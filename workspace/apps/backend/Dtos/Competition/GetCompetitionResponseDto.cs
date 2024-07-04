@@ -1,6 +1,8 @@
-﻿namespace Workspace.Backend.Models;
+﻿using Workspace.Backend.Models;
 
-public class Competition
+namespace Workspace.Backend.Dtos.Competition;
+
+public class GetCompetitionResponseDto
 {
   public int Id { get; set; }
   public string Name { get; set; }
@@ -15,7 +17,7 @@ public class Competition
   public Result Result { get; set; }
   public string? Other { get; set; }
 
-  public Competition()
+  public GetCompetitionResponseDto()
   {
     Name = string.Empty;
     Location = string.Empty;
@@ -28,45 +30,4 @@ public class Competition
     Form = Array.Empty<Form>();
     Result = new Result();
   }
-}
-
-public class Result
-{
-  public int? Position { get; set; }
-  public bool SpecialPrize { get; set; }
-  public bool Compliment { get; set; }
-  public bool NextRound { get; set; }
-
-  public Result()
-  {
-    Position = null;
-    SpecialPrize = false;
-    Compliment = false;
-    NextRound = false;
-  }
-}
-
-public enum Level
-{
-  Local,
-  State,
-  Regional,
-  National,
-  International
-}
-
-public enum Round
-{
-  School,
-  Regional,
-  State,
-  National
-}
-
-public enum Form
-{
-  Written,
-  Oral,
-  Sport,
-  Submission
 }
