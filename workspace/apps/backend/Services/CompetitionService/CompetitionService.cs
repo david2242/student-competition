@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Workspace.Backend.Data;
 using Workspace.Backend.Dtos.Competition;
 using Workspace.Backend.Models;
 
@@ -6,25 +7,22 @@ namespace Workspace.Backend.Services.CompetitionService;
 
 public class CompetitionService : ICompetitionService
 {
-  private static List<Competition> _competitions = new List<Competition>
-  {
-    new Competition { Id = 1, Name = "Competition 1" },
-    new Competition { Id = 2, Name = "Competition 2" }
-  };
-
   private readonly IMapper _mapper;
-  public CompetitionService(IMapper mapper)
+  private readonly DataContext _context;
+  public CompetitionService(IMapper mapper, DataContext context)
   {
     _mapper = mapper;
+    _context = context;
   }
   public async Task<List<GetCompetitionResponseDto>> GetAll()
   {
-      return _competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
+    var competitions = await _context.Competitions.ToListAsync();
+    return competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
   }
 
   public async Task<GetCompetitionResponseDto> GetSingle(int id)
   {
-    var competition = _competitions.FirstOrDefault(x => x.Id == id);
+    var competition = await _context.Competitions.FirstOrDefaultAsync(x => x.Id == id);
     if (competition == null)
     {
       throw new KeyNotFoundException($"Competition with id '{id}' was not found");
@@ -35,32 +33,35 @@ public class CompetitionService : ICompetitionService
   public async Task<List<GetCompetitionResponseDto>> AddCompetition(AddCompetitionRequestDto newCompetition)
   {
     var competition = _mapper.Map<Competition>(newCompetition);
-    competition.Id = _competitions.Max(x => x.Id) + 1;
-    _competitions.Add(competition);
-    return _competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
+    competition.Date = DateTime.UtcNow;
+    await _context.Competitions.AddAsync(_mapper.Map<Competition>(competition));
+    await _context.SaveChangesAsync();
+    var updatedCompetitions = await _context.Competitions.ToListAsync();
+    return updatedCompetitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
   }
 
   public async Task<GetCompetitionResponseDto> UpdateCompetition(int id, UpdateCompetitionRequestDto updatedCompetition)
   {
-    var index = _competitions.FindIndex(x => x.Id == id);
-    if (index == -1)
+    var competition = await _context.Competitions.FirstOrDefaultAsync(x => x.Id == id);
+    if (competition == null)
     {
       throw new KeyNotFoundException($"Competition with id '{id}' was not found");
     }
-    var updatedCompetitionModel = _mapper.Map<Competition>(updatedCompetition);
-    updatedCompetitionModel.Id = id;
-    _competitions[index] = updatedCompetitionModel;
-    return _mapper.Map<GetCompetitionResponseDto>(_competitions[index]);
+    _mapper.Map(updatedCompetition, competition);
+    await _context.SaveChangesAsync();
+    return _mapper.Map<GetCompetitionResponseDto>(competition);
   }
 
   public async Task<List<GetCompetitionResponseDto>> DeleteCompetition(int id)
   {
-    var index = _competitions.FindIndex(x => x.Id == id);
-    if (index == -1)
+    var competition = await _context.Competitions.FirstOrDefaultAsync(x => x.Id == id);
+    if (competition == null)
     {
       throw new KeyNotFoundException($"Competition with id '{id}' was not found");
     }
-    _competitions.RemoveAt(index);
-    return _competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
+    _context.Competitions.Remove(competition);
+    await _context.SaveChangesAsync();
+    var competitions = await _context.Competitions.ToListAsync();
+    return competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
   }
 }

@@ -22,7 +22,6 @@ public class Competition
     Subject = Array.Empty<string>();
     Teacher = Array.Empty<string>();
     Year = string.Empty;
-    Date = DateTime.Now;
     Level = Level.Local;
     Round = Round.School;
     Form = Array.Empty<Form>();
