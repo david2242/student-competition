@@ -1,4 +1,5 @@
-﻿using Workspace.Backend.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Workspace.Backend.Models;
 using Microsoft.AspNetCore.Mvc;
 using Workspace.Backend.Dtos.Competition;
 using Workspace.Backend.Services.CompetitionService;
@@ -15,7 +16,7 @@ namespace Workspace.Backend.Controllers
       _competitionService = competitionService;
     }
 
-    [HttpGet("")]
+    [HttpGet(""), Authorize]
     public async Task<ActionResult<ServiceResponse<List<GetCompetitionResponseDto>>>> GetAll()
     {
       var serviceResponse = new ServiceResponse<List<GetCompetitionResponseDto>>();
@@ -33,7 +34,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id}"), Authorize]
     public async Task<ActionResult<ServiceResponse<GetCompetitionResponseDto>>> GetSingle(int id)
     {
       var serviceResponse = new ServiceResponse<GetCompetitionResponseDto>();
@@ -58,7 +59,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpPost]
+    [HttpPost, Authorize]
     public async Task<ActionResult<ServiceResponse<List<GetCompetitionResponseDto>>>> AddCompetition(AddCompetitionRequestDto newCompetition)
     {
       var serviceResponse = new ServiceResponse<List<GetCompetitionResponseDto>>();
@@ -76,7 +77,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id}"), Authorize]
     public async Task<ActionResult<ServiceResponse<GetCompetitionResponseDto>>> UpdateCompetition(int id, UpdateCompetitionRequestDto updatedCompetition)
     {
       var serviceResponse = new ServiceResponse<GetCompetitionResponseDto>();
@@ -101,7 +102,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id}"), Authorize]
     public async Task<ActionResult<ServiceResponse<List<GetCompetitionResponseDto>>>> DeleteCompetition(int id)
     {
       var serviceResponse = new ServiceResponse<List<GetCompetitionResponseDto>>();
