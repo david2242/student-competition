@@ -7,7 +7,7 @@ using Workspace.Backend.Services.CompetitionService;
 namespace Workspace.Backend.Controllers
 {
   [ApiController]
-  [Route("api/[controller]")]
+  [Route("[controller]")]
   public class CompetitionController : ControllerBase
   {
     private readonly ICompetitionService _competitionService;
