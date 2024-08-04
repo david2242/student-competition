@@ -1,6 +1,7 @@
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Workspace.Backend.Data;
 using Workspace.Backend.Services.CompetitionService;
@@ -75,7 +76,12 @@ if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SWAGG
 }
 
 app.MapIdentityApi<IdentityUser>();
-app.UseHttpsRedirection();
+app.UseDefaultFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+  FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "wwwroot"))
+});
+
 app.MapControllers();
 
 app.Run();
