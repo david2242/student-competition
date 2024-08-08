@@ -1,0 +1,41 @@
+﻿version: '3.8'
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-CU13-ubuntu-22.04
+    environment:
+      MSSQL_SA_PASSWORD: "YourStrong(!)Password"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Express"
+    networks:
+      backend_network:
+        ipv4_address: 172.20.0.2
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+      - ./custom-entrypoint.sh:/usr/sc/app/custom-entrypoint.sh
+    entrypoint: /bin/bash /usr/sc/app/custom-entrypoint.sh
+
+  workspace-backend:
+    image: student-competition:latest
+    environment:
+      SQL_SERVER_IP: "172.20.0.2"
+      SQL_SERVER_PASSWORD: "YourStrong(!)Password"
+      SWAGGER: "True"
+    depends_on:
+      - sqlserver
+    networks:
+      backend_network:
+        ipv4_address: 172.20.0.3
+    ports:
+      - "5157:5157"
+
+networks:
+  backend_network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  sqlserver-data:
+    driver: local
