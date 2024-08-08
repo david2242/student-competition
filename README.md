@@ -5,6 +5,11 @@ This is an nx monorepo project, which contains the following applications:
 - frontend: Angular application
 - backend: .NET Core Web API application
 
+## Prerequisites
+- .NET sdk (e.g.: winget install Microsoft.DotNet.SDK.8)
+- Node.js (e.g.: winget install -e --id OpenJS.NodeJS)
+- In `./workspace/` npm install
+
 ## Development
 ### Running the backend API:
 `nx serve backend`
