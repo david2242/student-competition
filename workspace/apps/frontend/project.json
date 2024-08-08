@@ -57,7 +57,8 @@
         },
         "development": {
           "buildTarget": "frontend:build:development"
-        }
+        },
+        "proxyConfig": "apps/frontend/src/proxy.conf.json"
       },
       "defaultConfiguration": "development"
     },

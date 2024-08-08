@@ -6,6 +6,7 @@ export interface Result {
 }
 
 export interface Competition {
+  id?: number;
   name: string;
   location: string;
   subject: string[];
@@ -17,4 +18,10 @@ export interface Competition {
   form: ['written' | 'oral' | 'sport' | 'submission'];
   result: Result;
   note: string;
+}
+
+export interface ServerResponse<T> {
+  data: T;
+  message: string;
+  success: boolean;
 }
