@@ -11,14 +11,13 @@ public class DatabaseInitializerService
       throw new NullReferenceException("UserManager or RoleManager is null");
     }
 
-    if (!await roleManager.RoleExistsAsync("admin"))
+    var roles = new[] { "admin", "user" };
+    foreach (var role in roles)
     {
-      await roleManager.CreateAsync(new IdentityRole("admin"));
-    }
-
-    if (!await roleManager.RoleExistsAsync("creator"))
-    {
-      await roleManager.CreateAsync(new IdentityRole("creator"));
+      if (!await roleManager.RoleExistsAsync(role))
+      {
+        await roleManager.CreateAsync(new IdentityRole(role));
+      }
     }
 
     var adminUsers = await userManager.GetUsersInRoleAsync("admin");

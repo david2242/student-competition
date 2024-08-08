@@ -6,10 +6,14 @@ using Microsoft.OpenApi.Models;
 using Workspace.Backend.Data;
 using Workspace.Backend.Services.CompetitionService;
 using Swashbuckle.AspNetCore.Filters;
+using Workspace.Backend;
 using Workspace.Backend.Services.DatabaseInitializerService;
+using Workspace.Backend.Services.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -23,7 +27,7 @@ builder.Services.AddSwaggerGen(options =>
   options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
 var sqlServerIp = Environment.GetEnvironmentVariable("SQL_SERVER_IP");
 var sqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
@@ -45,11 +49,24 @@ builder.Services.Configure<RouteOptions>(options =>
     options.LowercaseUrls = true;
 });
 builder.Services.AddScoped<ICompetitionService, CompetitionService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<UserManager<IdentityUser>>();
 
 var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://localhost:5000";
 builder.WebHost.UseUrls(url);
 
 var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.MapIdentityApi<IdentityUser>();
+app.UseHttpsRedirection();
+app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -75,7 +92,6 @@ if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SWAGG
   app.UseSwaggerUI();
 }
 
-app.MapIdentityApi<IdentityUser>();
 app.UseDefaultFiles();
 app.UseStaticFiles(new StaticFileOptions
 {
