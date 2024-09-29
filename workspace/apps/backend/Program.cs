@@ -29,16 +29,20 @@ builder.Services.AddSwaggerGen(options =>
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-var sqlServerIp = Environment.GetEnvironmentVariable("SQL_SERVER_IP");
-var sqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
-var connectionString = $"Server={sqlServerIp};Database=competition;Trusted_Connection=False;TrustServerCertificate=True;User Id=sa;Password={sqlServerPassword};";
+var psqlHost = Environment.GetEnvironmentVariable("SQL_SERVER_HOST");
+var psqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
+var psqlServerUsername = Environment.GetEnvironmentVariable("SQL_SERVER_USERNAME");
+var psqlDatabaseName = Environment.GetEnvironmentVariable("SQL_DATABASE_NAME");
+var psqlServerPort = Environment.GetEnvironmentVariable("SQL_SERVER_PORT");
+var appPort = Environment.GetEnvironmentVariable("PORT") ?? "5157";
+var connectionString = $"User ID={psqlServerUsername};Password={psqlServerPassword};Host={psqlHost};Port={psqlServerPort};Database={psqlDatabaseName};Pooling=true;";
 
 if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
 {
   connectionString =  builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
-builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
   .AddRoles<IdentityRole>()
@@ -56,6 +60,8 @@ var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://local
 builder.WebHost.UseUrls(url);
 
 var app = builder.Build();
+
+app.Urls.Add($"http://0.0.0.0:{appPort}");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
