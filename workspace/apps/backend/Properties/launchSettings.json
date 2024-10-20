@@ -17,9 +17,13 @@
       "applicationUrl": "http://localhost:5157",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_URLS": "http://localhost:5157",
-        "SQL_SERVER_IP": "DESKTOP-5BA5TRB\\SQLEXPRESS",
-        "SQL_SERVER_PASSWORD":"YourStrong(!)Password"
+        "SQL_SERVER_HOST": "172.20.0.2",
+        "SQL_SERVER_USERNAME": "postgres",
+        "SQL_SERVER_PASSWORD": "YourStrong(!)Password",
+        "SQL_DATABASE_NAME": "competition",
+        "SQL_SERVER_PORT": "5432",
+        "SWAGGER": "True"
+
       }
     },
     "https": {
