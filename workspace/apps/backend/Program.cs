@@ -1,7 +1,6 @@
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.OpenApi.Models;
 using Workspace.Backend.Data;
 using Workspace.Backend.Services.CompetitionService;
@@ -17,28 +16,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-  options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-  {
-    In = ParameterLocation.Header,
-    Name = "Authorization",
-    Type = SecuritySchemeType.ApiKey
-  });
+   options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+   {
+     In = ParameterLocation.Header,
+     Name = "Authorization",
+     Type = SecuritySchemeType.ApiKey
+   });
 
-  options.OperationFilter<SecurityRequirementsOperationFilter>();
+   options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-var sqlServerIp = Environment.GetEnvironmentVariable("SQL_SERVER_IP");
-var sqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
-var connectionString = $"Server={sqlServerIp};Database=competition;Trusted_Connection=False;TrustServerCertificate=True;User Id=sa;Password={sqlServerPassword};";
+var psqlHost = Environment.GetEnvironmentVariable("SQL_SERVER_HOST");
+var psqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
+var psqlServerUsername = Environment.GetEnvironmentVariable("SQL_SERVER_USERNAME");
+var psqlDatabaseName = Environment.GetEnvironmentVariable("SQL_DATABASE_NAME");
+var psqlServerPort = Environment.GetEnvironmentVariable("SQL_SERVER_PORT");
+var connectionString = $"User ID={psqlServerUsername};Password={psqlServerPassword};Host={psqlHost};Port={psqlServerPort};Database={psqlDatabaseName};Pooling=true;";
 
-if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
-{
-  connectionString =  builder.Configuration.GetConnectionString("DefaultConnection");
-}
-
-builder.Services.AddDbContext<DataContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
   .AddRoles<IdentityRole>()
@@ -52,52 +49,38 @@ builder.Services.AddScoped<ICompetitionService, CompetitionService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<UserManager<IdentityUser>>();
 
-var url = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") ?? "http://localhost:5000";
-builder.WebHost.UseUrls(url);
-
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SWAGGER") == "True")
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+   app.UseSwagger();
+   app.UseSwaggerUI();
 }
 
-app.MapIdentityApi<IdentityUser>();
 app.UseHttpsRedirection();
+app.MapIdentityApi<IdentityUser>();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-	var context = scope.ServiceProvider.GetRequiredService<DataContext>();
-	context.Database.Migrate();
+   var context = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-  try
-  {
-    var userManager = scope.ServiceProvider.GetService(typeof(UserManager<IdentityUser>)) as UserManager<IdentityUser>;
-    var roleManager = scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>)) as RoleManager<IdentityRole>;
-    Console.WriteLine("Seeding data");
-    await DatabaseInitializerService.SeedDataAsync(userManager, roleManager);
-  }
-  catch (Exception e)
-  {
-    Console.WriteLine(e.Message);
-  }
-}
+   try
+   {
+     context.Database.Migrate();
 
-if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SWAGGER") == "True")
-{
-  app.UseSwagger();
-  app.UseSwaggerUI();
+     var userManager = scope.ServiceProvider.GetService(typeof(UserManager<IdentityUser>)) as UserManager<IdentityUser>;
+     var roleManager = scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>)) as RoleManager<IdentityRole>;
+     Console.WriteLine("Seeding data");
+     await DatabaseInitializerService.SeedDataAsync(userManager, roleManager);
+   }
+   catch (Exception e)
+   {
+     Console.WriteLine($"An error occurred while migrating or seeding the database: {e.Message}");
+   }
 }
 
 app.UseDefaultFiles();
-app.UseStaticFiles(new StaticFileOptions
-{
-  FileProvider = new PhysicalFileProvider(Path.Combine(builder.Environment.ContentRootPath, "wwwroot"))
-});
-
+app.UseStaticFiles();
 app.MapControllers();
-
 app.Run();

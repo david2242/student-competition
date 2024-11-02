@@ -29,7 +29,7 @@ Then run the following command in the ./workspace/ci folder to start the backend
 `docker-compose up`
 
 This command does the following:
-- starts a Microsoft SQL Server
+- starts a PostgresSQL Server
 - attaches a volume to the SQL Server to persist the data
 - seeds the database with the initial data
 - starts the backend API
@@ -37,7 +37,8 @@ This command does the following:
 - creates a user with the following credentials:
   - username: admin
   - password: Admin123!
-- the backend API is available at http://localhost:5157/api/Competition
+- frontend is available at http://localhost:8080
+- the backend API is available at http://localhost:8080/competition
 
 ### Swagger
-http://localhost:5157/swagger/index.html
+http://localhost:8080/swagger/index.html
