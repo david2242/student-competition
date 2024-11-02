@@ -16,14 +16,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-   options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
-   {
-     In = ParameterLocation.Header,
-     Name = "Authorization",
-     Type = SecuritySchemeType.ApiKey
-   });
-
-   options.OperationFilter<SecurityRequirementsOperationFilter>();
+  options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+  {
+    In = ParameterLocation.Header,
+    Name = "Authorization",
+    Type = SecuritySchemeType.ApiKey
+  });
+  options.OperationFilter<SecurityRequirementsOperationFilter>();
 });
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
@@ -43,7 +42,7 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 builder.Services.AddControllers();
 builder.Services.Configure<RouteOptions>(options =>
 {
-    options.LowercaseUrls = true;
+  options.LowercaseUrls = true;
 });
 builder.Services.AddScoped<ICompetitionService, CompetitionService>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -53,8 +52,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SWAGGER") == "True")
 {
-   app.UseSwagger();
-   app.UseSwaggerUI();
+  app.UseSwagger();
+  app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -63,21 +62,21 @@ app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {
-   var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+  var context = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-   try
-   {
-     context.Database.Migrate();
+  try
+  {
+   context.Database.Migrate();
 
-     var userManager = scope.ServiceProvider.GetService(typeof(UserManager<IdentityUser>)) as UserManager<IdentityUser>;
-     var roleManager = scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>)) as RoleManager<IdentityRole>;
-     Console.WriteLine("Seeding data");
-     await DatabaseInitializerService.SeedDataAsync(userManager, roleManager);
-   }
-   catch (Exception e)
-   {
-     Console.WriteLine($"An error occurred while migrating or seeding the database: {e.Message}");
-   }
+   var userManager = scope.ServiceProvider.GetService(typeof(UserManager<IdentityUser>)) as UserManager<IdentityUser>;
+   var roleManager = scope.ServiceProvider.GetService(typeof(RoleManager<IdentityRole>)) as RoleManager<IdentityRole>;
+    Console.WriteLine("Seeding data");
+    await DatabaseInitializerService.SeedDataAsync(userManager, roleManager);
+  }
+    catch (Exception e)
+  {
+    Console.WriteLine($"An error occurred while migrating or seeding the database: {e.Message}");
+  }
 }
 
 app.UseDefaultFiles();
