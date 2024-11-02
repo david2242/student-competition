@@ -1,34 +1,34 @@
 ﻿version: '3.8'
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-CU13-ubuntu-22.04
+  postgres:
+    image: postgres
     environment:
-      MSSQL_SA_PASSWORD: "YourStrong(!)Password"
-      ACCEPT_EULA: "Y"
-      MSSQL_PID: "Express"
+      POSTGRES_PASSWORD: "YourStrong(!)Password"
+      POSTGRES_DB: "competition"
     networks:
       backend_network:
         ipv4_address: 172.20.0.2
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - sqlserver-data:/var/opt/mssql
-      - ./custom-entrypoint.sh:/usr/sc/app/custom-entrypoint.sh
-    entrypoint: /bin/bash /usr/sc/app/custom-entrypoint.sh
+      - postgres-data:/var/lib/postgresql/data
 
   workspace-backend:
     image: student-competition:latest
     environment:
-      SQL_SERVER_IP: "172.20.0.2"
-      SQL_SERVER_PASSWORD: "YourStrong(!)Password"
       SWAGGER: "True"
+      SQL_SERVER_HOST: "172.20.0.2"
+      SQL_SERVER_USERNAME: "postgres"
+      SQL_SERVER_PASSWORD: "YourStrong(!)Password"
+      SQL_DATABASE_NAME: "competition"
+      SQL_SERVER_PORT: "5432"
     depends_on:
-      - sqlserver
+      - postgres
     networks:
       backend_network:
         ipv4_address: 172.20.0.3
     ports:
-      - "5157:5157"
+      - "8080:8080"
 
 networks:
   backend_network:
@@ -37,5 +37,5 @@ networks:
         - subnet: 172.20.0.0/16
 
 volumes:
-  sqlserver-data:
+  postgres-data:
     driver: local
