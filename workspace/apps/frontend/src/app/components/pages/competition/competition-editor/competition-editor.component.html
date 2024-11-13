@@ -1,0 +1,103 @@
+<div class="container mt-5">
+  <form [formGroup]="competitionForm" (ngSubmit)="onSubmit()" class="needs-validation mb-4" novalidate>
+    <div class="row">
+      <div class="col-sm-12 col-md-6 mb-3">
+        <label for="name" class="form-label">Versenyző neve</label>
+        <input type="text" class="form-control" [ngClass]="{'is-invalid': name.touched && name.errors, 'is-valid': name.touched && !name.errors}" id="name" formControlName="name">
+        <div class="invalid-feedback">Kérem töltse ki a versenyző nevét</div>
+      </div>
+      <div class="col-sm-12 col-md-6 mb-3">
+        <label for="location" class="form-label">Helyszín</label>
+        <input type="text" class="form-control" [ngClass]="{'is-invalid': location.touched && location.errors, 'is-valid': location.touched && !location.errors}" id="location" formControlName="location">
+        <div class="invalid-feedback">Kérem töltse ki a verseny helyszínét</div>
+      </div>
+      <div formArrayName="subject" class="col-sm-12 col-md-6 mb-3">
+        <label class="form-label d-block">Tantárgy / Téma</label>
+        <div *ngFor="let subject of subject.controls; let i = index" class="input-group mb-2">
+          <input type="text" class="form-control" [ngClass]="{'is-invalid': subject.touched && subject.errors, 'is-valid': subject.touched && !subject.errors}" [formControlName]="i">
+          <button *ngIf="i !=0" class="btn btn-outline-danger" type="button" (click)="removeSubject(i)">Törlés</button>
+          <div class="invalid-feedback">Kérem töltse ki a tantárgyat vagy a tematikát</div>
+        </div>
+        <button type="button" class="btn btn-secondary" (click)="addSubject('')">Tantárgy hozzáadása</button>
+      </div>
+      <div formArrayName="teacher" class="col-sm-12 col-md-6 mb-3">
+        <label class="form-label d-block">Felkészítő tanár</label>
+        <div *ngFor="let teacher of teacher.controls; let i = index" class="input-group mb-2">
+          <input type="text" class="form-control" [ngClass]="{'is-invalid': teacher.touched && teacher.errors, 'is-valid': teacher.touched && !teacher.errors}" [formControlName]="i">
+          <button class="btn btn-outline-danger" type="button" (click)="removeTeacher(i)">Törlés</button>
+          <div class="invalid-feedback">Kérem adja meg a felkészítő tanár nevét</div>
+        </div>
+        <button type="button" class="btn btn-secondary" (click)="addTeacher('')">Tanár hozzáadása</button>
+      </div>
+      <div class="col-sm-12 col-md-6 mb-3">
+        <label for="year" class="form-label">Évfolyam</label>
+        <input type="text" class="form-control" [ngClass]="{'is-invalid': year.touched && year.errors, 'is-valid': year.touched && !year.errors}" id="year" formControlName="year">
+        <div class="invalid-feedback">Kérem adja meg melyik tanévben kezdődött a verseny!</div>
+      </div>
+      <div class="col-sm-12 col-md-6 mb-3">
+        <label for="level" class="form-label">Verseny típusa</label>
+        <select class="form-select" [ngClass]="{'is-invalid': level.touched && level.errors, 'is-valid': level.touched && !level.errors}" id="level" formControlName="level">
+          <option value="local">Helyi</option>
+          <option value="regional">Körzeti</option>
+          <option value="state">Megyei</option>
+          <option value="national">Országos</option>
+        </select>
+        <div class="invalid-feedback">Kérem adja meg a verseny körzetét!</div>
+      </div>
+      <div class="col-sm-12 col-md-6 mb-3">
+        <label for="round" class="form-label">Verseny szintje</label>
+        <select class="form-select" [ngClass]="{'is-invalid': round.touched && round.errors, 'is-valid': round.touched && !round.errors}" id="round" formControlName="round">
+          <option value="school">Iskolai</option>
+          <option value="regional">Körzeti</option>
+          <option value="state">Megyei</option>
+          <option value="national">Országos</option>
+        </select>
+        <div class="invalid-feedback">Kérem adja meg a verseny szintjét!</div>
+      </div>
+      <div formArrayName="form" class="col-sm-12 col-md-6 mb-3">
+        <label class="form-label d-block">Verseny formája</label>
+        <div *ngFor="let form of form.controls; let i = index" class="input-group mb-2">
+          <select class="form-select" [ngClass]="{'is-invalid': form.touched && form.errors, 'is-valid': form.touched && !form.errors}" [formControlName]="i">
+            <option value="written">Írásbeli</option>
+            <option value="oral">Szóbeli</option>
+            <option value="sport">Sport</option>
+            <option value="submission">Pályázatos</option>
+          </select>
+          <div class="invalid-feedback">Kérem adja meg a verseny formáját!</div>
+          <button *ngIf="i !=0" class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
+        </div>
+        <button type="button" class="btn btn-secondary" (click)="addForm('written')">Több hozzáadása</button>
+      </div>
+      <div formGroupName="result" class="col-sm-12 col-md-6 mb-3">
+        <div class="d-flex gap-4">
+
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="enablePosition" formControlName="enablePosition">
+          <label class="form-check-label" for="enablePosition">Helyezés</label>
+        </div>
+          <input type="number" class="form-control w-25" min="1" formControlName="position">
+        </div>
+
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="specialPrize" formControlName="specialPrize">
+          <label class="form-check-label" for="specialPrize">Különdíj</label>
+        </div>
+
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="compliment" formControlName="compliment">
+          <label class="form-check-label" for="compliment">Dícséret</label>
+        </div>
+
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="nextRound" formControlName="nextRound">
+          <label class="form-check-label" for="nextRound">Továbbjutás</label>
+        </div>
+      </div>
+      <div class="col-sm-12 col-md-6 mb-3">
+        <label for="note" class="form-label">Megjegyzés</label>
+        <textarea class="form-control" id="note" formControlName="note"></textarea>
+      </div>
+      <button [disabled]="competitionForm.invalid" type="submit" class="btn btn-primary">Mentés</button>
+    </div>
+  </form>
+</div>
