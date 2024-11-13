@@ -11,6 +11,7 @@ export interface Competition {
   subject: string[];
   teacher: string[];
   year: string;
+  date: Date;
   level: 'local' | 'state' | 'regional' | 'national' | 'international';
   round: 'school' | 'regional' | 'state' | 'national';
   form: ['written' | 'oral' | 'sport' | 'submission'];

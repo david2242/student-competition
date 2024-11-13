@@ -17,6 +17,7 @@ export class CompetitionEditorComponent implements OnInit {
         subject: new FormArray([(new FormControl('', Validators.required))], Validators.required),
         teacher: new FormArray([]),
         year: new FormControl('', Validators.required),
+        date: new FormControl('', Validators.required),
         level: new FormControl('local', Validators.required),
         round: new FormControl('school', Validators.required),
         form: new FormArray([(new FormControl('', Validators.required))], Validators.required),
@@ -52,6 +53,10 @@ export class CompetitionEditorComponent implements OnInit {
 
   get year(): FormControl {
     return this.competitionForm.get('year') as FormControl;
+  }
+
+  get date(): FormControl {
+    return this.competitionForm.get('date') as FormControl;
   }
 
   get level(): FormControl {
