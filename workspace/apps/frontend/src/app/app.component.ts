@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CompetitionService } from "./services/competition.service";
+import {NavbarComponent} from "@/app/components/navbar/navbar.component";
 
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, NavbarComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
