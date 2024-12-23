@@ -8,7 +8,7 @@
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "SQL_SERVER_HOST": "172.20.0.2",
+        "SQL_SERVER_HOST": "localhost",
         "SQL_SERVER_USERNAME": "postgres",
         "SQL_SERVER_PASSWORD": "YourStrong(!)Password",
         "SQL_DATABASE_NAME": "competition",
