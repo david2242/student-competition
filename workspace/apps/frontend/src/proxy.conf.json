@@ -1,7 +1,7 @@
-{
-  "/competition": {
-    "target": "http://localhost:8080",
-    "secure": false,
-    "changeOrigin": true
-  }
-}
+//{
+//  "/competition": {
+//    "target": "http://localhost:8080",
+//    "secure": false,
+//    "changeOrigin": true
+//  }
+//}

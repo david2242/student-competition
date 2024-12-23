@@ -9,7 +9,7 @@ import {environment} from '@/environments/environment';
 })
 export class CompetitionService {
 
-  apiUrl = environment.apiUrl
+  apiUrl = `${environment.apiUrl}/api`
   httpService = inject(HttpClient)
 
   getCompetitions() {

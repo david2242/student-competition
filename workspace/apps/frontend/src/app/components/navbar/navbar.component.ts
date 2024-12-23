@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from "@angular/router";
+import { AuthService } from "@/app/services/auth.service";
 
 @Component({
   selector: 'app-navbar',
@@ -12,8 +13,4 @@ import { RouterLink } from "@angular/router";
 export class NavbarComponent {
   isAdmin = false; // This should be dynamically set based on user role
 
-  logout() {
-    // TODO: Implement logout functionality
-    console.log('User logged out');
-  }
 }

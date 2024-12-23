@@ -9,26 +9,26 @@ import {ServerResponse} from '@/app/models/server-response';
 })
 export class UserService {
 
-  apiUrl = environment.apiUrl;
+  apiUrl = `${environment.apiUrl}/api`;
   httpService = inject(HttpClient);
 
   getAllUsers() {
-    return this.httpService.get<ServerResponse<User[]>>(`${this.apiUrl}/api/user`);
+    return this.httpService.get<ServerResponse<User[]>>(`${this.apiUrl}/user`);
   }
 
   getUser(id: string) {
-    return this.httpService.get<ServerResponse<User>>(`${this.apiUrl}/api/user/${id}`);
+    return this.httpService.get<ServerResponse<User>>(`${this.apiUrl}/user/${id}`);
   }
 
   addUser(user: User) {
-    return this.httpService.post<ServerResponse<User>>(`${this.apiUrl}/api/user`, user);
+    return this.httpService.post<ServerResponse<User>>(`${this.apiUrl}/user`, user);
   }
 
   updateUser(id: string, user: User) {
-    return this.httpService.put<ServerResponse<User>>(`${this.apiUrl}/api/user/${id}`, user);
+    return this.httpService.put<ServerResponse<User>>(`${this.apiUrl}/user/${id}`, user);
   }
 
   deleteUser(id: string) {
-    return this.httpService.delete<ServerResponse<User>>(`${this.apiUrl}/api/user/${id}`);
+    return this.httpService.delete<ServerResponse<User>>(`${this.apiUrl}/user/${id}`);
   }
 }
