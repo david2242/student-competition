@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { NavbarComponent } from "./components/navbar/navbar.component";
+import { NavbarComponent } from "@/app/components/navbar/navbar.component";
+import { AuthService } from "@/app/services/auth.service";
 
 @Component({
   standalone: true,
@@ -9,6 +10,11 @@ import { NavbarComponent } from "./components/navbar/navbar.component";
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
-  title = 'frontend';
+export class AppComponent implements OnInit {
+
+  private authService = inject(AuthService);
+
+  ngOnInit() {
+    this.authService.info().subscribe();
+  }
 }

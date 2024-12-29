@@ -9,15 +9,10 @@
         <li class="nav-item">
           <a class="nav-link active" aria-current="page" href="#" routerLink="competition">Verseny</a>
         </li>
-        @if (isAdmin) {
-          <li class="nav-item">
-            <a class="nav-link" href="#">Felhasználók</a>
-          </li>
-        }
       </ul>
-      <span class="navbar-item">
-        <a class="nav-link active" aria-current="page" href="#" (click)="logout()">Kijelentkezés</a>
-      </span>
+      <div *ngIf="!($isLoggedIn | async)" class="d-flex">
+        <button class="btn btn-outline-success me-2" routerLink="login" aria-current="page"><i class="bi-person-fill me-1"></i>Bejelentkezés</button>
+      </div>
     </div>
   </div>
 </nav>
