@@ -12,10 +12,34 @@ export interface Competition {
   subject: string[];
   teacher: string[];
   year: string;
-  level: 'local' | 'state' | 'regional' | 'national' | 'international';
-  round: 'school' | 'regional' | 'state' | 'national';
-  form: ['written' | 'oral' | 'sport' | 'submission'];
+  level: Level;
+  round: Round;
+  form: Form[];
   result: Result;
-  note: string;
+  other: string;
 }
 
+export enum Level
+{
+  Local,
+  State,
+  Regional,
+  National,
+  International
+}
+
+export enum Round
+{
+  School,
+  Regional,
+  State,
+  National
+}
+
+export enum Form
+{
+  Written,
+  Oral,
+  Sport,
+  Submission
+}

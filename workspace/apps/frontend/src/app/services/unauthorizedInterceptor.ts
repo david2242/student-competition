@@ -16,7 +16,6 @@ export class UnauthorizedInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, handler: HttpHandler): Observable<HttpEvent<any>> {
-    console.log('Request URL: ' + req.url);
     return handler.handle(req).pipe(tap(event => {
       if (event.type === HttpEventType.Response && event.status === 401) {
         this.authService.$isLoggedIn.next(false);
