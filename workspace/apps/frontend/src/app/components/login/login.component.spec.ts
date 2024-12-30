@@ -1,22 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NavbarComponent } from './navbar.component';
+import { LoginComponent } from './login.component';
+import { of } from "rxjs";
 import { AuthService } from "@/app/services/auth.service";
-import { BehaviorSubject } from "rxjs";
-import { RouterTestingModule } from "@angular/router/testing";
 
-describe('NavbarComponent', () => {
-  let component: NavbarComponent;
-  let fixture: ComponentFixture<NavbarComponent>;
+describe('LoginComponent', () => {
+  let component: LoginComponent;
+  let fixture: ComponentFixture<LoginComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarComponent, RouterTestingModule],
+      imports: [ LoginComponent ],
       providers: [
         { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(NavbarComponent);
+    fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -27,5 +26,5 @@ describe('NavbarComponent', () => {
 });
 
 const mockAuthService = {
-  $isLoggedIn: new BehaviorSubject(false)
+  login: () => of()
 };

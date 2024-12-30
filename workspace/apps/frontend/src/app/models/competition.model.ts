@@ -6,6 +6,7 @@ export interface Result {
 }
 
 export interface Competition {
+  id?: number;
   name: string;
   location: string;
   subject: string[];
@@ -17,3 +18,4 @@ export interface Competition {
   result: Result;
   note: string;
 }
+
