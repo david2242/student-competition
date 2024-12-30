@@ -73,7 +73,7 @@ if (app.Environment.IsDevelopment())
 {
   app.UseCors("_myAllowSpecificOrigins");
 }
-
+app.MapGroup("/api").MapIdentityApi<IdentityUser>();
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
