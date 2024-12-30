@@ -35,6 +35,19 @@ var psqlServerPort = Environment.GetEnvironmentVariable("SQL_SERVER_PORT");
 var connectionString = $"User ID={psqlServerUsername};Password={psqlServerPassword};Host={psqlHost};Port={psqlServerPort};Database={psqlDatabaseName};Pooling=true;";
 
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
+
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy(
+    name: "_myAllowSpecificOrigins",
+    policy =>
+    {
+      policy.AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
   .AddRoles<IdentityRole>()
@@ -56,8 +69,11 @@ if (app.Environment.IsDevelopment() || Environment.GetEnvironmentVariable("SWAGG
   app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-app.MapIdentityApi<IdentityUser>();
+if (app.Environment.IsDevelopment())
+{
+  app.UseCors("_myAllowSpecificOrigins");
+}
+
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
@@ -73,7 +89,7 @@ using (var scope = app.Services.CreateScope())
     Console.WriteLine("Seeding data");
     await DatabaseInitializerService.SeedDataAsync(userManager, roleManager);
   }
-    catch (Exception e)
+  catch (Exception e)
   {
     Console.WriteLine($"An error occurred while migrating or seeding the database: {e.Message}");
   }
