@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from "@angular/common/http";
 import { HttpTestingController, provideHttpClientTesting } from "@angular/common/http/testing";
-import { Competition } from "@/app/models/competition.model";
+import { Competition, Form, Level, Round } from "@/app/models/competition.model";
 import { ServerResponse } from "@/app/models/server-response";
 import { CompetitionService } from './competition.service';
 
@@ -14,16 +14,16 @@ describe('CompetitionService', () => {
     subject: [],
     teacher: [],
     year: '',
-    level: 'local',
-    round: 'state',
-    form: [ "oral" ],
+    level: Level.Local,
+    round: Round.State,
+    form: [ Form.Oral ],
     result: {
       position: 0,
       specialPrize: false,
       compliment: false,
       nextRound: false
     },
-    note: ''
+    other: ''
   }
 
   const stubGetAllResponse: ServerResponse<Competition[]> = {

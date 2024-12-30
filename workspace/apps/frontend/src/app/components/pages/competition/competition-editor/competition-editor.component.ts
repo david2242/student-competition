@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subscription } from "rxjs";
+import { Form, Level, Round } from "@/app/models/competition.model";
+import { CompetitionService } from "@/app/services/competition.service";
 
 @Component({
   selector: 'app-competition-editor',
@@ -9,37 +12,47 @@ import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } fr
   templateUrl: './competition-editor.component.html',
   styleUrl: './competition-editor.component.css',
 })
-export class CompetitionEditorComponent implements OnInit {
+export class CompetitionEditorComponent implements OnInit, OnDestroy {
+
+  competitionService = inject(CompetitionService);
+  positionEnablerSubsripction?: Subscription;
+  protected readonly Level = Level;
+  protected readonly Form = Form;
+  protected readonly Round = Round;
 
   competitionForm = new FormGroup({
-        name: new FormControl('', Validators.required),
-        location: new FormControl('', Validators.required),
-        subject: new FormArray([(new FormControl('', Validators.required))], Validators.required),
+        name: new FormControl<string>('', {nonNullable: true, validators: [Validators.required]}),
+        location: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
+        subject: new FormArray([(new FormControl('', {nonNullable: true, validators: [Validators.required]}))], Validators.required),
         teacher: new FormArray([]),
-        year: new FormControl('', Validators.required),
-        level: new FormControl('local', Validators.required),
-        round: new FormControl('school', Validators.required),
-        form: new FormArray([(new FormControl('', Validators.required))], Validators.required),
+        year: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
+        level: new FormControl<Level>(Level.Local, {nonNullable: true, validators: [Validators.required]}),
+        round: new FormControl<Round>(Round.School, {nonNullable: true, validators: [Validators.required]}),
+        form: new FormArray([(new FormControl<Form>(Form.Written, {nonNullable: true, validators: [Validators.required]}))], Validators.required),
         result: new FormGroup({
           enablePosition: new FormControl(false, {nonNullable: true}),
-          position: new FormControl(null, Validators.required),
-          specialPrize: new FormControl(false),
-          compliment: new FormControl(false),
-          nextRound: new FormControl(false),
+          position: new FormControl({value: null, disabled: true}, {nonNullable: true, validators: [Validators.required]}),
+          specialPrize: new FormControl(false, {nonNullable: true}),
+          compliment: new FormControl(false, {nonNullable: true}),
+          nextRound: new FormControl(false, {nonNullable: true}),
         }),
-        note: new FormControl(''),
+        other: new FormControl('', {nonNullable: true}),
   });
 
   ngOnInit(): void {
     const positionControl = this.competitionForm.controls.result.controls.position;
-    positionControl?.disable();
-    this.competitionForm.get('result.enablePosition')?.valueChanges.subscribe((checked: boolean) => {
+    this.positionEnablerSubsripction = this.competitionForm.get('result.enablePosition')?.valueChanges.subscribe((checked: boolean) => {
       if (checked) {
         positionControl?.enable();
       } else {
+        positionControl?.reset();
         positionControl?.disable();
       }
     })
+  }
+
+  ngOnDestroy(): void {
+    this.positionEnablerSubsripction?.unsubscribe();
   }
 
   get name(): FormControl {
@@ -88,8 +101,8 @@ export class CompetitionEditorComponent implements OnInit {
 
   onSubmit(): void {
     if (this.competitionForm.valid) {
-      const competition = this.competitionForm.value;
-      console.log('Competition submitted:', competition);
+      const competition = this.competitionForm.getRawValue();
+      this.competitionService.createCompetition(competition).subscribe(() => this.competitionForm.reset());
     } else {
       console.log('Form is invalid', this.competitionForm);
     }

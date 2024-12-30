@@ -37,20 +37,20 @@
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="level" class="form-label">Verseny típusa</label>
         <select class="form-select" [ngClass]="{'is-invalid': level.touched && level.errors, 'is-valid': level.touched && !level.errors}" id="level" formControlName="level">
-          <option value="local">Helyi</option>
-          <option value="regional">Körzeti</option>
-          <option value="state">Megyei</option>
-          <option value="national">Országos</option>
+          <option [value]=Level.Local>Helyi</option>
+          <option [value]=Level.Regional>Körzeti</option>
+          <option [value]=Level.State>Megyei</option>
+          <option [value]=Level.National>Országos</option>
         </select>
         <div class="invalid-feedback">Kérem adja meg a verseny körzetét!</div>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="round" class="form-label">Verseny szintje</label>
         <select class="form-select" [ngClass]="{'is-invalid': round.touched && round.errors, 'is-valid': round.touched && !round.errors}" id="round" formControlName="round">
-          <option value="school">Iskolai</option>
-          <option value="regional">Körzeti</option>
-          <option value="state">Megyei</option>
-          <option value="national">Országos</option>
+          <option [value]=Round.School>Iskolai</option>
+          <option [value]=Round.Regional>Körzeti</option>
+          <option [value]=Round.State>Megyei</option>
+          <option [value]=Round.National>Országos</option>
         </select>
         <div class="invalid-feedback">Kérem adja meg a verseny szintjét!</div>
       </div>
@@ -58,10 +58,10 @@
         <label class="form-label d-block">Verseny formája</label>
         <div *ngFor="let form of form.controls; let i = index" class="input-group mb-2">
           <select class="form-select" [ngClass]="{'is-invalid': form.touched && form.errors, 'is-valid': form.touched && !form.errors}" [formControlName]="i">
-            <option value="written">Írásbeli</option>
-            <option value="oral">Szóbeli</option>
-            <option value="sport">Sport</option>
-            <option value="submission">Pályázatos</option>
+            <option [value]=Form.Written>Írásbeli</option>
+            <option [value]=Form.Oral>Szóbeli</option>
+            <option [value]=Form.Sport>Sport</option>
+            <option [value]=Form.Submission>Pályázatos</option>
           </select>
           <div class="invalid-feedback">Kérem adja meg a verseny formáját!</div>
           <button *ngIf="i !=0" class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
@@ -95,7 +95,7 @@
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="note" class="form-label">Megjegyzés</label>
-        <textarea class="form-control" id="note" formControlName="note"></textarea>
+        <textarea class="form-control" id="note" formControlName="other"></textarea>
       </div>
       <button [disabled]="competitionForm.invalid" type="submit" class="btn btn-primary">Mentés</button>
     </div>
