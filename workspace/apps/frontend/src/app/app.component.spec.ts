@@ -3,6 +3,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { CompetitionService } from "@/app/services/competition.service";
 import { AppComponent } from './app.component';
+import { AuthService } from "@/app/services/auth.service";
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -10,7 +11,8 @@ describe('AppComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AppComponent, RouterTestingModule],
       providers: [
-        { provide: CompetitionService, useValue: mockCompetitionService }
+        { provide: CompetitionService, useValue: mockCompetitionService },
+        { provide: AuthService, useValue: mockAuthService }
       ]
     }).compileComponents();
   });
@@ -24,4 +26,7 @@ describe('AppComponent', () => {
 
 const mockCompetitionService = {
   getCompetitions: () => of([])
+};
+const mockAuthService = {
+  info: () => of()
 };
