@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from "@angular/forms";
+import { Router } from "@angular/router";
 import { AuthService } from "@/app/services/auth.service";
 import { ILoginRequest } from "@/app/services/auth.types";
 
@@ -14,6 +15,7 @@ import { ILoginRequest } from "@/app/services/auth.types";
 export class LoginComponent {
 
   private authService = inject(AuthService);
+  private router = inject(Router);
 
   credentials: ILoginRequest = {
     email: '',
@@ -21,6 +23,6 @@ export class LoginComponent {
   }
 
   login() {
-    this.authService.login(this.credentials).subscribe();
+    this.authService.login(this.credentials).subscribe(() => this.router.navigate(['/']));
   }
 }
