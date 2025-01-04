@@ -5,6 +5,8 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, Subscription } from "rxjs";
 import { Competition, Form, Level, Round } from "@/app/models/competition.model";
 import { CompetitionService } from "@/app/services/competition.service";
+import { subjects } from "./subjects";
+import { teachers } from "./teachers";
 
 @Component({
   selector: 'app-competition-editor',
@@ -22,6 +24,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   positionEnablerSubsripction?: Subscription;
   id: number | null = null;
   $displayMode = new BehaviorSubject<'show' | 'edit'>('show');
+  subjects = subjects;
+  teachers = teachers;
   protected readonly Level = Level;
   protected readonly Form = Form;
   protected readonly Round = Round;

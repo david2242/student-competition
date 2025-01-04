@@ -4,10 +4,29 @@ import { Router } from "@angular/router";
 import { CompetitionService } from "@/app/services/competition.service";
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, SizeColumnsToFitGridStrategy, RowClickedEvent } from 'ag-grid-community';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
+import {
+  ModuleRegistry,
+  ClientSideRowModelModule,
+  ColumnAutoSizeModule,
+  NumberFilterModule,
+  PaginationModule,
+  QuickFilterModule,
+  RowSelectionModule,
+  TextFilterModule,
+  ValidationModule,
+} from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
 
-ModuleRegistry.registerModules([ AllCommunityModule ]);
+ModuleRegistry.registerModules([
+  ClientSideRowModelModule,
+  ColumnAutoSizeModule,
+  NumberFilterModule,
+  PaginationModule,
+  QuickFilterModule,
+  RowSelectionModule,
+  TextFilterModule,
+  ValidationModule,
+]);
 
 @Component({
   selector: 'app-competition-list',
@@ -48,7 +67,8 @@ export class CompetitionListComponent implements OnInit {
     },
     {
       field: "subject",
-      headerName: "Tantárgy"
+      headerName: "Tantárgy",
+      valueGetter: (data) => data.data.subject[0]
     },
     {
       field: "result.position",
