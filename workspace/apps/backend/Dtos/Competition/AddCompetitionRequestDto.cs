@@ -1,11 +1,12 @@
-﻿using Workspace.Backend.Models;
+﻿using System.Collections.ObjectModel;
+using Workspace.Backend.Models;
 
 namespace Workspace.Backend.Dtos.Competition;
 
 public class AddCompetitionRequestDto
 {
   public string Name { get; set; }
-  public Student[] Students { get; set; }
+  public ICollection<CompetitionStudent> CompetitionStudents { get; set; }
   public string Location { get; set; }
   public string[] Subject { get; set; }
   public string[] Teacher { get; set; }
@@ -19,7 +20,7 @@ public class AddCompetitionRequestDto
   public AddCompetitionRequestDto()
   {
     Name = string.Empty;
-    Students = Array.Empty<Student>();
+    CompetitionStudents = new Collection<CompetitionStudent>();
     Location = string.Empty;
     Subject = Array.Empty<string>();
     Teacher = Array.Empty<string>();

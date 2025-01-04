@@ -4,7 +4,6 @@ public class Competition
 {
   public int Id { get; set; }
   public string Name { get; set; }
-  public Student[] Students { get; set; }
   public string Location { get; set; }
   public string[] Subject { get; set; }
   public string[] Teacher { get; set; }
@@ -16,10 +15,11 @@ public class Competition
   public Result Result { get; set; }
   public string? Other { get; set; }
 
+  // Many-to-Many relationship
+  public ICollection<CompetitionStudent> CompetitionStudents { get; set; }
   public Competition()
   {
     Name = string.Empty;
-    Students = Array.Empty<Student>();
     Location = string.Empty;
     Subject = Array.Empty<string>();
     Teacher = Array.Empty<string>();
@@ -28,6 +28,7 @@ public class Competition
     Round = Round.School;
     Form = Array.Empty<Form>();
     Result = new Result();
+    CompetitionStudents = new List<CompetitionStudent>();
   }
 }
 

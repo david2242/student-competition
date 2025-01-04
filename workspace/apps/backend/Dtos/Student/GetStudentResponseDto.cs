@@ -1,14 +1,16 @@
-﻿namespace Workspace.Backend.Models;
+﻿using Workspace.Backend.Models;
 
-public class Student
+namespace Workspace.Backend.Dtos.Student;
+
+public class GetStudentResponseDto
 {
   public int Id { get; set; }
+
   public string Name { get; set; }
   public string Class { get; set; }
 
   public ICollection<CompetitionStudent> CompetitionStudents { get; set; }
-
-  public Student()
+  public GetStudentResponseDto()
   {
     Name = string.Empty;
     Class = string.Empty;
