@@ -67,7 +67,8 @@ export class CompetitionListComponent implements OnInit {
     },
     {
       field: "subject",
-      headerName: "Tantárgy"
+      headerName: "Tantárgy",
+      valueGetter: (data) => data.data.subject[0]
     },
     {
       field: "result.position",
