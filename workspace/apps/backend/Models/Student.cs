@@ -1,5 +1,7 @@
-﻿namespace Workspace.Backend.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+namespace Workspace.Backend.Models;
 
+[NotMapped]
 public class Student
 {
   public int Id { get; set; }
