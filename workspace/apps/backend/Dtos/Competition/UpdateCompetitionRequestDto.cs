@@ -1,10 +1,12 @@
-﻿using Workspace.Backend.Models;
+﻿using Workspace.Backend.Dtos.Student;
+using Workspace.Backend.Models;
 
 namespace Workspace.Backend.Dtos.Competition;
 
 public class UpdateCompetitionRequestDto
 {
   public string Name { get; set; }
+  public AddStudentRequestDto[] Students { get; set; }
   public string Location { get; set; }
   public string[] Subject { get; set; }
   public string[] Teacher { get; set; }
@@ -18,6 +20,7 @@ public class UpdateCompetitionRequestDto
   public UpdateCompetitionRequestDto()
   {
     Name = string.Empty;
+    Students = Array.Empty<AddStudentRequestDto>();
     Location = string.Empty;
     Subject = Array.Empty<string>();
     Teacher = Array.Empty<string>();

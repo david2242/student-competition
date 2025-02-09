@@ -33,7 +33,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
-
 var psqlHost = Environment.GetEnvironmentVariable("SQL_SERVER_HOST");
 var psqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
 var psqlServerUsername = Environment.GetEnvironmentVariable("SQL_SERVER_USERNAME");
