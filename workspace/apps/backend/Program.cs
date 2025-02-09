@@ -1,5 +1,6 @@
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using DotNetEnv;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using Workspace.Backend.Data;
@@ -10,6 +11,11 @@ using Workspace.Backend.Services.DatabaseInitializerService;
 using Workspace.Backend.Services.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+  Env.Load();
+}
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
