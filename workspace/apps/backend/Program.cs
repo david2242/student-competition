@@ -29,6 +29,7 @@ builder.Services.AddSwaggerGen(options =>
     Type = SecuritySchemeType.ApiKey
   });
   options.OperationFilter<SecurityRequirementsOperationFilter>();
+  options.SchemaFilter<DateOnlySchemaFilter>();
 });
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));

@@ -33,7 +33,7 @@ public class CompetitionService : ICompetitionService
   public async Task<List<GetCompetitionResponseDto>> AddCompetition(AddCompetitionRequestDto newCompetition)
   {
     var competition = _mapper.Map<Competition>(newCompetition);
-    competition.Date = DateTime.UtcNow;
+    competition.Created = DateTime.UtcNow;
     await _context.Competitions.AddAsync(_mapper.Map<Competition>(competition));
     await _context.SaveChangesAsync();
     var updatedCompetitions = await _context.Competitions.ToListAsync();
