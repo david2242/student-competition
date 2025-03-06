@@ -1,3 +1,5 @@
+import { Student } from "@/app/models/student.model";
+
 export interface Result {
   position: number | null;
   specialPrize: boolean;
@@ -7,11 +9,13 @@ export interface Result {
 
 export interface Competition {
   id?: number;
+  created?: string;
   name: string;
+  students: Student[];
   location: string;
   subject: string[];
   teacher: string[];
-  year: string;
+  date: string;
   level: Level;
   round: Round;
   form: Form[];
