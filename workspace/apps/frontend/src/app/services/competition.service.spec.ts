@@ -9,11 +9,13 @@ describe('CompetitionService', () => {
 
   const stubCompetition: Competition = {
     id: 1,
+    created: "2021-01-01T00:00:00.000Z",
+    students: [{ name: 'Test Student', class: 'Test Class' }, { name: 'Test Student 2', class: 'Test Class 2' }],
     name: 'Test Competition',
     location: 'Test Location',
     subject: [],
     teacher: [],
-    year: '',
+    date: '',
     level: Level.Local,
     round: Round.State,
     form: [ Form.Oral ],

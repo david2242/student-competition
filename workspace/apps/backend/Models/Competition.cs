@@ -4,11 +4,12 @@ public class Competition
 {
   public int Id { get; set; }
   public string Name { get; set; }
+  public List<CompetitionStudent> CompetitionStudents { get; set; }
   public string Location { get; set; }
   public string[] Subject { get; set; }
   public string[] Teacher { get; set; }
-  public string Year { get; set; }
-  public DateTime Date { get; set; }
+  public DateOnly Date { get; set; }
+  public DateTime Created { get; set; }
   public Level Level { get; set; }
   public Round Round { get; set; }
   public Form[] Form { get; set; }
@@ -18,10 +19,11 @@ public class Competition
   public Competition()
   {
     Name = string.Empty;
+    CompetitionStudents = new List<CompetitionStudent>();
     Location = string.Empty;
     Subject = Array.Empty<string>();
     Teacher = Array.Empty<string>();
-    Year = string.Empty;
+    Date = new DateOnly();
     Level = Level.Local;
     Round = Round.School;
     Form = Array.Empty<Form>();

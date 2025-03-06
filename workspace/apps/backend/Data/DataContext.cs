@@ -9,12 +9,13 @@ namespace Workspace.Backend.Data
     }
 
     public DbSet<Competition> Competitions => Set<Competition>();
+    public DbSet<Student> Students => Set<Student>();
+    public DbSet<CompetitionStudent> CompetitionStudent { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
       base.OnModelCreating(modelBuilder);
 
-      // Configure Competition to own Result
       modelBuilder.Entity<Competition>()
         .OwnsOne(c => c.Result, r =>
         {
@@ -23,6 +24,21 @@ namespace Workspace.Backend.Data
           r.Property(p => p.Compliment);
           r.Property(p => p.NextRound);
         });
+
+      modelBuilder.Entity<CompetitionStudent>()
+        .HasKey(cs => new { cs.CompetitionId, cs.StudentId });
+
+      modelBuilder.Entity<CompetitionStudent>()
+        .HasOne(cs => cs.Competition)
+        .WithMany(c => c.CompetitionStudents)
+        .HasForeignKey(cs => cs.CompetitionId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+      modelBuilder.Entity<CompetitionStudent>()
+        .HasOne(cs => cs.Student)
+        .WithMany(s => s.CompetitionStudents)
+        .HasForeignKey(cs => cs.StudentId)
+        .OnDelete(DeleteBehavior.Cascade);
     }
   }
 }
