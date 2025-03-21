@@ -8,6 +8,7 @@ using Workspace.Backend.Services.CompetitionService;
 using Swashbuckle.AspNetCore.Filters;
 using Workspace.Backend;
 using Workspace.Backend.Services.DatabaseInitializerService;
+using Workspace.Backend.Services.KeepAliveService;
 using Workspace.Backend.Services.UserService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+builder.Services.AddHostedService<KeepAliveService>();
 var psqlHost = Environment.GetEnvironmentVariable("SQL_SERVER_HOST");
 var psqlServerPassword = Environment.GetEnvironmentVariable("SQL_SERVER_PASSWORD");
 var psqlServerUsername = Environment.GetEnvironmentVariable("SQL_SERVER_USERNAME");
