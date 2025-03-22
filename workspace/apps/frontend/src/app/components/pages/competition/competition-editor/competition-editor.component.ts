@@ -234,7 +234,10 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     if (this.id == null) {
       return;
     }
-    this.competitionService.deleteCompetition(this.id).subscribe(() => this.router.navigate(['competition']));
+
+    if (window.confirm('Biztosan törölni szeretnéd ezt a versenyt?')) {
+      this.competitionService.deleteCompetition(this.id).subscribe(() => this.router.navigate(['competition']));
+    }
   }
 
   addStudentRow() {
