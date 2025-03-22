@@ -17,6 +17,7 @@ export function handleBackendResponse<T>() {
         }
       }),
       catchError((error) => {
-        return throwError(() => error.error.message);
+        let message = error.error?.message || error.message || error || 'An error occurred';
+        return throwError(() => message);
       }));
 }
