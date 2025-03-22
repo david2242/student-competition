@@ -41,14 +41,7 @@ export class CompetitionListComponent implements OnInit {
   router = inject(Router);
 
   ngOnInit(): void {
-    this.competitionService.getCompetitions().subscribe(
-      {
-        next: (competitions) => this.rowData = competitions,
-        error: (error) => {
-          alert(error);
-        }
-      }
-    );
+    this.competitionService.getCompetitions().subscribe(competitions => this.rowData = competitions);
   }
 
   rowData?: Competition[];
