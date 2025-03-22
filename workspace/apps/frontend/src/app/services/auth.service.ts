@@ -20,4 +20,11 @@ export class AuthService {
   info() {
     return this.httpService.get(`${this.apiUrl}/manage/info`).pipe(tap(() => this.$isLoggedIn.next(true)));
   }
+
+  logout() {
+    return this.httpService.post(`${this.apiUrl}/logout`, null).pipe(tap(() => {
+      this.$isLoggedIn.next(false)
+    }));
+
+  }
 }
