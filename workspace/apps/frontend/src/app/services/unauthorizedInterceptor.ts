@@ -1,25 +1,25 @@
 import {
+  HttpErrorResponse,
   HttpEvent,
-  HttpEventType,
-  HttpHandler,
-  HttpInterceptor,
-  HttpRequest
+  HttpHandlerFn,
+  HttpRequest,
 } from "@angular/common/http";
-import { Observable, tap } from "rxjs";
-import { Injectable } from "@angular/core";
+import { Observable, throwError } from "rxjs";
+import { inject } from "@angular/core";
 import { AuthService } from "@/app/services/auth.service";
+import { Router } from "@angular/router";
+import { catchError } from "rxjs/operators";
 
-@Injectable()
-export class UnauthorizedInterceptor implements HttpInterceptor {
-
-  constructor(private authService: AuthService) {
-  }
-
-  intercept(req: HttpRequest<any>, handler: HttpHandler): Observable<HttpEvent<any>> {
-    return handler.handle(req).pipe(tap(event => {
-      if (event.type === HttpEventType.Response && event.status === 401) {
-        this.authService.$isLoggedIn.next(false);
-      }
-    }));
-  }
+export function unauthorizedInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  return next(req).pipe(catchError((error: HttpErrorResponse) => {
+    if (error.status === 401) {
+      authService.$isLoggedIn.next(false);
+      router.navigate([ '' ]);
+      return throwError(() => 'Unauthorized');
+    }
+    ;
+    return throwError(() => error);
+  }));
 }
