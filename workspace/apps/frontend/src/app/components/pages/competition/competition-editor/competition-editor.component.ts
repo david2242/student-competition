@@ -37,7 +37,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     name: new FormControl<string>('', {nonNullable: true, validators: [Validators.required]}),
     location: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
     subject: new FormArray([(new FormControl('', {nonNullable: true, validators: [Validators.required]}))], Validators.required),
-    teacher: new FormArray([(new FormControl('', {nonNullable: true, validators: [Validators.required]}))], Validators.required),
+    teacher: new FormArray([(new FormControl('', {nonNullable: true }))]),
     date: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
     level: new FormControl<Level>(Level.Local, {nonNullable: true, validators: [Validators.required]}),
     round: new FormControl<Round>(Round.School, {nonNullable: true, validators: [Validators.required]}),
@@ -181,7 +181,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   addTeacher(teacher: string): void {
-    this.teacher.push(new FormControl(teacher, Validators.required));
+    this.teacher.push(new FormControl(teacher));
   }
 
   addForm(form: string): void {
