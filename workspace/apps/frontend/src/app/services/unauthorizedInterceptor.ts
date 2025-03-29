@@ -16,7 +16,7 @@ export function unauthorizedInterceptor(req: HttpRequest<unknown>, next: HttpHan
   return next(req).pipe(catchError((error: HttpErrorResponse) => {
     if (error.status === 401) {
       authService.$isLoggedIn.next(false);
-      router.navigate([ '' ]);
+      router.navigate([ 'login' ]);
       return throwError(() => 'Unauthorized');
     }
     ;
