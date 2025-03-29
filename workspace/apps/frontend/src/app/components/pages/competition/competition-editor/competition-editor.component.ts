@@ -1,13 +1,14 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, Subscription } from "rxjs";
+import { CommonModule } from '@angular/common';
 import { Competition, Form, Level, Round } from "@/app/models/competition.model";
 import { CompetitionService } from "@/app/services/competition.service";
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Student } from "@/app/models/student.model";
+import { ToastrService } from "ngx-toastr";
 import { subjects } from "./subjects";
 import { teachers } from "./teachers";
-import { Student } from "@/app/models/student.model";
 
 @Component({
   selector: 'app-competition-editor',
@@ -21,6 +22,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   competitionService = inject(CompetitionService);
   route = inject(ActivatedRoute);
   router = inject(Router);
+  toastr = inject(ToastrService);
   competition?: Competition;
   positionEnablerSubsripction?: Subscription;
   id: number | null = null;
@@ -35,7 +37,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     name: new FormControl<string>('', {nonNullable: true, validators: [Validators.required]}),
     location: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
     subject: new FormArray([(new FormControl('', {nonNullable: true, validators: [Validators.required]}))], Validators.required),
-    teacher: new FormArray([(new FormControl('', {nonNullable: true, validators: [Validators.required]}))], Validators.required),
+    teacher: new FormArray([(new FormControl('', {nonNullable: true }))]),
     date: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
     level: new FormControl<Level>(Level.Local, {nonNullable: true, validators: [Validators.required]}),
     round: new FormControl<Round>(Round.School, {nonNullable: true, validators: [Validators.required]}),
@@ -58,9 +60,12 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.saveIdFromParam();
     if (this.id) {
       this.$displayMode.next('show');
-      this.competitionService.getCompetition(this.id).subscribe((competition) => {
-        this.competition = competition;
-        this.fillForm(competition);
+      this.competitionService.getCompetition(this.id).subscribe({
+        next: (competition) => {
+          this.competition = competition;
+          this.fillForm(competition);
+        },
+        error: () => this.toastr.error('Nem sikerült betölteni a versenyt!'),
       });
     } else {
       this.$displayMode.next('edit');
@@ -176,7 +181,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   addTeacher(teacher: string): void {
-    this.teacher.push(new FormControl(teacher, Validators.required));
+    this.teacher.push(new FormControl(teacher));
   }
 
   addForm(form: string): void {
@@ -187,8 +192,20 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     if (this.competitionForm.valid) {
       const competition = this.competitionForm.getRawValue();
       this.id
-        ? this.competitionService.updateCompetition(this.id, competition).subscribe(() => this.$displayMode.next('show'))
-        : this.competitionService.createCompetition(competition).subscribe(() => this.$displayMode.next('show'));
+        ? this.competitionService.updateCompetition(this.id, competition).subscribe({
+          next: () => {
+            this.toastr.success('Verseny frissítve!');
+            this.$displayMode.next('show')
+          },
+          error: () => this.toastr.error('Nem sikerült frissíteni a versenyt!'),
+        })
+        : this.competitionService.createCompetition(competition).subscribe({
+          next: () => {
+            this.toastr.success('Verseny létrehozva!');
+            this.router.navigate(['competition']);
+          },
+          error: () => this.toastr.error('Nem sikerült létrehozni a versenyt!'),
+        });
     } else {
       console.log('Form is invalid', this.competitionForm);
     }

@@ -16,6 +16,7 @@ import {
   ValidationModule,
 } from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
+import { ToastrService } from "ngx-toastr";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -39,9 +40,13 @@ export class CompetitionListComponent implements OnInit {
 
   competitionService = inject(CompetitionService);
   router = inject(Router);
+  toastr = inject(ToastrService);
 
   ngOnInit(): void {
-    this.competitionService.getCompetitions().subscribe(competitions => this.rowData = competitions);
+    this.competitionService.getCompetitions().subscribe({
+      next: (competitions) => this.rowData = competitions,
+      error: () => this.toastr.error('Nem sikerült betölteni a versenyeket!'),
+  });
   }
 
   rowData?: Competition[];
@@ -56,7 +61,7 @@ export class CompetitionListComponent implements OnInit {
     },
     {
       field: "name",
-      headerName: "Versenyző neve"
+      headerName: "Verseny neve"
     },
     {
       field: "subject",
