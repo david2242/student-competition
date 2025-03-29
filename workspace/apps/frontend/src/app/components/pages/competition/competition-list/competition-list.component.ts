@@ -61,7 +61,7 @@ export class CompetitionListComponent implements OnInit {
     },
     {
       field: "name",
-      headerName: "Versenyző neve"
+      headerName: "Verseny neve"
     },
     {
       field: "subject",
