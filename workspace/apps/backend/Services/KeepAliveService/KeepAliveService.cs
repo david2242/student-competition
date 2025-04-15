@@ -32,7 +32,6 @@ public class KeepAliveService : BackgroundService
         Console.WriteLine($"[Keep-Alive] ERROR: {ex.Message}");
       }
 
-      // Wait 12 hours before the next request
       await Task.Delay(TimeSpan.FromHours(12), stoppingToken);
     }
   }
