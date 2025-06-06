@@ -1,6 +1,4 @@
-@Workspace.Backend_HostAddress = http://localhost:5157
-
-GET {{Workspace.Backend_HostAddress}}/weatherforecast/
+@Workspace.Backend_HostAddress = http://localhost:5157HEAD http://localhost:5000//api/keepalive
 Accept: application/json
 
 ###

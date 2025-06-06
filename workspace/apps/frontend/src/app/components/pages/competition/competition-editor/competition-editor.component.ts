@@ -34,27 +34,37 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   protected readonly Round = Round;
 
   competitionForm = new FormGroup({
-    name: new FormControl<string>('', {nonNullable: true, validators: [Validators.required]}),
-    location: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
-    subject: new FormArray([(new FormControl('', {nonNullable: true, validators: [Validators.required]}))], Validators.required),
-    teacher: new FormArray([(new FormControl('', {nonNullable: true }))]),
-    date: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
-    level: new FormControl<Level>(Level.Local, {nonNullable: true, validators: [Validators.required]}),
-    round: new FormControl<Round>(Round.School, {nonNullable: true, validators: [Validators.required]}),
-    form: new FormArray([(new FormControl<Form>(Form.Written, {nonNullable: true, validators: [Validators.required]}))], Validators.required),
+    name: new FormControl<string>('', { nonNullable: true, validators: [ Validators.required ] }),
+    location: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
+    subject: new FormArray([ (new FormControl('', {
+      nonNullable: true,
+      validators: [ Validators.required ]
+    })) ], Validators.required),
+    teacher: new FormArray([ (new FormControl('', { nonNullable: true })) ]),
+    date: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
+    level: new FormControl<Level | null>(null,  { validators: [ Validators.required ] }),
+    round: new FormControl<Round | null>(null, { validators: [ Validators.required ] }),
+    form: new FormArray([ (new FormControl<Form | null>(null, {
+      validators: [ Validators.required ]
+    })) ], Validators.required),
     result: new FormGroup({
-      enablePosition: new FormControl(false, {nonNullable: true}),
-      position: new FormControl<number | null>({value: null, disabled: true}, {nonNullable: true, validators: [Validators.required]}),
-      specialPrize: new FormControl(false, {nonNullable: true}),
-      compliment: new FormControl(false, {nonNullable: true}),
-      nextRound: new FormControl(false, {nonNullable: true}),
+      enablePosition: new FormControl(false, { nonNullable: true }),
+      position: new FormControl<number | null>({ value: null, disabled: true }, {
+        nonNullable: true,
+        validators: [ Validators.required ]
+      }),
+      specialPrize: new FormControl(false, { nonNullable: true }),
+      compliment: new FormControl(false, { nonNullable: true }),
+      nextRound: new FormControl(false, { nonNullable: true }),
     }),
-    other: new FormControl('', {nonNullable: true}),
-    students: new FormArray([(new FormGroup({
-      name: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
-      class: new FormControl('', {nonNullable: true, validators: [Validators.required]})
-    }))], Validators.required),
+    other: new FormControl('', { nonNullable: true }),
+    students: new FormArray([ (new FormGroup({
+      name: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
+      class: new FormControl('', { nonNullable: true, validators: [ Validators.required ] })
+    })) ], Validators.required),
   });
+
+  oktv = false;
 
   ngOnInit(): void {
     this.saveIdFromParam();
@@ -83,17 +93,21 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   private fillForm(competition: Competition) {
     this.competitionForm.patchValue(competition);
     this.enablePosition.setValue(competition.result.position != null);
+
+    this.fillOKTV(competition.round);
+
     this.fillStudents();
     this.fillTeachers();
     this.fillSubjects();
+    this.fillForms();
   }
 
   private fillStudents() {
     this.students.clear();
     this.competition?.students.forEach((student: Student) => {
       this.students.push(new FormGroup({
-        name: new FormControl(student.name, {nonNullable: true, validators: [Validators.required]}),
-        class: new FormControl(student.class, {nonNullable: true, validators: [Validators.required]})
+        name: new FormControl(student.name, { nonNullable: true, validators: [ Validators.required ] }),
+        class: new FormControl(student.class, { nonNullable: true, validators: [ Validators.required ] })
       }));
     });
   }
@@ -105,11 +119,25 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     });
   }
 
-  private  fillSubjects() {
+  private fillSubjects() {
     this.subject.clear();
     this.competition?.subject.forEach((subject: string) => {
       this.subject.push(new FormControl(subject, Validators.required));
     });
+  }
+
+  private fillForms() {
+    this.form.clear();
+    this.competition?.form.forEach((form: Form | null) => {
+      this.form.push(new FormControl<Form | null>(form, Validators.required));
+    });
+  }
+
+  private fillOKTV(round: Round | null) {
+    const oktvRounds = [Round.OktvRoundOne, Round.OktvRoundTwo, Round.OktvFinal];
+    if (round) {
+      this.oktv = oktvRounds.includes(round);
+    }
   }
 
   private saveIdFromParam() {
@@ -176,6 +204,21 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     return this.competitionForm.get('students') as FormArray;
   }
 
+  get filteredRounds(): { value: Round, text: string }[] {
+    return this.oktv
+      ? [
+        { value: Round.OktvRoundOne, text: 'OKTV. I. forduló' },
+        { value: Round.OktvRoundTwo, text: 'OKTV. II. forduló' },
+        { value: Round.OktvFinal, text: 'OKTV. döntő' }
+      ]
+      : [
+          { value: Round.School, text: 'Iskolai forduló' },
+          { value: Round.Regional, text: 'Regionális forduló' },
+          { value: Round.State, text: 'Országos forduló' },
+          { value: Round.National, text: 'Nemzeti forduló' }
+        ]
+  }
+
   addSubject(subject: string): void {
     this.subject.push(new FormControl(subject, Validators.required));
   }
@@ -184,8 +227,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.teacher.push(new FormControl(teacher));
   }
 
-  addForm(form: string): void {
-    this.form.push(new FormControl(form, Validators.required));
+  addForm(): void {
+    this.form.push(new FormControl(null, Validators.required));
   }
 
   onSubmit(): void {
@@ -202,7 +245,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
         : this.competitionService.createCompetition(competition).subscribe({
           next: () => {
             this.toastr.success('Verseny létrehozva!');
-            this.router.navigate(['competition']);
+            this.router.navigate([ 'competition' ]);
           },
           error: () => this.toastr.error('Nem sikerült létrehozni a versenyt!'),
         });
@@ -224,7 +267,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   back() {
-    this.router.navigate(['competition']);
+    this.router.navigate([ 'competition' ]);
   }
 
   editMode() {
@@ -235,11 +278,16 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     if (enable) {
       this.level.enable();
       this.round.enable();
-      this.form.enable();
+      this.form.controls.forEach(control => control.enable());
+      this.competitionForm.controls.result.enable()
+      if (!this.competitionForm.controls.result.controls.position.value) {
+        this.competitionForm.controls.result.controls.position.disable();
+      }
     } else {
       this.level.disable();
       this.round.disable();
-      this.form.disable();
+      this.form.controls.forEach(control => control.disable());
+      this.competitionForm.controls.result.disable();
     }
   }
 
@@ -253,18 +301,28 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     }
 
     if (window.confirm('Biztosan törölni szeretnéd ezt a versenyt?')) {
-      this.competitionService.deleteCompetition(this.id).subscribe(() => this.router.navigate(['competition']));
+      this.competitionService.deleteCompetition(this.id).subscribe(() => this.router.navigate([ 'competition' ]));
     }
   }
 
   addStudentRow() {
     this.students.push(new FormGroup({
-      name: new FormControl('', {nonNullable: true, validators: [Validators.required]}),
-      class: new FormControl('', {nonNullable: true, validators: [Validators.required]})
+      name: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
+      class: new FormControl('', { nonNullable: true, validators: [ Validators.required ] })
     }));
   }
 
   removeStudentRow(i: number) {
     this.students.removeAt(i);
   }
+
+  toggleOktv($event: Event) {
+    const event = $event as MouseEvent;
+    const checkbox = event.target as HTMLInputElement;
+    this.oktv = checkbox.checked;
+
+    this.round.reset(null, { emitEvent: false });
+  }
 }
+
+

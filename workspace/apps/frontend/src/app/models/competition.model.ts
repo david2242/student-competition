@@ -16,9 +16,9 @@ export interface Competition {
   subject: string[];
   teacher: string[];
   date: string;
-  level: Level;
-  round: Round;
-  form: Form[];
+  level: Level | null;
+  round: Round | null;
+  form: (Form | null)[];
   result: Result;
   other: string;
 }
@@ -37,7 +37,10 @@ export enum Round
   School,
   Regional,
   State,
-  National
+  National,
+  OktvRoundOne,
+  OktvRoundTwo,
+  OktvFinal,
 }
 
 export enum Form
