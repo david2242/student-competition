@@ -53,7 +53,10 @@ public enum Level
   State,
   Regional,
   National,
-  International
+  International,
+  OktvRoundOne,
+  OktvRoundTwo,
+  OktvFinal,
 }
 
 public enum Round

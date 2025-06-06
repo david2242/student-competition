@@ -2,32 +2,45 @@
   @if (id != null) {
     <div class="row">
       <div class="col d-flex flex-row-reverse">
-        <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="deleteCompetition()">Verseny törlése</button>
+        <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="deleteCompetition()">Verseny törlése
+        </button>
       </div>
     </div>
   }
 </div>
 <div class="container">
-  <form [formGroup]="competitionForm" (ngSubmit)="onSubmit()" [ngClass]="{'needs-validation': ($displayMode | async) == 'edit'}" class="mb-4" novalidate>
-    <div class="row">
-      <div class="col-sm-12 col-md-6 mb-3">
+  <form [formGroup]="competitionForm" (ngSubmit)="onSubmit()"
+        [ngClass]="{'needs-validation': ($displayMode | async) == 'edit'}" class="mb-4" novalidate>
+    <div class="row flex flex-row align-items-center">
+      <div class="col-sm-12 col-md-5 mb-3">
         <label for="name" class="form-label">Verseny neve</label>
-        <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control" [ngClass]="{'is-invalid': ($displayMode | async) == 'edit' && name.touched && name.errors, 'is-valid': ($displayMode | async) == 'edit' && name.touched && !name.errors}" id="name" formControlName="name">
+        <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+               [ngClass]="{'is-invalid': ($displayMode | async) == 'edit' && name.touched && name.errors, 'is-valid': ($displayMode | async) == 'edit' && name.touched && !name.errors}"
+               id="name" formControlName="name">
         <div class="invalid-feedback">Kérem töltse ki a versenyző nevét</div>
+      </div>
+      <div class="col-sm-12 col-md-1 form-check pt-3 ps-4">
+        <input [disabled]="($displayMode | async) == 'show'" class="form-check-input" type="checkbox" id="oktv"
+               (change)="toggleOktv($event)" [checked]="oktv">
+        <label class="form-check-label" for="oktv">OKTV</label>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="location" class="form-label">Helyszín</label>
-        <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control" [ngClass]="{'is-invalid': location.touched && location.errors, 'is-valid': location.touched && !location.errors}" id="location" formControlName="location">
+        <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+               [ngClass]="{'is-invalid': location.touched && location.errors, 'is-valid': location.touched && !location.errors}"
+               id="location" formControlName="location">
         <div class="invalid-feedback">Kérem töltse ki a verseny helyszínét</div>
       </div>
       <div formArrayName="subject" class="col-sm-12 col-md-6 mb-3">
         <label class="form-label d-block">Tantárgy / Téma</label>
         <div *ngFor="let subject of subject.controls; let i = index" class="input-group mb-2">
-          <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control" [ngClass]="{'is-invalid': subject.touched && subject.errors, 'is-valid': subject.touched && !subject.errors}" [formControlName]="i" list="subject">
+          <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+                 [ngClass]="{'is-invalid': subject.touched && subject.errors, 'is-valid': subject.touched && !subject.errors}"
+                 [formControlName]="i" list="subject">
           <datalist id="subject">
             <option *ngFor="let subject of subjects" [value]="subject"></option>
           </datalist>
-          @if (($displayMode | async) == 'edit' && i !=0) {
+          @if (($displayMode | async) == 'edit' && i != 0) {
             <button class="btn btn-outline-danger" type="button" (click)="removeSubject(i)">Törlés</button>
           }
           <div class="invalid-feedback">Kérem töltse ki a tantárgyat vagy a tematikát</div>
@@ -39,11 +52,13 @@
       <div formArrayName="teacher" class="col-sm-12 col-md-6 mb-3">
         <label class="form-label d-block">Felkészítő tanár</label>
         <div *ngFor="let teacher of teacher.controls; let i = index" class="input-group mb-2">
-          <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control" [ngClass]="{'is-invalid': teacher.touched && teacher.errors, 'is-valid': teacher.touched && !teacher.errors}" [formControlName]="i" list="teachers">
+          <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+                 [ngClass]="{'is-invalid': teacher.touched && teacher.errors, 'is-valid': teacher.touched && !teacher.errors}"
+                 [formControlName]="i" list="teachers">
           <datalist id="teachers">
             <option *ngFor="let teacher of teachers" [value]="teacher"></option>
           </datalist>
-          @if (($displayMode | async) == 'edit' && i !=0) {
+          @if (($displayMode | async) == 'edit' && i != 0) {
             <button class="btn btn-outline-danger" type="button" (click)="removeTeacher(i)">Törlés</button>
           }
           <div class="invalid-feedback">Kérem adja meg a felkészítő tanár nevét</div>
@@ -54,16 +69,22 @@
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="date" class="form-label">Verseny dátuma</label>
-        <input [readonly]="($displayMode | async) == 'show'" type="date" class="form-control" [ngClass]="{'is-invalid': date.touched && date.errors, 'is-valid': date.touched && !date.errors}" id="date" formControlName="date">
+        <input [readonly]="($displayMode | async) == 'show'" type="date" class="form-control"
+               [ngClass]="{'is-invalid': date.touched && date.errors, 'is-valid': date.touched && !date.errors}"
+               id="date" formControlName="date">
         <div class="invalid-feedback">Kérem adja meg melyik tanévben kezdődött a verseny!</div>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="level" class="form-label">Verseny típusa</label>
-        <select class="form-select" [ngClass]="{'is-invalid': level.touched && level.errors, 'is-valid': level.touched && !level.errors}" id="level" formControlName="level">
+        <select class="form-select"
+                [ngClass]="{'is-invalid': level.touched && level.errors, 'is-valid': level.touched && !level.errors}"
+                id="level" formControlName="level">
+          <option [ngValue]="null" disabled selected>Válasszon típust!</option>
           <option [ngValue]=Level.Local>Helyi</option>
           <option [ngValue]=Level.Regional>Körzeti</option>
           <option [ngValue]=Level.State>Megyei</option>
           <option [ngValue]=Level.National>Országos</option>
+
         </select>
         <div class="invalid-feedback">Kérem adja meg a verseny körzetét!</div>
       </div>
@@ -71,85 +92,99 @@
         <label>Tanuló(k)</label>
         <table class="table">
           <thead>
-            <tr>
-              <th>Név</th>
-              <th>Osztály</th>
-              <th>
-                @if (($displayMode | async) == 'edit') {
-                  <button type="button" class="btn btn-secondary" (click)="addStudentRow()">Hozzáad</button>
-                }
-              </th>
-            </tr>
+          <tr>
+            <th>Név</th>
+            <th>Osztály</th>
+            <th>
+              @if (($displayMode | async) == 'edit') {
+                <button type="button" class="btn btn-secondary" (click)="addStudentRow()">Hozzáad</button>
+              }
+            </th>
+          </tr>
           </thead>
           <tbody formArrayName="students">
-            <tr *ngFor="let student of students.controls; let i = index" [formGroupName]="i">
-              <td><input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control" formControlName="name" name="studentName{{i}}" required></td>
-              <td><input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control" formControlName="class" name="studentClass{{i}}" required></td>
-              <td>
-                @if (($displayMode | async) == 'edit'  && i !=0) {
-                  <button type="button" class="btn btn-danger" (click)="removeStudentRow(i)">Töröl</button>
-                }
-              </td>
-            </tr>
+          <tr *ngFor="let student of students.controls; let i = index" [formGroupName]="i">
+            <td><input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+                       formControlName="name" name="studentName{{i}}" required></td>
+            <td><input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+                       formControlName="class" name="studentClass{{i}}" required></td>
+            <td>
+              @if (($displayMode | async) == 'edit' && i != 0) {
+                <button type="button" class="btn btn-danger" (click)="removeStudentRow(i)">Töröl</button>
+              }
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="round" class="form-label">Verseny szintje</label>
-        <select class="form-select" [ngClass]="{'is-invalid': round.touched && round.errors, 'is-valid': round.touched && !round.errors}" id="round" formControlName="round">
-          <option [ngValue]="Round.School" Round.School>Iskolai</option>
-          <option [ngValue]=Round.Regional>Körzeti</option>
-          <option [ngValue]=Round.State>Megyei</option>
-          <option [ngValue]=Round.National>Országos</option>
+        <select class="form-select"
+                [ngClass]="{'is-invalid': round.touched && round.errors, 'is-valid': round.touched && !round.errors}"
+                id="round" formControlName="round">
+          <option [ngValue]="null" disabled selected>Válasszon szintet!</option>
+          <option *ngFor="let round of filteredRounds" [ngValue]="round.value">
+            {{ round.text }}
+          </option>
         </select>
         <div class="invalid-feedback">Kérem adja meg a verseny szintjét!</div>
       </div>
       <div formArrayName="form" class="col-sm-12 col-md-6 mb-3">
         <label class="form-label d-block">Verseny formája</label>
-        <div *ngFor="let form of form.controls; let i = index" class="input-group mb-2">
-          <select class="form-select" [ngClass]="{'is-invalid': form.touched && form.errors, 'is-valid': form.touched && !form.errors}" [formControlName]="i">
+        <div *ngFor="let foo of form.controls; let i = index" class="input-group mb-2">
+          <select class="form-select"
+                  [ngClass]="{'is-invalid': form.touched && form.errors, 'is-valid': form.touched && !form.errors}"
+                  [formControlName]="i"
+          >
+            <option [ngValue]="null" disabled selected>Válasszon formátumot!</option>
             <option [ngValue]=Form.Written>Írásbeli</option>
             <option [ngValue]=Form.Oral>Szóbeli</option>
             <option [ngValue]=Form.Sport>Sport</option>
             <option [ngValue]=Form.Submission>Pályázatos</option>
           </select>
           <div class="invalid-feedback">Kérem adja meg a verseny formáját!</div>
-          @if (($displayMode | async) == 'edit' && i !=0) {
+          @if (($displayMode | async) == 'edit' && i != 0) {
             <button *ngIf="i !=0" class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
           }
         </div>
         @if (($displayMode | async) == 'edit') {
-          <button type="button" class="btn btn-secondary" (click)="addForm('written')">Több hozzáadása</button>
+          <button type="button" class="btn btn-secondary" (click)="addForm()">Több hozzáadása</button>
         }
       </div>
       <div formGroupName="result" class="col-sm-12 col-md-6 mb-3">
         <div class="d-flex gap-4">
 
-        <div class="form-check mt-2">
-          <input [readonly]="($displayMode | async) == 'show'" class="form-check-input" type="checkbox" id="enablePosition" formControlName="enablePosition">
-          <label class="form-check-label" for="enablePosition">Helyezés</label>
-        </div>
-          <input [readonly]="($displayMode | async) == 'show'" type="number" class="form-control w-25" min="1" formControlName="position">
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox"
+                   id="enablePosition" formControlName="enablePosition">
+            <label class="form-check-label" for="enablePosition">Helyezés</label>
+          </div>
+          <input [readonly]="($displayMode | async) == 'show'" type="number" class="form-control w-25" min="1"
+                 formControlName="position">
         </div>
 
         <div class="form-check mt-2">
-          <input [readonly]="($displayMode | async) == 'show'" class="form-check-input" type="checkbox" id="specialPrize" formControlName="specialPrize">
+          <input  class="form-check-input" type="checkbox"
+                 id="specialPrize" formControlName="specialPrize">
           <label class="form-check-label" for="specialPrize">Különdíj</label>
         </div>
 
         <div class="form-check mt-2">
-          <input [readonly]="($displayMode | async) == 'show'" class="form-check-input" type="checkbox" id="compliment" formControlName="compliment">
+          <input  class="form-check-input" type="checkbox" id="compliment"
+                 formControlName="compliment">
           <label class="form-check-label" for="compliment">Dícséret</label>
         </div>
 
         <div class="form-check mt-2">
-          <input [readonly]="($displayMode | async) == 'show'" class="form-check-input" type="checkbox" id="nextRound" formControlName="nextRound">
+          <input class="form-check-input" type="checkbox" id="nextRound"
+                 formControlName="nextRound">
           <label class="form-check-label" for="nextRound">Továbbjutás</label>
         </div>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="note" class="form-label">Megjegyzés</label>
-        <textarea [readonly]="($displayMode | async) == 'show'" class="form-control" id="note" formControlName="other"></textarea>
+        <textarea [readonly]="($displayMode | async) == 'show'" class="form-control" id="note"
+                  formControlName="other"></textarea>
       </div>
       <div class="row mt-3">
         <div class="col d-flex flex-row justify-content-between">
