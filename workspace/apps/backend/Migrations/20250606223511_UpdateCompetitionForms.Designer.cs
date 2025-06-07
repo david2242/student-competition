@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Workspace.Backend.Data;
@@ -11,9 +12,11 @@ using Workspace.Backend.Data;
 namespace Workspace.Backend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250606223511_UpdateCompetitionForms")]
+    partial class UpdateCompetitionForms
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -319,25 +322,25 @@ namespace Workspace.Backend.Migrations
                         {
                             Id = 1,
                             Description = "Written competition form",
-                            Name = "WRITTEN"
+                            Name = "Written"
                         },
                         new
                         {
                             Id = 2,
                             Description = "Oral competition form",
-                            Name = "ORAL"
+                            Name = "Oral"
                         },
                         new
                         {
                             Id = 3,
                             Description = "Sport competition form",
-                            Name = "SPORT"
+                            Name = "Sport"
                         },
                         new
                         {
                             Id = 4,
                             Description = "Submission-based competition form",
-                            Name = "SUBMISSION"
+                            Name = "Submission"
                         });
                 });
 

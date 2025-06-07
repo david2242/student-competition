@@ -18,35 +18,31 @@ export interface Competition {
   date: string;
   level: Level | null;
   round: Round | null;
-  form: (Form | null)[];
+  forms: (Form | null)[];
   result: Result;
   other: string;
 }
 
-export enum Level
-{
-  Local,
-  State,
-  Regional,
-  National,
-  International
+export enum Level {
+  Local = 'LOCAL',
+  State = 'STATE',
+  National = 'NATIONAL',
+  International = 'INTERNATIONAL',
 }
 
-export enum Round
-{
-  School,
-  Regional,
-  State,
-  National,
-  OktvRoundOne,
-  OktvRoundTwo,
-  OktvFinal,
+export enum Round {
+  School = 'SCHOOL',
+  Regional = 'REGIONAL',
+  State = 'STATE',
+  National = 'NATIONAL',
+  OktvRoundOne = 'OKTV_ROUND_ONE',
+  OktvRoundTwo = 'OKTV_ROUND_TWO',
+  OktvFinal = 'OKTV_FINAL',
 }
 
-export enum Form
-{
-  Written,
-  Oral,
-  Sport,
-  Submission
+export enum Form {
+  Written = 'WRITTEN',
+  Oral = 'ORAL',
+  Sport = 'SPORT',
+  Submission = 'SUBMISSION',
 }

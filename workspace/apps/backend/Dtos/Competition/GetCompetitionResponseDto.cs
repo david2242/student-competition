@@ -1,4 +1,4 @@
-﻿using Workspace.Backend.Models;
+using Workspace.Backend.Models;
 namespace Workspace.Backend.Dtos.Competition;
 
 public class GetCompetitionResponseDto
@@ -11,9 +11,9 @@ public class GetCompetitionResponseDto
   public string[] Teacher { get; set; }
   public DateOnly Date { get; set; }
   public DateTime Created { get; set; }
-  public Level Level { get; set; }
-  public Round Round { get; set; }
-  public Form[] Form { get; set; }
+  public string Level { get; set; }
+  public string Round { get; set; }
+  public string[] Forms { get; set; }
   public Result Result { get; set; }
   public string? Other { get; set; }
 
@@ -26,9 +26,9 @@ public class GetCompetitionResponseDto
     Teacher = Array.Empty<string>();
     Date = new DateOnly();
     Created = DateTime.Now;
-    Level = Level.Local;
-    Round = Round.School;
-    Form = Array.Empty<Form>();
+    Level = Workspace.Backend.Models.Level.Local;
+    Round = Workspace.Backend.Models.Round.School;
+    Forms = Array.Empty<string>();
     Result = new Result();
   }
 }
