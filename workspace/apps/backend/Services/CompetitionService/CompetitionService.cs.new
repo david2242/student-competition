@@ -9,13 +9,11 @@ public class CompetitionService : ICompetitionService
 {
   private readonly IMapper _mapper;
   private readonly DataContext _context;
-
   public CompetitionService(IMapper mapper, DataContext context)
   {
     _mapper = mapper;
     _context = context;
   }
-
   public async Task<List<GetCompetitionResponseDto>> GetAll()
   {
     var competitions = await _context.Competitions
@@ -40,7 +38,6 @@ public class CompetitionService : ICompetitionService
     {
       throw new KeyNotFoundException($"Competition with id '{id}' was not found");
     }
-
     return _mapper.Map<GetCompetitionResponseDto>(competition);
   }
 
@@ -54,6 +51,7 @@ public class CompetitionService : ICompetitionService
       await _context.Competitions.AddAsync(competition);
       await _context.SaveChangesAsync();
 
+      // Add students
       foreach (var studentDto in newCompetition.Students)
       {
         var existingStudent = await _context.Students
@@ -81,6 +79,7 @@ public class CompetitionService : ICompetitionService
         await _context.CompetitionStudent.AddAsync(competitionStudent);
       }
 
+      // Add forms
       if (newCompetition.Forms != null && newCompetition.Forms.Length > 0)
       {
         var forms = await _context.Forms
@@ -97,6 +96,7 @@ public class CompetitionService : ICompetitionService
           await _context.CompetitionForms.AddAsync(competitionForm);
         }
       }
+
 
       await _context.SaveChangesAsync();
       await transaction.CommitAsync();
@@ -134,6 +134,7 @@ public class CompetitionService : ICompetitionService
 
       _mapper.Map(updatedCompetition, competition);
 
+      // Update students
       var existingStudents = _context.CompetitionStudent
         .Where(cs => cs.CompetitionId == id);
       _context.CompetitionStudent.RemoveRange(existingStudents);
@@ -168,6 +169,8 @@ public class CompetitionService : ICompetitionService
         }
       }
 
+
+      // Update forms
       var existingForms = _context.CompetitionForms
         .Where(cf => cf.CompetitionId == id);
       _context.CompetitionForms.RemoveRange(existingForms);
@@ -224,14 +227,14 @@ public class CompetitionService : ICompetitionService
     _context.CompetitionForms.RemoveRange(competition.CompetitionForms);
     _context.Competitions.Remove(competition);
     await _context.SaveChangesAsync();
-
+    
     var competitions = await _context.Competitions
       .Include(c => c.CompetitionStudents)
       .ThenInclude(cs => cs.Student)
       .Include(c => c.CompetitionForms)
       .ThenInclude(cf => cf.Form)
       .ToListAsync();
-
+      
     return competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
   }
 }

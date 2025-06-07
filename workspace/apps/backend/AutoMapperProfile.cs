@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Workspace.Backend.Dtos.Competition;
 using Workspace.Backend.Dtos.Student;
@@ -12,7 +12,8 @@ public class AutoMapperProfile : Profile
   public AutoMapperProfile()
   {
     CreateMap<Competition, GetCompetitionResponseDto>()
-      .ForMember(dest => dest.Students, opt => opt.MapFrom(src => src.CompetitionStudents.Select(cs => cs.Student).ToArray()));;
+      .ForMember(dest => dest.Students, opt => opt.MapFrom(src => src.CompetitionStudents.Select(cs => cs.Student).ToArray()))
+      .ForMember(dest => dest.Forms, opt => opt.MapFrom(src => src.CompetitionForms.Select(cf => cf.Form.Name).ToArray()));
     CreateMap<AddCompetitionRequestDto, Competition>();
     CreateMap<UpdateCompetitionRequestDto, Competition>();
     CreateMap<IdentityUser, GetUserResponseDto>()

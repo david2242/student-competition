@@ -18,7 +18,7 @@ describe('CompetitionService', () => {
     date: '',
     level: Level.Local,
     round: Round.State,
-    form: [ Form.Oral ],
+    forms: [ Form.Oral ],
     result: {
       position: 0,
       specialPrize: false,

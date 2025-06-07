@@ -1,9 +1,6 @@
-﻿using Workspace.Backend.Data;
+using Workspace.Backend.Data;
 
 namespace Workspace.Backend.Services.KeepAliveService;
-using Microsoft.EntityFrameworkCore;
-
-using Microsoft.EntityFrameworkCore;
 
 public class KeepAliveService : BackgroundService
 {

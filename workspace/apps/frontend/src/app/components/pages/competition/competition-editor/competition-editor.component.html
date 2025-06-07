@@ -81,7 +81,6 @@
                 id="level" formControlName="level">
           <option [ngValue]="null" disabled selected>Válasszon típust!</option>
           <option [ngValue]=Level.Local>Helyi</option>
-          <option [ngValue]=Level.Regional>Körzeti</option>
           <option [ngValue]=Level.State>Megyei</option>
           <option [ngValue]=Level.National>Országos</option>
 
@@ -129,9 +128,9 @@
         </select>
         <div class="invalid-feedback">Kérem adja meg a verseny szintjét!</div>
       </div>
-      <div formArrayName="form" class="col-sm-12 col-md-6 mb-3">
+      <div formArrayName="forms" class="col-sm-12 col-md-6 mb-3">
         <label class="form-label d-block">Verseny formája</label>
-        <div *ngFor="let foo of form.controls; let i = index" class="input-group mb-2">
+        <div *ngFor="let form of forms.controls; let i = index" class="input-group mb-2">
           <select class="form-select"
                   [ngClass]="{'is-invalid': form.touched && form.errors, 'is-valid': form.touched && !form.errors}"
                   [formControlName]="i"

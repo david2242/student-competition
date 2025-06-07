@@ -44,7 +44,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     date: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
     level: new FormControl<Level | null>(null,  { validators: [ Validators.required ] }),
     round: new FormControl<Round | null>(null, { validators: [ Validators.required ] }),
-    form: new FormArray([ (new FormControl<Form | null>(null, {
+    forms: new FormArray([ (new FormControl<Form | null>(null, {
       validators: [ Validators.required ]
     })) ], Validators.required),
     result: new FormGroup({
@@ -127,9 +127,10 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   private fillForms() {
-    this.form.clear();
-    this.competition?.form.forEach((form: Form | null) => {
-      this.form.push(new FormControl<Form | null>(form, Validators.required));
+    this.forms.clear();
+    console.log(this.competition)
+    this.competition?.forms.forEach((form: Form | null) => {
+      this.forms.push(new FormControl<Form | null>(form, Validators.required));
     });
   }
 
@@ -196,8 +197,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     return this.competitionForm.get('teacher') as FormArray;
   }
 
-  get form(): FormArray {
-    return this.competitionForm.get('form') as FormArray;
+  get forms(): FormArray {
+    return this.competitionForm.get('forms') as FormArray;
   }
 
   get students(): FormArray {
@@ -228,12 +229,14 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   addForm(): void {
-    this.form.push(new FormControl(null, Validators.required));
+    this.forms.push(new FormControl(null, Validators.required));
   }
 
   onSubmit(): void {
+    console.log(this.competitionForm.value);
     if (this.competitionForm.valid) {
       const competition = this.competitionForm.getRawValue();
+      console.log(competition);
       this.id
         ? this.competitionService.updateCompetition(this.id, competition).subscribe({
           next: () => {
@@ -263,7 +266,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   removeForm(i: number) {
-    this.form.removeAt(i);
+    this.forms.removeAt(i);
   }
 
   back() {
@@ -278,7 +281,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     if (enable) {
       this.level.enable();
       this.round.enable();
-      this.form.controls.forEach(control => control.enable());
+      this.forms.controls.forEach(control => control.enable());
       this.competitionForm.controls.result.enable()
       if (!this.competitionForm.controls.result.controls.position.value) {
         this.competitionForm.controls.result.controls.position.disable();
@@ -286,7 +289,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     } else {
       this.level.disable();
       this.round.disable();
-      this.form.controls.forEach(control => control.disable());
+      this.forms.controls.forEach(control => control.disable());
       this.competitionForm.controls.result.disable();
     }
   }
