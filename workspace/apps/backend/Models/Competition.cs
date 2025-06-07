@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace Workspace.Backend.Models;
 
 public class Competition
@@ -15,6 +17,9 @@ public class Competition
   public ICollection<CompetitionForm> CompetitionForms { get; set; }
   public Result Result { get; set; }
   public string? Other { get; set; }
+
+  public string? CreatorId { get; set; }
+  public virtual IdentityUser? Creator { get; set; }
 
   public Competition()
   {

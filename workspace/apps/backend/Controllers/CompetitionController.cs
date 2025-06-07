@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Workspace.Backend.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Workspace.Backend.Dtos.Competition;
+using Workspace.Backend.Models;
 using Workspace.Backend.Services.CompetitionService;
 
 namespace Workspace.Backend.Controllers
@@ -16,7 +18,7 @@ namespace Workspace.Backend.Controllers
       _competitionService = competitionService;
     }
 
-    [HttpGet(""), Authorize]
+    [HttpGet(""), Authorize(Roles = "admin,contributor,viewer")]
     public async Task<ActionResult<ServiceResponse<List<GetCompetitionResponseDto>>>> GetAll()
     {
       var serviceResponse = new ServiceResponse<List<GetCompetitionResponseDto>>();
@@ -34,7 +36,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpGet("{id}"), Authorize]
+    [HttpGet("{id}"), Authorize(Roles = "admin,contributor,viewer")]
     public async Task<ActionResult<ServiceResponse<GetCompetitionResponseDto>>> GetSingle(int id)
     {
       var serviceResponse = new ServiceResponse<GetCompetitionResponseDto>();
@@ -59,7 +61,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpPost, Authorize]
+    [HttpPost, Authorize(Roles = "admin,contributor")]
     public async Task<ActionResult<ServiceResponse<List<GetCompetitionResponseDto>>>> AddCompetition(AddCompetitionRequestDto newCompetition)
     {
       var serviceResponse = new ServiceResponse<List<GetCompetitionResponseDto>>();
@@ -77,7 +79,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpPut("{id}"), Authorize]
+    [HttpPut("{id}"), Authorize(Roles = "admin,contributor")]
     public async Task<ActionResult<ServiceResponse<GetCompetitionResponseDto>>> UpdateCompetition(int id, UpdateCompetitionRequestDto updatedCompetition)
     {
       var serviceResponse = new ServiceResponse<GetCompetitionResponseDto>();
@@ -102,7 +104,7 @@ namespace Workspace.Backend.Controllers
       }
     }
 
-    [HttpDelete("{id}"), Authorize]
+    [HttpDelete("{id}"), Authorize(Roles = "admin")]
     public async Task<ActionResult<ServiceResponse<List<GetCompetitionResponseDto>>>> DeleteCompetition(int id)
     {
       var serviceResponse = new ServiceResponse<List<GetCompetitionResponseDto>>();
