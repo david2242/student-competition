@@ -148,14 +148,14 @@
                   [formControlName]="i"
           >
             <option [ngValue]="null" disabled selected>Válasszon formátumot!</option>
-            <option [ngValue]=Form.Written>Írásbeli</option>
-            <option [ngValue]=Form.Oral>Szóbeli</option>
-            <option [ngValue]=Form.Sport>Sport</option>
-            <option [ngValue]=Form.Submission>Pályázatos</option>
+            <option [ngValue]="Form.Written">Írásbeli</option>
+            <option [ngValue]="Form.Oral">Szóbeli</option>
+            <option [ngValue]="Form.Sport">Sport</option>
+            <option [ngValue]="Form.Submission">Pályázatos</option>
           </select>
           <div class="invalid-feedback">Kérem adja meg a verseny formáját!</div>
-          @if (($displayMode | async) == 'edit' && i != 0) {
-            <button *ngIf="i !=0" class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
+          @if (($displayMode | async) == 'edit' && i !== 0) {
+            <button class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
           }
         </div>
         @if (($displayMode | async) == 'edit') {
