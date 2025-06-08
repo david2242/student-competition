@@ -346,6 +346,9 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   showMode() {
+    if (this.competition) {
+      this.fillForm(this.competition);
+    }
     this.$displayMode.next('show');
   }
 
