@@ -7,7 +7,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarText">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0 flex flex-row align-items-center">
+        <ul class="navbar-nav me-auto mb-4 mb-sm-0">
           @if ($isLoggedIn | async) {
             <li class="nav-item">
               <a class="nav-link" routerLinkActive="active" routerLink="competition">Eredmények</a>
@@ -20,8 +20,8 @@
 
         @if (!($isLoggedIn | async)) {
           <div class="d-flex">
-            <button class="btn btn-outline-success me-2" routerLink="login">
-              <i class="bi-person-fill me-1"></i>Bejelentkezés
+            <button class="btn btn-outline-secondary btn-sm" routerLink="login">
+              <i class="bi-box-arrow-in-right me-1"></i>Bejelentkezés
             </button>
           </div>
         } @else if ($currentUser | async) {
