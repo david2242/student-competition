@@ -8,20 +8,22 @@ import { Role } from "@/app/models/current-user";
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [ CommonModule, RouterLink, RouterLinkActive ],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css',
+  styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly roleTranslator = inject(RoleTranslatorService);
 
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private roleTranslator = inject(RoleTranslatorService)
-  $isLoggedIn = this.authService.$isLoggedIn;
-  $currentUser = this.authService.$currentUser;
+  readonly $isLoggedIn = this.authService.$isLoggedIn;
+  readonly $currentUser = this.authService.$currentUser;
 
-  logout() {
-    this.authService.logout().subscribe(() => this.router.navigate(['']));
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/'])
+    });
   }
 
   getRoleTranslation(role: Role): string {
@@ -29,21 +31,13 @@ export class NavbarComponent {
   }
 
   get currentSchoolYear(): string {
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const month = now.getMonth() + 1;
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const month = now.getMonth() + 1;
 
-  const schoolYearStartMonth = 9;
-  let startYear: number;
+    const isNewSchoolYear = month >= 9;
+    const startYear = isNewSchoolYear ? currentYear : currentYear - 1;
 
-  if (month >= schoolYearStartMonth) {
-    startYear = currentYear;
-  } else {
-    startYear = currentYear - 1;
+    return `${startYear}/${(startYear + 1).toString().slice(2)}`; // e.g., "2024/25"
   }
-
-  const endYear = startYear + 1;
-  return `${startYear}/${endYear.toString().slice(2)}`;
-}
-
 }
