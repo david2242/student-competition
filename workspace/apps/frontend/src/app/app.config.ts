@@ -12,6 +12,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     provideHttpClient(withInterceptors([unauthorizedInterceptor])),
     provideAnimations(),
-    provideToastr()
+    provideToastr({ preventDuplicates: true, closeButton: true, positionClass: 'toast-top-center'}),
   ],
 };
