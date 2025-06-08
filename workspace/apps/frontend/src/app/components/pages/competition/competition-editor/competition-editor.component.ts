@@ -45,7 +45,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       nonNullable: true,
       validators: [ Validators.required ]
     })) ], Validators.required),
-    teacher: new FormArray([ (new FormControl('', { nonNullable: true })) ]),
+    teacher: new FormArray<FormControl<string>>([]),
     date: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
     level: new FormControl<Level | null>(null,  { validators: [ Validators.required ] }),
     round: new FormControl<Round | null>(null, { validators: [ Validators.required ] }),
@@ -124,9 +124,12 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
   private fillTeachers() {
     this.teacher.clear();
-    this.competition?.teacher.forEach((teacher: string) => {
-      this.teacher.push(new FormControl(teacher, Validators.required));
-    });
+
+    if (this.competition?.teacher && this.competition.teacher.length > 0) {
+      this.competition.teacher.forEach((teacher: string) => {
+        this.teacher.push(new FormControl(teacher, Validators.required));
+      });
+    }
   }
 
   private fillSubjects() {
@@ -352,5 +355,3 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.round.reset(null, { emitEvent: false });
   }
 }
-
-
