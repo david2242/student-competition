@@ -65,9 +65,21 @@ builder.Services.Configure<RouteOptions>(options =>
 {
   options.LowercaseUrls = true;
 });
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddScoped<ICompetitionService, CompetitionService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<UserManager<IdentityUser>>();
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+
+    options.User.RequireUniqueEmail = true;
+});
 
 var app = builder.Build();
 

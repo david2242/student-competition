@@ -58,6 +58,12 @@ namespace Workspace.Backend.Data
         .HasForeignKey(cf => cf.FormId)
         .OnDelete(DeleteBehavior.Cascade);
 
+      modelBuilder.Entity<Competition>()
+        .HasOne(c => c.Creator)
+        .WithMany()
+        .HasForeignKey(c => c.CreatorId)
+        .OnDelete(DeleteBehavior.Restrict);
+
       modelBuilder.Entity<Form>().HasData(
         new Form { Id = 1, Name = "WRITTEN", Description = "Written competition form" },
         new Form { Id = 2, Name = "ORAL", Description = "Oral competition form" },

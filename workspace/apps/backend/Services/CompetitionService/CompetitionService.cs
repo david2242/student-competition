@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Workspace.Backend.Data;
 using Workspace.Backend.Dtos.Competition;
 using Workspace.Backend.Models;
@@ -9,11 +11,46 @@ public class CompetitionService : ICompetitionService
 {
   private readonly IMapper _mapper;
   private readonly DataContext _context;
+  private readonly UserManager<IdentityUser> _userManager;
+  private readonly IHttpContextAccessor _httpContextAccessor;
 
-  public CompetitionService(IMapper mapper, DataContext context)
+  public CompetitionService(
+    IMapper mapper,
+    DataContext context,
+    UserManager<IdentityUser> userManager,
+    IHttpContextAccessor httpContextAccessor)
   {
     _mapper = mapper;
     _context = context;
+    _userManager = userManager;
+    _httpContextAccessor = httpContextAccessor;
+  }
+
+  private string? GetCurrentUserId()
+  {
+    return _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+  }
+
+  private async Task<bool> IsUserInRoleAsync(string userId, string role)
+  {
+    var user = await _userManager.FindByIdAsync(userId);
+    if (user == null) return false;
+    return await _userManager.IsInRoleAsync(user, role);
+  }
+
+  private async Task<bool> HasPermissionToModifyCompetition(int competitionId, string userId)
+  {
+    if (string.IsNullOrEmpty(userId)) return false;
+
+    if (await IsUserInRoleAsync(userId, "admin")) return true;
+
+    if (!await IsUserInRoleAsync(userId, "contributor")) return false;
+
+    var competition = await _context.Competitions
+      .AsNoTracking()
+      .FirstOrDefaultAsync(c => c.Id == competitionId);
+
+    return competition?.CreatorId == userId;
   }
 
   public async Task<List<GetCompetitionResponseDto>> GetAll()
@@ -24,6 +61,7 @@ public class CompetitionService : ICompetitionService
       .Include(c => c.CompetitionForms)
       .ThenInclude(cf => cf.Form)
       .ToListAsync();
+
     return competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
   }
 
@@ -46,11 +84,26 @@ public class CompetitionService : ICompetitionService
 
   public async Task<List<GetCompetitionResponseDto>> AddCompetition(AddCompetitionRequestDto newCompetition)
   {
+    var currentUserId = GetCurrentUserId();
+    if (string.IsNullOrEmpty(currentUserId))
+    {
+      throw new UnauthorizedAccessException("User must be logged in to create a competition");
+    }
+
+    var isContributor = await IsUserInRoleAsync(currentUserId, "contributor");
+    var isAdmin = await IsUserInRoleAsync(currentUserId, "admin");
+
+    if (!isContributor && !isAdmin)
+    {
+      throw new UnauthorizedAccessException("Only contributors and admins can create competitions");
+    }
+
     using var transaction = await _context.Database.BeginTransactionAsync();
     try
     {
       var competition = _mapper.Map<Competition>(newCompetition);
       competition.Created = DateTime.UtcNow;
+      competition.CreatorId = currentUserId;
       await _context.Competitions.AddAsync(competition);
       await _context.SaveChangesAsync();
 
@@ -119,6 +172,12 @@ public class CompetitionService : ICompetitionService
 
   public async Task<GetCompetitionResponseDto> UpdateCompetition(int id, UpdateCompetitionRequestDto updatedCompetition)
   {
+    var currentUserId = GetCurrentUserId();
+    if (string.IsNullOrEmpty(currentUserId))
+    {
+      throw new UnauthorizedAccessException("User must be logged in to update a competition");
+    }
+
     using var transaction = await _context.Database.BeginTransactionAsync();
     try
     {
@@ -130,6 +189,11 @@ public class CompetitionService : ICompetitionService
       if (competition == null)
       {
         throw new KeyNotFoundException($"Competition with id '{id}' was not found");
+      }
+
+      if (!await HasPermissionToModifyCompetition(id, currentUserId))
+      {
+        throw new UnauthorizedAccessException("You don't have permission to update this competition");
       }
 
       _mapper.Map(updatedCompetition, competition);
@@ -211,13 +275,30 @@ public class CompetitionService : ICompetitionService
 
   public async Task<List<GetCompetitionResponseDto>> DeleteCompetition(int id)
   {
+    var currentUserId = GetCurrentUserId();
+    if (string.IsNullOrEmpty(currentUserId))
+    {
+      throw new UnauthorizedAccessException("User must be logged in to delete a competition");
+    }
+
+    if (!await IsUserInRoleAsync(currentUserId, "admin"))
+    {
+      throw new UnauthorizedAccessException("Only admins can delete competitions");
+    }
+
     var competition = await _context.Competitions
       .Include(c => c.CompetitionStudents)
       .Include(c => c.CompetitionForms)
       .FirstOrDefaultAsync(x => x.Id == id);
+
     if (competition == null)
     {
       throw new KeyNotFoundException($"Competition with id '{id}' was not found");
+    }
+
+    if (!await HasPermissionToModifyCompetition(id, currentUserId))
+    {
+      throw new UnauthorizedAccessException("You don't have permission to delete this competition");
     }
 
     _context.CompetitionStudent.RemoveRange(competition.CompetitionStudents);

@@ -7,15 +7,21 @@ using Workspace.Backend.Services.UserService;
 
 namespace Workspace.Backend.Controllers
 {
-
   [ApiController]
   [Route("api/[controller]")]
+  [Authorize]
   public class UserController : ControllerBase
   {
     private readonly IUserService _userService;
-    public UserController(IUserService userService)
+    private readonly UserManager<IdentityUser> _userManager;
+
+    public UserController(
+      IUserService userService,
+      UserManager<IdentityUser> userManager
+    )
     {
       _userService = userService;
+      _userManager = userManager;
     }
 
     [HttpGet(""), Authorize(Roles = "admin")]
@@ -80,7 +86,8 @@ namespace Workspace.Backend.Controllers
     }
 
     [HttpPut("{id}"), Authorize(Roles = "admin")]
-    public async Task<ActionResult<ServiceResponse<GetUserResponseDto>>> UpdateUser(string id, UpdateUserRequestDto updatedUser)
+    public async Task<ActionResult<ServiceResponse<GetUserResponseDto>>> UpdateUser(string id,
+      UpdateUserRequestDto updatedUser)
     {
       var serviceResponse = new ServiceResponse<List<GetUserResponseDto>>();
       try
@@ -127,6 +134,23 @@ namespace Workspace.Backend.Controllers
         serviceResponse.Message = e.Message;
         return BadRequest(serviceResponse);
       }
+    }
+
+    [HttpGet("me")]
+    public async Task<IActionResult> GetCurrentUser()
+    {
+      var user = await _userManager.GetUserAsync(User);
+      if (user == null) return Unauthorized();
+
+      var roles = await _userManager.GetRolesAsync(user);
+
+      return Ok(new
+      {
+        Id = user.Id,
+        UserName = user.UserName,
+        Email = user.Email,
+        Roles = roles
+      });
     }
   }
 };
