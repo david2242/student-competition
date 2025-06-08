@@ -9,6 +9,9 @@ import { Student } from "@/app/models/student.model";
 import { ToastrService } from "ngx-toastr";
 import { subjects } from "./subjects";
 import { teachers } from "./teachers";
+import { Role } from "@/app/models/current-user";
+import { AuthService } from "@/app/services/auth.service";
+import { schoolYearValidator } from "@/app/components/pages/competition/competition-editor/schoolYearValidator";
 
 @Component({
   selector: 'app-competition-editor',
@@ -23,6 +26,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   route = inject(ActivatedRoute);
   router = inject(Router);
   toastr = inject(ToastrService);
+  authService = inject(AuthService);
+  userRoles: Role[] = [];
   competition?: Competition;
   positionEnablerSubsripction?: Subscription;
   id: number | null = null;
@@ -88,6 +93,11 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
         this.toggleSelects(true)
       }
     })
+
+    this.authService.$currentUser.subscribe(user => {
+      this.userRoles = user?.roles || [];
+      this.updateDateValidator();
+    });
   }
 
   private fillForm(competition: Competition) {
@@ -159,6 +169,21 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
         positionControl?.disable();
       }
     });
+  }
+
+  private updateDateValidator(): void {
+    const dateControl = this.competitionForm.get('date');
+    if (dateControl) {
+      dateControl.clearValidators();
+
+      dateControl.addValidators(Validators.required);
+
+      if (!this.userRoles.includes(Role.ADMIN)) {
+        dateControl.addValidators(schoolYearValidator(this.userRoles));
+      }
+
+      dateControl.updateValueAndValidity();
+    }
   }
 
   ngOnDestroy(): void {
