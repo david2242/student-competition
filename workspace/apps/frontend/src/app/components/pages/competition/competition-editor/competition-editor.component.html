@@ -206,7 +206,11 @@
             <button type="button" class="btn btn-outline-secondary" (click)="showMode()">Mégse</button>
           }
           @if (($displayMode | async) == 'edit') {
-            <button [disabled]="competitionForm.invalid" type="submit" class="btn btn-primary">Mentés</button>
+            <button [disabled]="competitionForm.invalid || isLoading" type="submit" class="btn btn-primary">
+              <span *ngIf="!isLoading">Mentés</span>
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              <span *ngIf="isLoading" class="visually-hidden">Mentés...</span>
+            </button>
           }
         </div>
       </div>

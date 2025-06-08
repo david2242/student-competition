@@ -70,6 +70,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   });
 
   oktv = false;
+  isLoading = false;
 
   ngOnInit(): void {
     this.saveIdFromParam();
@@ -264,22 +265,32 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (this.competitionForm.valid) {
+    if (this.competitionForm.valid && !this.isLoading) {
+      this.isLoading = true;
       const competition = this.competitionForm.getRawValue();
-      this.id
+      const subscription: Subscription = this.id
         ? this.competitionService.updateCompetition(this.id, competition).subscribe({
           next: () => {
             this.toastr.success('Verseny frissítve!');
-            this.$displayMode.next('show')
+            this.$displayMode.next('show');
+            this.isLoading = false;
           },
-          error: () => this.toastr.error('Nem sikerült frissíteni a versenyt!'),
+          error: () => {
+            this.toastr.error('Nem sikerült frissíteni a versenyt!');
+            this.isLoading = false;
+          },
+          complete: () => subscription.unsubscribe()
         })
         : this.competitionService.createCompetition(competition).subscribe({
           next: () => {
             this.toastr.success('Verseny létrehozva!');
             this.router.navigate([ 'competition' ]);
           },
-          error: () => this.toastr.error('Nem sikerült létrehozni a versenyt!'),
+          error: () => {
+            this.toastr.error('Nem sikerült létrehozni a versenyt!');
+            this.isLoading = false;
+          },
+          complete: () => subscription.unsubscribe()
         });
     } else {
       console.log('Form is invalid', this.competitionForm);
