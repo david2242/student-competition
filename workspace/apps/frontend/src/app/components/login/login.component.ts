@@ -14,7 +14,6 @@ import { ToastrService } from "ngx-toastr";
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-
   private authService = inject(AuthService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
@@ -23,15 +22,25 @@ export class LoginComponent {
     email: '',
     password: '',
   }
+  isLoading = false;
 
   login() {
-    this.authService.login(this.credentials).subscribe({
+    if (this.isLoading) return;
+
+    this.isLoading = true;
+    const subscription = this.authService.login(this.credentials).subscribe({
       next: () => {
         this.toastr.success('Sikeres bejelentkezés!');
         this.router.navigate([ '/' ]);
       },
       error: () => {
         this.toastr.error('Sikertelen bejelentkezés!');
+        this.isLoading = false;
+        subscription.unsubscribe();
+      },
+      complete: () => {
+        this.isLoading = false;
+        subscription.unsubscribe();
       }
     })
   }
