@@ -1,24 +1,40 @@
 <nav class="navbar navbar-expand-md bg-body-tertiary">
   <div class="container-fluid">
     <a class="navbar-brand" href="#">PSG:DB</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
+            aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarText">
       <ul class="navbar-nav me-auto mb-lg-0">
-        <li *ngIf="($isLoggedIn | async)" class="nav-item">
-          <a class="nav-link" routerLinkActive="active" aria-current="page" routerLink="competition">Eredmények</a>
-        </li>
-        <li *ngIf="($isLoggedIn | async)" class="nav-item">
-          <a class="nav-link" routerLinkActive="active" aria-current="page" routerLink="competition-editor">Rögzítés</a>
-        </li>
+        @if ($isLoggedIn | async) {
+          <li class="nav-item">
+            <a class="nav-link" routerLinkActive="active" aria-current="page" routerLink="competition">Eredmények</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLinkActive="active" aria-current="page" routerLink="competition-editor">Rögzítés</a>
+          </li>
+        }
       </ul>
-      <div *ngIf="!($isLoggedIn | async)" class="d-flex">
-        <button class="btn btn-outline-success me-2" routerLink="login" aria-current="page"><i class="bi-person-fill me-1"></i>Bejelentkezés</button>
-      </div>
-      <div *ngIf="$isLoggedIn | async" class="d-flex">
-        <button class="btn btn-outline-success me-2" (click)="logout()" aria-current="page"><i class="bi-person-fill me-1"></i>Kijelentkezés</button>
-      </div>
+
+      @if (!($isLoggedIn | async)) {
+        <div class="d-flex">
+          <button class="btn btn-outline-success me-2" routerLink="login" aria-current="page"><i
+            class="bi-person-fill me-1"></i>Bejelentkezés
+          </button>
+        </div>
+      } @else if ($currentUser | async) {
+        <div class="d-flex align-items-center justify-content-center flex-row">
+          <span class="me-4">Üdv {{ ($currentUser | async)?.userName }}!</span>
+          <span class="me-4">
+            <span class="badge bg-primary">{{ getRoleTranslation(($currentUser | async)!.roles[0]) }}</span>
+          </span>
+          <button class="btn btn-outline-success me-2" (click)="logout()" aria-current="page">
+
+            <i class="bi-person-fill me-1"></i>Kijelentkezés
+          </button>
+        </div>
+      }
     </div>
   </div>
 </nav>
