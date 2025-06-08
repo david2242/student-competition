@@ -28,4 +28,22 @@ export class NavbarComponent {
     return this.roleTranslator.translate(role);
   }
 
+  get currentSchoolYear(): string {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const month = now.getMonth() + 1;
+
+  const schoolYearStartMonth = 9;
+  let startYear: number;
+
+  if (month >= schoolYearStartMonth) {
+    startYear = currentYear;
+  } else {
+    startYear = currentYear - 1;
+  }
+
+  const endYear = startYear + 1;
+  return `${startYear}/${endYear.toString().slice(2)}`;
+}
+
 }
