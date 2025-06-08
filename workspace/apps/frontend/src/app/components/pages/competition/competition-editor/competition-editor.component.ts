@@ -45,7 +45,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       nonNullable: true,
       validators: [ Validators.required ]
     })) ], Validators.required),
-    teacher: new FormArray([ (new FormControl('', { nonNullable: true })) ]),
+    teacher: new FormArray<FormControl<string>>([]),
     date: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
     level: new FormControl<Level | null>(null,  { validators: [ Validators.required ] }),
     round: new FormControl<Round | null>(null, { validators: [ Validators.required ] }),
@@ -110,6 +110,10 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.fillTeachers();
     this.fillSubjects();
     this.fillForms();
+
+    if (this.$displayMode.value === 'show') {
+      this.toggleSelects(false);
+    }
   }
 
   private fillStudents() {
@@ -124,9 +128,12 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
   private fillTeachers() {
     this.teacher.clear();
-    this.competition?.teacher.forEach((teacher: string) => {
-      this.teacher.push(new FormControl(teacher, Validators.required));
-    });
+
+    if (this.competition?.teacher && this.competition.teacher.length > 0) {
+      this.competition.teacher.forEach((teacher: string) => {
+        this.teacher.push(new FormControl(teacher, Validators.required));
+      });
+    }
   }
 
   private fillSubjects() {
@@ -138,7 +145,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
   private fillForms() {
     this.forms.clear();
-    console.log(this.competition)
     this.competition?.forms.forEach((form: Form | null) => {
       this.forms.push(new FormControl<Form | null>(form, Validators.required));
     });
@@ -258,10 +264,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    console.log(this.competitionForm.value);
     if (this.competitionForm.valid) {
       const competition = this.competitionForm.getRawValue();
-      console.log(competition);
       this.id
         ? this.competitionService.updateCompetition(this.id, competition).subscribe({
           next: () => {
@@ -304,18 +308,29 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
   private toggleSelects(enable: boolean) {
     if (enable) {
-      this.level.enable();
-      this.round.enable();
-      this.forms.controls.forEach(control => control.enable());
-      this.competitionForm.controls.result.enable()
+      Object.values(this.competitionForm.controls).forEach(control => {
+        if (control instanceof FormControl) {
+          control.enable();
+        } else if (control instanceof FormArray) {
+          control.controls.forEach(c => c.enable());
+        } else if (control instanceof FormGroup) {
+          Object.values(control.controls).forEach(c => c.enable());
+        }
+      });
+
       if (!this.competitionForm.controls.result.controls.position.value) {
         this.competitionForm.controls.result.controls.position.disable();
       }
     } else {
-      this.level.disable();
-      this.round.disable();
-      this.forms.controls.forEach(control => control.disable());
-      this.competitionForm.controls.result.disable();
+      Object.values(this.competitionForm.controls).forEach(control => {
+        if (control instanceof FormControl) {
+          control.disable();
+        } else if (control instanceof FormArray) {
+          control.controls.forEach(c => c.disable());
+        } else if (control instanceof FormGroup) {
+          Object.values(control.controls).forEach(c => c.disable());
+        }
+      });
     }
   }
 
@@ -352,5 +367,3 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.round.reset(null, { emitEvent: false });
   }
 }
-
-

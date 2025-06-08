@@ -51,20 +51,25 @@
       </div>
       <div formArrayName="teacher" class="col-sm-12 col-md-6 mb-3">
         <label class="form-label d-block">Felkészítő tanár</label>
-        <div *ngFor="let teacher of teacher.controls; let i = index" class="input-group mb-2">
-          <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
-                 [ngClass]="{'is-invalid': teacher.touched && teacher.errors, 'is-valid': teacher.touched && !teacher.errors}"
-                 [formControlName]="i" list="teachers">
-          <datalist id="teachers">
-            <option *ngFor="let teacher of teachers" [value]="teacher"></option>
-          </datalist>
-          @if (($displayMode | async) == 'edit' && i != 0) {
-            <button class="btn btn-outline-danger" type="button" (click)="removeTeacher(i)">Törlés</button>
-          }
-          <div class="invalid-feedback">Kérem adja meg a felkészítő tanár nevét</div>
-        </div>
+        @if (teacher.controls.length > 0) {
+          <div *ngFor="let teacher of teacher.controls; let i = index" class="input-group mb-2">
+            <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
+                  [ngClass]="{'is-invalid': teacher.touched && teacher.errors, 'is-valid': teacher.touched && !teacher.errors}"
+                  [formControlName]="i" list="teachers">
+            <datalist id="teachers">
+              <option *ngFor="let teacher of teachers" [value]="teacher"></option>
+            </datalist>
+            @if (($displayMode | async) == 'edit') {
+              <button class="btn btn-outline-danger" type="button" (click)="removeTeacher(i)">Törlés</button>
+            }
+            <div class="invalid-feedback">Kérem adja meg a felkészítő tanár nevét</div>
+          </div>
+        }
         @if (($displayMode | async) == 'edit') {
           <button type="button" class="btn btn-secondary" (click)="addTeacher('')">Tanár hozzáadása</button>
+        }
+        @if (($displayMode | async) === 'show' && teacher.controls.length === 0) {
+          <div class="text-muted">Nincs megadva felkészítő tanár</div>
         }
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
@@ -143,14 +148,14 @@
                   [formControlName]="i"
           >
             <option [ngValue]="null" disabled selected>Válasszon formátumot!</option>
-            <option [ngValue]=Form.Written>Írásbeli</option>
-            <option [ngValue]=Form.Oral>Szóbeli</option>
-            <option [ngValue]=Form.Sport>Sport</option>
-            <option [ngValue]=Form.Submission>Pályázatos</option>
+            <option [ngValue]="Form.Written">Írásbeli</option>
+            <option [ngValue]="Form.Oral">Szóbeli</option>
+            <option [ngValue]="Form.Sport">Sport</option>
+            <option [ngValue]="Form.Submission">Pályázatos</option>
           </select>
           <div class="invalid-feedback">Kérem adja meg a verseny formáját!</div>
-          @if (($displayMode | async) == 'edit' && i != 0) {
-            <button *ngIf="i !=0" class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
+          @if (($displayMode | async) == 'edit' && i !== 0) {
+            <button class="btn btn-outline-danger" type="button" (click)="removeForm(i)">Törlés</button>
           }
         </div>
         @if (($displayMode | async) == 'edit') {
@@ -178,7 +183,7 @@
         <div class="form-check mt-2">
           <input  class="form-check-input" type="checkbox" id="compliment"
                  formControlName="compliment">
-          <label class="form-check-label" for="compliment">Dícséret</label>
+          <label class="form-check-label" for="compliment">Dicséret</label>
         </div>
 
         <div class="form-check mt-2">
