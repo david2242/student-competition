@@ -114,4 +114,82 @@ public class AuthController : ControllerBase
         };
         return Ok(response);
     }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ServiceResponse<AuthResponseDto>>> ChangePassword(ChangePasswordRequestDto request)
+    {
+        var response = new ServiceResponse<AuthResponseDto>();
+
+        try
+        {
+            var result = await _authService.ChangePasswordAsync(request);
+            response.Data = result;
+            _logger.LogInformation("Password changed successfully");
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            response.Success = false;
+            response.Message = ex.Message;
+            _logger.LogWarning("Password change failed: {Message}", ex.Message);
+            return Unauthorized(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            response.Success = false;
+            response.Message = ex.Message;
+            _logger.LogWarning("Password change failed: {Message}", ex.Message);
+            return BadRequest(response);
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.Message = "An error occurred while changing the password.";
+            _logger.LogError(ex, "Error changing password");
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+        }
+    }
+
+    [HttpPut("profile")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<ServiceResponse<AuthResponseDto>>> UpdateProfile(UpdateProfileRequestDto request)
+    {
+        var response = new ServiceResponse<AuthResponseDto>();
+
+        try
+        {
+            var result = await _authService.UpdateProfileAsync(request);
+            response.Data = result;
+            _logger.LogInformation("Profile updated successfully");
+            return Ok(response);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            response.Success = false;
+            response.Message = ex.Message;
+            _logger.LogWarning("Profile update failed: {Message}", ex.Message);
+            return Unauthorized(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            response.Success = false;
+            response.Message = ex.Message;
+            _logger.LogWarning("Profile update failed: {Message}", ex.Message);
+            return BadRequest(response);
+        }
+        catch (Exception ex)
+        {
+            response.Success = false;
+            response.Message = "An error occurred while updating the profile.";
+            _logger.LogError(ex, "Error updating profile");
+            return StatusCode(StatusCodes.Status500InternalServerError, response);
+        }
+    }
 }

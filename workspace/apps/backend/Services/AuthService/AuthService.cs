@@ -106,4 +106,97 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(email);
         return user != null;
     }
+
+    public async Task<AuthResponseDto> ChangePasswordAsync(ChangePasswordRequestDto request)
+    {
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("User is not authenticated");
+        }
+
+        var result = await _userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            _logger.LogWarning("Failed to change password for user {UserId}: {Errors}", user.Id, errors);
+            throw new InvalidOperationException($"Failed to change password: {errors}");
+        }
+
+        _logger.LogInformation("Password changed successfully for user {UserId}", user.Id);
+        return await GetCurrentUserAsync();
+    }
+
+    public async Task<AuthResponseDto> UpdateProfileAsync(UpdateProfileRequestDto request)
+    {
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("User is not authenticated");
+        }
+
+        // Update email if changed
+        if (user.Email != request.Email)
+        {
+            var existingUser = await _userManager.FindByEmailAsync(request.Email);
+            if (existingUser != null && existingUser.Id != user.Id)
+            {
+                throw new InvalidOperationException($"Email '{request.Email}' is already in use.");
+            }
+
+            user.Email = request.Email;
+            user.UserName = request.Email;
+            user.NormalizedEmail = request.Email.ToUpper();
+            user.NormalizedUserName = request.Email.ToUpper();
+        }
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+            _logger.LogWarning("Failed to update user profile {UserId}: {Errors}", user.Id, errors);
+            throw new InvalidOperationException($"Failed to update profile: {errors}");
+        }
+
+        // Update user claims for first name and last name
+        var currentClaims = await _userManager.GetClaimsAsync(user);
+        var givenNameClaim = currentClaims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName);
+        var surnameClaim = currentClaims.FirstOrDefault(c => c.Type == ClaimTypes.Surname);
+
+        var claimsToRemove = new List<Claim>();
+        var claimsToAdd = new List<Claim>();
+
+        if (givenNameClaim != null && givenNameClaim.Value != request.FirstName)
+        {
+            claimsToRemove.Add(givenNameClaim);
+            claimsToAdd.Add(new Claim(ClaimTypes.GivenName, request.FirstName ?? string.Empty));
+        }
+        else if (givenNameClaim == null)
+        {
+            claimsToAdd.Add(new Claim(ClaimTypes.GivenName, request.FirstName ?? string.Empty));
+        }
+
+        if (surnameClaim != null && surnameClaim.Value != request.LastName)
+        {
+            claimsToRemove.Add(surnameClaim);
+            claimsToAdd.Add(new Claim(ClaimTypes.Surname, request.LastName ?? string.Empty));
+        }
+        else if (surnameClaim == null)
+        {
+            claimsToAdd.Add(new Claim(ClaimTypes.Surname, request.LastName ?? string.Empty));
+        }
+
+        if (claimsToRemove.Any())
+        {
+            await _userManager.RemoveClaimsAsync(user, claimsToRemove);
+        }
+
+        if (claimsToAdd.Any())
+        {
+            await _userManager.AddClaimsAsync(user, claimsToAdd);
+        }
+
+        _logger.LogInformation("Profile updated successfully for user {UserId}", user.Id);
+        return await GetCurrentUserAsync();
+    }
 }
