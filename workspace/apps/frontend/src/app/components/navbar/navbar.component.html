@@ -10,25 +10,38 @@
         <ul class="navbar-nav me-auto mb-4 mb-sm-0">
           @if ($isLoggedIn | async) {
             <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" routerLink="competition">Eredmények</a>
+              <a class="nav-link" routerLinkActive="active" routerLink="competition">
+                <i class="bi-trophy me-1"></i>Eredmények
+              </a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" routerLinkActive="active" routerLink="competition-editor">Rögzítés</a>
-            </li>
+            @if (($currentUser | async)?.role !== Role.VIEWER) {
+              <li class="nav-item">
+                <a class="nav-link" routerLinkActive="active" routerLink="competition-editor">
+                  <i class="bi-pencil-square me-1"></i>Rögzítés
+                </a>
+              </li>
+            }
+            @if (($currentUser | async)?.role === Role.ADMIN) {
+              <li class="nav-item">
+                <a class="nav-link" routerLinkActive="active" routerLink="admin/users">
+                  <i class="bi-people me-1"></i>Felhasználók
+                </a>
+              </li>
+            }
           }
         </ul>
 
         @if (!($isLoggedIn | async)) {
           <div class="d-flex">
-            <button class="btn btn-outline-secondary btn-sm" routerLink="login">
+            <button class="btn btn-outline-secondary btn-sm" routerLink="login" title="Bejelentkezés">
               <i class="bi-box-arrow-in-right me-1"></i>Bejelentkezés
             </button>
           </div>
         } @else if ($currentUser | async) {
           <div class="d-flex align-items-center">
-            <span class="me-3">Üdv {{ ($currentUser | async)!.userName }}!</span>
-            <span class="badge bg-primary me-3">{{ getRoleTranslation(($currentUser | async)!.roles[0]) }}</span>
-            <button class="btn btn-outline-secondary btn-sm" (click)="logout()">
+            <span class="me-3">Üdv {{ ($currentUser | async)!.email }}!</span>
+            <span class="badge bg-primary me-3">{{ getRoleTranslation(($currentUser | async)!.role) }}</span>
+            <button class="btn btn-outline-secondary btn-sm" (click)="logout()" title="Kijelentkezés">
               <i class="bi-box-arrow-right me-1"></i>Kijelentkezés
             </button>
           </div>

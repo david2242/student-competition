@@ -1,12 +1,8 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Role } from "@/app/models/current-user";
 
-export function schoolYearValidator(userRoles: Role[] | null): ValidatorFn {
+export function schoolYearValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
-    if (userRoles?.includes(Role.ADMIN)) {
-      return null;
-    }
-
     const date = new Date(control.value);
     if (isNaN(date.getTime())) {
       return null;

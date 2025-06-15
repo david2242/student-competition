@@ -40,4 +40,6 @@ export class NavbarComponent {
 
     return `${startYear}/${(startYear + 1).toString().slice(2)}`; // e.g., "2024/25"
   }
+
+  protected readonly Role = Role;
 }

@@ -1,5 +1,5 @@
 <div class="container-fluid mt-2">
-  @if (id != null) {
+  @if (id != null && userRole !== Role.VIEWER) {
     <div class="row">
       <div class="col d-flex flex-row-reverse">
         <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="deleteCompetition()">Verseny törlése
@@ -199,7 +199,7 @@
       </div>
       <div class="row mt-3">
         <div class="col d-flex flex-row justify-content-between">
-          @if (($displayMode | async) == 'show') {
+          @if (($displayMode | async) == 'show' && userRole !== Role.VIEWER) {
             <button type="button" class="btn btn-outline-secondary" (click)="editMode()">Szerkesztés</button>
           }
           @if (($displayMode | async) == 'edit' && id != null) {

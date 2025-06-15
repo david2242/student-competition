@@ -27,7 +27,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   router = inject(Router);
   toastr = inject(ToastrService);
   authService = inject(AuthService);
-  userRoles: Role[] = [];
+  userRole: Role = Role.VIEWER;
   competition?: Competition;
   positionEnablerSubsripction?: Subscription;
   id: number | null = null;
@@ -96,7 +96,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     })
 
     this.authService.$currentUser.subscribe(user => {
-      this.userRoles = user?.roles || [];
+      this.userRole = user?.role || Role.VIEWER;
       this.updateDateValidator();
     });
   }
@@ -185,8 +185,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
       dateControl.addValidators(Validators.required);
 
-      if (!this.userRoles.includes(Role.ADMIN)) {
-        dateControl.addValidators(schoolYearValidator(this.userRoles));
+      if (!(this.userRole === Role.ADMIN)) {
+        dateControl.addValidators(schoolYearValidator());
       }
 
       dateControl.updateValueAndValidity();
@@ -275,8 +275,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
             this.$displayMode.next('show');
             this.isLoading = false;
           },
-          error: () => {
-            this.toastr.error('Nem sikerült frissíteni a versenyt!');
+          error: (err) => {
+            this.toastr.error(err, 'Nem sikerült frissíteni a versenyt!');
             this.isLoading = false;
           },
           complete: () => subscription.unsubscribe()
@@ -380,4 +380,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
     this.round.reset(null, { emitEvent: false });
   }
+
+  protected readonly Role = Role;
 }
