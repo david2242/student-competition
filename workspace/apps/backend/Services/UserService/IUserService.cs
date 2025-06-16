@@ -1,4 +1,5 @@
 ﻿using Workspace.Backend.Dtos.User;
+using Workspace.Backend.Models;
 
 namespace Workspace.Backend.Services.UserService;
 

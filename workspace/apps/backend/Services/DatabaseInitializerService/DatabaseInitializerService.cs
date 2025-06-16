@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Workspace.Backend.Models;
 
 namespace Workspace.Backend.Services.DatabaseInitializerService;
 
@@ -14,16 +16,17 @@ public class DatabaseInitializerService
       throw new NullReferenceException("UserManager or RoleManager is null");
     }
 
-    var roles = new[] { "admin", "contributor", "viewer" };
-    foreach (var role in roles)
+    foreach (UserRole role in Enum.GetValues(typeof(UserRole)))
     {
-      if (!await roleManager.RoleExistsAsync(role))
+      var roleName = role.ToString();
+      if (!await roleManager.RoleExistsAsync(roleName))
       {
-        await roleManager.CreateAsync(new IdentityRole(role));
+        await roleManager.CreateAsync(new IdentityRole(roleName));
       }
     }
 
-    var adminUsers = await userManager.GetUsersInRoleAsync("admin");
+    var adminRoleName = UserRole.admin.ToString();
+    var adminUsers = await userManager.GetUsersInRoleAsync(adminRoleName);
     if (!adminUsers.Any())
     {
       var adminUser = new IdentityUser()
@@ -38,37 +41,16 @@ public class DatabaseInitializerService
       var result = await userManager.CreateAsync(adminUser, defaultPassword);
       if (result.Succeeded)
       {
-        await userManager.AddToRoleAsync(adminUser, "admin");
+        await userManager.AddToRoleAsync(adminUser, adminRoleName);
+        await userManager.AddClaimsAsync(adminUser, new[]
+        {
+          new Claim(ClaimTypes.GivenName, "Admin"),
+          new Claim(ClaimTypes.Surname, "User")
+        });
       }
       else
       {
         throw new Exception($"Failed to create admin user: {result.Errors.First().Description}");
-      }
-    }
-  }
-
-  private static async Task CreateUserIfNotExists(UserManager<IdentityUser> userManager, string email, string userName, string password)
-  {
-    var user = await userManager.FindByEmailAsync(email);
-    if (user == null)
-    {
-      user = new IdentityUser
-      {
-        UserName = userName,
-        Email = email,
-        EmailConfirmed = true
-      };
-
-      var result = await userManager.CreateAsync(user, password);
-      if (result.Succeeded)
-      {
-        // Determine role based on email
-        string role = email.Contains("contributor") ? "contributor" : "viewer";
-        await userManager.AddToRoleAsync(user, role);
-      }
-      else
-      {
-        throw new Exception($"Failed to create user {email}: {result.Errors.First().Description}");
       }
     }
   }

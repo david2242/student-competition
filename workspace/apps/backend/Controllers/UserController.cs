@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Workspace.Backend.Dtos.User;
@@ -9,7 +10,6 @@ namespace Workspace.Backend.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
-  [Authorize]
   public class UserController : ControllerBase
   {
     private readonly IUserService _userService;
@@ -25,6 +25,7 @@ namespace Workspace.Backend.Controllers
     }
 
     [HttpGet(""), Authorize(Roles = "admin")]
+    [Authorize]
     public async Task<ActionResult<ServiceResponse<List<GetUserResponseDto>>>> GetAll()
     {
       var serviceResponse = new ServiceResponse<List<GetUserResponseDto>>();
@@ -134,23 +135,6 @@ namespace Workspace.Backend.Controllers
         serviceResponse.Message = e.Message;
         return BadRequest(serviceResponse);
       }
-    }
-
-    [HttpGet("me")]
-    public async Task<IActionResult> GetCurrentUser()
-    {
-      var user = await _userManager.GetUserAsync(User);
-      if (user == null) return Unauthorized();
-
-      var roles = await _userManager.GetRolesAsync(user);
-
-      return Ok(new
-      {
-        Id = user.Id,
-        UserName = user.UserName,
-        Email = user.Email,
-        Roles = roles
-      });
     }
   }
 };

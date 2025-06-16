@@ -1,13 +1,12 @@
-﻿namespace Workspace.Backend.Dtos.User;
+namespace Workspace.Backend.Dtos.User;
+
+using Workspace.Backend.Models;
 
 public class AddUserRequestDto
 {
-  public string Email { get; set; }
-  public string Password { get; set; }
-
-  public AddUserRequestDto()
-  {
-    Email = string.Empty;
-    Password = string.Empty;
-  }
+  public string Email { get; set; } = string.Empty;
+  public string Password { get; set; } = string.Empty;
+  public string FirstName { get; set; } = string.Empty;
+  public string LastName { get; set; } = string.Empty;
+  public UserRole Role { get; set; } = UserRole.viewer;
 }
