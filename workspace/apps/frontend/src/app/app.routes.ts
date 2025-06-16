@@ -7,6 +7,8 @@ import { UserListComponent } from "@/app/components/pages/user/user-list/user-li
 import { UserEditorComponent } from "@/app/components/pages/user/user-editor/user-editor.component";
 import { UserAdminComponent } from "@/app/components/pages/user/user-admin/user-admin.component";
 import { adminGuard } from "@/app/guards/admin.guard";
+import { ProfileComponent } from "@/app/components/pages/user/profile/profile.component";
+import { ChangePasswordComponent } from "@/app/components/pages/user/change-password/change-password.component";
 
 export const appRoutes: Route[] = [
   {
@@ -23,6 +25,8 @@ export const appRoutes: Route[] = [
   { path: 'competition/:id', component: CompetitionEditorComponent },
   { path: 'competition-editor', component: CompetitionEditorComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'profile', component: ProfileComponent },
+  { path: 'change-password', component: ChangePasswordComponent },
   { path: '', component: WelcomeComponent },
   { path: '**', redirectTo: '' }
 ];

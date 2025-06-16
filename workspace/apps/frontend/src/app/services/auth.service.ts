@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
 import { environment } from "@/environments/environment";
-import { ILoginRequest } from "@/app/services/auth.types";
+import { ILoginRequest, IUpdateProfileRequest, IChangePasswordRequest } from "@/app/services/auth.types";
 import { BehaviorSubject, catchError, of, tap } from "rxjs";
 import { CurrentUser } from "@/app/models/current-user";
 import { ServerResponse, handleBackendResponse } from "@/app/models/server-response";
@@ -71,5 +71,24 @@ export class AuthService {
         }
       })
     );
+  }
+
+  updateProfile(profileData: IUpdateProfileRequest) {
+    return this.httpService.put<ServerResponse<CurrentUser>>(
+      `${this.apiUrl}/profile`,
+      profileData
+    ).pipe(
+      handleBackendResponse<CurrentUser>(),
+      tap((user) => {
+        this.$currentUser.next(user);
+      })
+    );
+  }
+
+  changePassword(passwordData: IChangePasswordRequest) {
+    return this.httpService.post<ServerResponse<void>>(
+      `${this.apiUrl}/change-password`,
+      passwordData
+    ).pipe(handleBackendResponse());
   }
 }

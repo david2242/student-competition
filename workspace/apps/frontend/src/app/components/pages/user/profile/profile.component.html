@@ -1,0 +1,69 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title mb-0">Profil szerkesztése</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="needs-validation" novalidate>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="lastName" class="form-label">Vezetéknév</label>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              class="form-control"
+              [class.is-invalid]="lastName?.invalid && (lastName?.touched || lastName?.dirty)"
+              [class.is-valid]="lastName?.valid && lastName?.touched"
+            >
+            <div class="invalid-feedback" *ngIf="lastName?.errors?.['required']">
+              Vezetéknév kitöltése kötelező
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="firstName" class="form-label">Keresztnév</label>
+            <input
+              type="text"
+              id="firstName"
+              formControlName="firstName"
+              class="form-control"
+              [class.is-invalid]="firstName?.invalid && (firstName?.touched || firstName?.dirty)"
+              [class.is-valid]="firstName?.valid && firstName?.touched"
+            >
+            <div class="invalid-feedback" *ngIf="firstName?.errors?.['required']">
+              Keresztnév kitöltése kötelező
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="email" class="form-label">Email</label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-control"
+            [class.is-invalid]="email?.invalid && (email?.touched || email?.dirty)"
+            [class.is-valid]="email?.valid && email?.touched"
+          >
+          <div class="invalid-feedback" *ngIf="email?.errors?.['required']">
+            Email megadása kötelező
+          </div>
+          <div class="invalid-feedback" *ngIf="email?.errors?.['email']">
+            Kérjük, érvényes email címet adj meg
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" (click)="goBack()">
+            <i class="bi-arrow-left me-1"></i>Vissza
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            <span *ngIf="!isSubmitting">Mentés</span>
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
