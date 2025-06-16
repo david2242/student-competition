@@ -17,6 +17,7 @@ import {
 } from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
 import { ToastrService } from "ngx-toastr";
+import { translateLevel } from "@/app/shared/translations/competition.translations";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -64,18 +65,34 @@ export class CompetitionListComponent implements OnInit {
       headerName: "Verseny neve"
     },
     {
-      field: "subject",
-      headerName: "Tantárgy",
-      valueGetter: (data) => data.data.subject[0]
+      field: "students",
+      headerName: "Versenyző",
+      valueGetter: (data) => {
+        const students = data.data.students || [];
+        return students.length === 1 ? students[0].name : 'Csapatverseny';
+      }
+    },
+    {
+      field: "level",
+      headerName: "Szint",
+      valueGetter: (data) => translateLevel(data.data.level)
+    },
+    {
+      field: "teacher",
+      headerName: "Tanár",
+      valueGetter: (data) => data.data.teacher[0] || ''
     },
     {
       field: "result.position",
-      headerName: "Helyezés"
+      headerName: "Helyezés",
+      width: 100,
+      valueGetter: (data) => data.data.result?.position || ''
     },
     {
-      field: "date",
-      headerName: "Dátum",
-      valueGetter: data => new Date(data.data.date).toLocaleString('hu') || ''
+      field: "result.nextRound",
+      headerName: "Továbbjutás",
+      width: 120,
+      valueGetter: (data) => data.data.result?.nextRound ? 'Igen' : 'Nem'
     }
   ];
 
