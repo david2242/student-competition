@@ -14,10 +14,12 @@ import {
   RowSelectionModule,
   TextFilterModule,
   ValidationModule,
+  RowStyleModule
 } from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
 import { ToastrService } from "ngx-toastr";
 import { translateLevel } from "@/app/shared/translations/competition.translations";
+import { AuthService } from "@/app/services/auth.service";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -28,6 +30,7 @@ ModuleRegistry.registerModules([
   RowSelectionModule,
   TextFilterModule,
   ValidationModule,
+  RowStyleModule,
 ]);
 
 @Component({
@@ -42,12 +45,13 @@ export class CompetitionListComponent implements OnInit {
   competitionService = inject(CompetitionService);
   router = inject(Router);
   toastr = inject(ToastrService);
+  authService = inject(AuthService);
 
   ngOnInit(): void {
     this.competitionService.getCompetitions().subscribe({
       next: (competitions) => this.rowData = competitions,
       error: () => this.toastr.error('Nem sikerült betölteni a versenyeket!'),
-  });
+    });
   }
 
   rowData?: Competition[];
@@ -110,4 +114,15 @@ export class CompetitionListComponent implements OnInit {
   goToCompetition($event: RowClickedEvent<Competition>) {
     this.router.navigate([ 'competition', $event.data?.id ]);
   }
+
+  getRowClass = (params: any): string | string[] | undefined => {
+    const competition = params.data as Competition;
+    const currentUser = this.authService.$currentUser.value;
+
+    if (currentUser && competition?.creatorId === currentUser.id) {
+      return 'tinted';
+    }
+    return undefined;
+  }
+
 }
