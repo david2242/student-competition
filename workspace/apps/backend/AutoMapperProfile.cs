@@ -13,7 +13,8 @@ public class AutoMapperProfile : Profile
   {
     CreateMap<Competition, GetCompetitionResponseDto>()
       .ForMember(dest => dest.Students, opt => opt.MapFrom(src => src.CompetitionStudents.Select(cs => cs.Student).ToArray()))
-      .ForMember(dest => dest.Forms, opt => opt.MapFrom(src => src.CompetitionForms.Select(cf => cf.Form.Name).ToArray()));
+      .ForMember(dest => dest.Forms, opt => opt.MapFrom(src => src.CompetitionForms.Select(cf => cf.Form.Name).ToArray()))
+      .ForMember(dest => dest.CreatorId, opt => opt.MapFrom(src => src.CreatorId));
     CreateMap<AddCompetitionRequestDto, Competition>();
     CreateMap<UpdateCompetitionRequestDto, Competition>();
     CreateMap<IdentityUser, GetUserResponseDto>()

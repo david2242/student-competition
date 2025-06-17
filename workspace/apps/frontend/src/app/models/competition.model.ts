@@ -10,6 +10,7 @@ export interface Result {
 export interface Competition {
   id?: number;
   created?: string;
+  creatorId?: string;
   name: string;
   students: Student[];
   location: string;

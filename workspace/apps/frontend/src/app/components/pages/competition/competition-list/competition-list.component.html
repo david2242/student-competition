@@ -1,11 +1,12 @@
 <div class="container">
   <ag-grid-angular
-    class="mt-3"
+    class="ag-theme-alpine mt-3"
     domLayout="autoHeight"
     [rowData]="rowData"
     [columnDefs]="colDefs"
     [autoSizeStrategy]="autoSizeStrategy"
     (rowClicked)="goToCompetition($event)"
     [defaultColDef]="defaultColDef"
+    [getRowClass]="getRowClass.bind(this)"
   />
 </div>

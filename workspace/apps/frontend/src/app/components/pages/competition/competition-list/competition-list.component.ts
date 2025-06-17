@@ -14,9 +14,12 @@ import {
   RowSelectionModule,
   TextFilterModule,
   ValidationModule,
+  RowStyleModule
 } from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
 import { ToastrService } from "ngx-toastr";
+import { translateLevel } from "@/app/shared/translations/competition.translations";
+import { AuthService } from "@/app/services/auth.service";
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -27,6 +30,7 @@ ModuleRegistry.registerModules([
   RowSelectionModule,
   TextFilterModule,
   ValidationModule,
+  RowStyleModule,
 ]);
 
 @Component({
@@ -41,12 +45,13 @@ export class CompetitionListComponent implements OnInit {
   competitionService = inject(CompetitionService);
   router = inject(Router);
   toastr = inject(ToastrService);
+  authService = inject(AuthService);
 
   ngOnInit(): void {
     this.competitionService.getCompetitions().subscribe({
       next: (competitions) => this.rowData = competitions,
       error: () => this.toastr.error('Nem sikerült betölteni a versenyeket!'),
-  });
+    });
   }
 
   rowData?: Competition[];
@@ -64,18 +69,34 @@ export class CompetitionListComponent implements OnInit {
       headerName: "Verseny neve"
     },
     {
-      field: "subject",
-      headerName: "Tantárgy",
-      valueGetter: (data) => data.data.subject[0]
+      field: "students",
+      headerName: "Versenyző",
+      valueGetter: (data) => {
+        const students = data.data.students || [];
+        return students.length === 1 ? students[0].name : 'Csapatverseny';
+      }
+    },
+    {
+      field: "level",
+      headerName: "Szint",
+      valueGetter: (data) => translateLevel(data.data.level)
+    },
+    {
+      field: "teacher",
+      headerName: "Tanár",
+      valueGetter: (data) => data.data.teacher[0] || ''
     },
     {
       field: "result.position",
-      headerName: "Helyezés"
+      headerName: "Helyezés",
+      width: 100,
+      valueGetter: (data) => data.data.result?.position || ''
     },
     {
-      field: "date",
-      headerName: "Dátum",
-      valueGetter: data => new Date(data.data.date).toLocaleString('hu') || ''
+      field: "result.nextRound",
+      headerName: "Továbbjutás",
+      width: 120,
+      valueGetter: (data) => data.data.result?.nextRound ? 'Igen' : 'Nem'
     }
   ];
 
@@ -93,4 +114,15 @@ export class CompetitionListComponent implements OnInit {
   goToCompetition($event: RowClickedEvent<Competition>) {
     this.router.navigate([ 'competition', $event.data?.id ]);
   }
+
+  getRowClass = (params: any): string | string[] | undefined => {
+    const competition = params.data as Competition;
+    const currentUser = this.authService.$currentUser.value;
+
+    if (currentUser && competition?.creatorId === currentUser.id) {
+      return 'tinted';
+    }
+    return undefined;
+  }
+
 }

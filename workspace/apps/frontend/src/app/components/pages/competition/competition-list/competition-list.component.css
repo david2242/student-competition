@@ -1,0 +1,7 @@
+:host ::ng-deep .ag-row.tinted {
+  background-color: rgba(147, 197, 253, 0.2) !important;
+}
+
+:host ::ng-deep .ag-row.tinted:hover {
+  background-color: rgba(147, 197, 253, 0.3) !important;
+}

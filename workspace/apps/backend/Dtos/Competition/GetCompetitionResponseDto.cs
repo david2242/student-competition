@@ -16,6 +16,7 @@ public class GetCompetitionResponseDto
   public string[] Forms { get; set; }
   public Result Result { get; set; }
   public string? Other { get; set; }
+  public string? CreatorId { get; set; }
 
   public GetCompetitionResponseDto()
   {
