@@ -53,6 +53,13 @@ public class CompetitionService : ICompetitionService
     return competition?.CreatorId == userId;
   }
 
+  private GetCompetitionResponseDto MapCompetitionToDto(Competition competition, string? creatorId)
+  {
+    var dto = _mapper.Map<GetCompetitionResponseDto>(competition);
+    dto.CreatorId = creatorId;
+    return dto;
+  }
+
   public async Task<List<GetCompetitionResponseDto>> GetAll()
   {
     var competitions = await _context.Competitions
@@ -60,9 +67,15 @@ public class CompetitionService : ICompetitionService
       .ThenInclude(cs => cs.Student)
       .Include(c => c.CompetitionForms)
       .ThenInclude(cf => cf.Form)
+      .Include(c => c.Creator)
+      .Select(c => new 
+      {
+        Competition = c,
+        c.CreatorId
+      })
       .ToListAsync();
 
-    return competitions.Select(c => _mapper.Map<GetCompetitionResponseDto>(c)).ToList();
+    return competitions.Select(c => MapCompetitionToDto(c.Competition, c.CreatorId)).ToList();
   }
 
   public async Task<GetCompetitionResponseDto> GetSingle(int id)
@@ -72,14 +85,21 @@ public class CompetitionService : ICompetitionService
       .ThenInclude(cs => cs.Student)
       .Include(c => c.CompetitionForms)
       .ThenInclude(cf => cf.Form)
-      .FirstOrDefaultAsync(x => x.Id == id);
+      .Include(c => c.Creator)
+      .Where(x => x.Id == id)
+      .Select(c => new 
+      {
+        Competition = c,
+        c.CreatorId
+      })
+      .FirstOrDefaultAsync();
 
     if (competition == null)
     {
       throw new KeyNotFoundException($"Competition with id '{id}' was not found");
     }
 
-    return _mapper.Map<GetCompetitionResponseDto>(competition);
+    return MapCompetitionToDto(competition.Competition, competition.CreatorId);
   }
 
   public async Task<List<GetCompetitionResponseDto>> AddCompetition(AddCompetitionRequestDto newCompetition)
