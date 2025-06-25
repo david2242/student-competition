@@ -76,7 +76,12 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> GetCurrentUserAsync()
     {
-        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+        if (_httpContextAccessor.HttpContext == null)
+        {
+            throw new UnauthorizedAccessException("No active HTTP context available");
+        }
+        
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
         if (user == null)
         {
             throw new UnauthorizedAccessException("User is not authenticated");
@@ -109,7 +114,12 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> ChangePasswordAsync(ChangePasswordRequestDto request)
     {
-        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+        if (_httpContextAccessor.HttpContext == null)
+        {
+            throw new UnauthorizedAccessException("No active HTTP context available");
+        }
+        
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
         if (user == null)
         {
             throw new UnauthorizedAccessException("User is not authenticated");
@@ -129,7 +139,12 @@ public class AuthService : IAuthService
 
     public async Task<AuthResponseDto> UpdateProfileAsync(UpdateProfileRequestDto request)
     {
-        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+        if (_httpContextAccessor.HttpContext == null)
+        {
+            throw new UnauthorizedAccessException("No active HTTP context available");
+        }
+        
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
         if (user == null)
         {
             throw new UnauthorizedAccessException("User is not authenticated");

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using Workspace.Backend.Data;
+using Workspace.Backend.Services.StudentService;
 using Workspace.Backend.Services.CompetitionService;
 using Swashbuckle.AspNetCore.Filters;
 using Workspace.Backend;
@@ -61,7 +62,6 @@ var connectionString =
   $"User ID={psqlServerUsername};Password={psqlServerPassword};Host={psqlHost};Port={psqlServerPort};Database={psqlDatabaseName};Pooling=true;";
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
 
-// Identity setup
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
   {
     options.Password.RequireDigit = true;
@@ -120,6 +120,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICompetitionService, CompetitionService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 builder.Services.AddControllers()
   .AddJsonOptions(options =>

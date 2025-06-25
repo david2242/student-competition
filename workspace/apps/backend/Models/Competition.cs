@@ -6,33 +6,37 @@ public class Competition
 {
   public int Id { get; set; }
   public string Name { get; set; }
-  public List<CompetitionStudent> CompetitionStudents { get; set; }
+  public ICollection<CompetitionParticipant> CompetitionParticipants { get; set; }
   public string Location { get; set; }
   public string[] Subject { get; set; }
   public string[] Teacher { get; set; }
   public DateOnly Date { get; set; }
   public DateTime Created { get; set; }
+  public DateTime? UpdatedAt { get; set; }
   public string Level { get; set; }
   public string Round { get; set; }
-  public ICollection<CompetitionForm> CompetitionForms { get; set; }
+  public string[] Forms { get; set; }
   public Result Result { get; set; }
   public string? Other { get; set; }
-
   public string? CreatorId { get; set; }
   public virtual IdentityUser? Creator { get; set; }
 
   public Competition()
   {
     Name = string.Empty;
-    CompetitionStudents = new List<CompetitionStudent>();
-    CompetitionForms = new List<CompetitionForm>();
+    CompetitionParticipants = new List<CompetitionParticipant>();
+    Forms = Array.Empty<string>();
     Location = string.Empty;
     Subject = Array.Empty<string>();
     Teacher = Array.Empty<string>();
-    Date = new DateOnly();
+    Date = new DateOnly(DateTime.UtcNow.Year, 1, 1);
     Level = Workspace.Backend.Models.Level.Local;
     Round = Workspace.Backend.Models.Round.School;
     Result = new Result();
+    Created = DateTime.UtcNow;
+    UpdatedAt = null;
+    Other = null;
+    CreatorId = null;
   }
 }
 
@@ -82,15 +86,15 @@ public static class Round
   };
 }
 
-public static class CompetitionFormType
+public static class CompetitionForm
 {
-  public const string Written = nameof(Written);
-  public const string Oral = nameof(Oral);
-  public const string Sport = nameof(Sport);
-  public const string Submission = nameof(Submission);
+  public const string WRITTEN = "WRITTEN";
+  public const string ORAL = "ORAL";
+  public const string SPORT = "SPORT";
+  public const string SUBMISSION = "SUBMISSION";
 
   public static readonly string[] All = 
   {
-    Written, Oral, Sport, Submission
+    WRITTEN, ORAL, SPORT, SUBMISSION
   };
 }

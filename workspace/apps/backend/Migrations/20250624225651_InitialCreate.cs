@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Workspace.Backend.Migrations
 {
     /// <inheritdoc />
-    public partial class ToPostgres : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,29 +52,17 @@ namespace Workspace.Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Competitions",
+                name: "Students",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Location = table.Column<string>(type: "text", nullable: false),
-                    Subject = table.Column<string[]>(type: "text[]", nullable: false),
-                    Teacher = table.Column<string[]>(type: "text[]", nullable: false),
-                    Year = table.Column<string>(type: "text", nullable: false),
-                    Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    Level = table.Column<int>(type: "integer", nullable: false),
-                    Round = table.Column<int>(type: "integer", nullable: false),
-                    Form = table.Column<int[]>(type: "integer[]", nullable: false),
-                    Result_Position = table.Column<int>(type: "integer", nullable: true),
-                    Result_SpecialPrize = table.Column<bool>(type: "boolean", nullable: false),
-                    Result_Compliment = table.Column<bool>(type: "boolean", nullable: false),
-                    Result_NextRound = table.Column<bool>(type: "boolean", nullable: false),
-                    Other = table.Column<string>(type: "text", nullable: true)
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Competitions", x => x.Id);
+                    table.PrimaryKey("PK_Students", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -183,6 +171,69 @@ namespace Workspace.Backend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Competitions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Location = table.Column<string>(type: "text", nullable: false),
+                    Subject = table.Column<string[]>(type: "text[]", nullable: false),
+                    Teacher = table.Column<string[]>(type: "text[]", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Level = table.Column<string>(type: "text", nullable: false),
+                    Round = table.Column<string>(type: "text", nullable: false),
+                    Forms = table.Column<string>(type: "text", nullable: false),
+                    Result_Position = table.Column<int>(type: "integer", nullable: true),
+                    Result_SpecialPrize = table.Column<bool>(type: "boolean", nullable: false),
+                    Result_Compliment = table.Column<bool>(type: "boolean", nullable: false),
+                    Result_NextRound = table.Column<bool>(type: "boolean", nullable: false),
+                    Other = table.Column<string>(type: "text", nullable: true),
+                    CreatorId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Competitions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Competitions_AspNetUsers_CreatorId",
+                        column: x => x.CreatorId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CompetitionParticipants",
+                columns: table => new
+                {
+                    CompetitionId = table.Column<int>(type: "integer", nullable: false),
+                    StudentId = table.Column<int>(type: "integer", nullable: false),
+                    ClassYear = table.Column<int>(type: "integer", nullable: false),
+                    ClassLetter = table.Column<string>(type: "character varying(1)", maxLength: 1, nullable: false),
+                    SchoolYear = table.Column<int>(type: "integer", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "NOW() AT TIME ZONE 'UTC'"),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CompetitionParticipants", x => new { x.CompetitionId, x.StudentId });
+                    table.ForeignKey(
+                        name: "FK_CompetitionParticipants_Competitions_CompetitionId",
+                        column: x => x.CompetitionId,
+                        principalTable: "Competitions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CompetitionParticipants_Students_StudentId",
+                        column: x => x.StudentId,
+                        principalTable: "Students",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -219,6 +270,16 @@ namespace Workspace.Backend.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CompetitionParticipants_StudentId",
+                table: "CompetitionParticipants",
+                column: "StudentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Competitions_CreatorId",
+                table: "Competitions",
+                column: "CreatorId");
         }
 
         /// <inheritdoc />
@@ -240,10 +301,16 @@ namespace Workspace.Backend.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "Competitions");
+                name: "CompetitionParticipants");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "Competitions");
+
+            migrationBuilder.DropTable(
+                name: "Students");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

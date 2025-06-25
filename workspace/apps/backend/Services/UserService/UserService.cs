@@ -135,9 +135,9 @@ public class UserService : IUserService
         return await GetAll();
     }
 
-    public async Task<UserLoginResponseDto> Login(UserLoginRequestDto request)
+    public Task<UserLoginResponseDto> Login(UserLoginRequestDto request)
     {
-        throw new NotImplementedException("Login functionality has been moved to AuthService");
+        return Task.FromException<UserLoginResponseDto>(new NotImplementedException("Login functionality has been moved to AuthService"));
     }
 
     public Task Logout()
@@ -147,7 +147,12 @@ public class UserService : IUserService
 
     public async Task<GetUserResponseDto> GetCurrentUser()
     {
-        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext?.User);
+        if (_httpContextAccessor.HttpContext == null)
+        {
+            throw new UnauthorizedAccessException("No active HTTP context available");
+        }
+        
+        var user = await _userManager.GetUserAsync(_httpContextAccessor.HttpContext.User);
         if (user == null)
         {
             throw new UnauthorizedAccessException("User not authenticated");

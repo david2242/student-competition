@@ -235,6 +235,10 @@ namespace Workspace.Backend.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<string>("Forms")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Level")
                         .IsRequired()
                         .HasColumnType("text");
@@ -262,6 +266,9 @@ namespace Workspace.Backend.Migrations
                         .IsRequired()
                         .HasColumnType("text[]");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorId");
@@ -269,22 +276,7 @@ namespace Workspace.Backend.Migrations
                     b.ToTable("Competitions");
                 });
 
-            modelBuilder.Entity("Workspace.Backend.Models.CompetitionForm", b =>
-                {
-                    b.Property<int>("CompetitionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("FormId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("CompetitionId", "FormId");
-
-                    b.HasIndex("FormId");
-
-                    b.ToTable("CompetitionForms");
-                });
-
-            modelBuilder.Entity("Workspace.Backend.Models.CompetitionStudent", b =>
+            modelBuilder.Entity("Workspace.Backend.Models.CompetitionParticipant", b =>
                 {
                     b.Property<int>("CompetitionId")
                         .HasColumnType("integer");
@@ -292,58 +284,30 @@ namespace Workspace.Backend.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ClassLetter")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("character varying(1)");
+
+                    b.Property<int>("ClassYear")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+
+                    b.Property<int>("SchoolYear")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("CompetitionId", "StudentId");
 
                     b.HasIndex("StudentId");
 
-                    b.ToTable("CompetitionStudent");
-                });
-
-            modelBuilder.Entity("Workspace.Backend.Models.Form", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Forms");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Written competition form",
-                            Name = "WRITTEN"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Oral competition form",
-                            Name = "ORAL"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Sport competition form",
-                            Name = "SPORT"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            Description = "Submission-based competition form",
-                            Name = "SUBMISSION"
-                        });
+                    b.ToTable("CompetitionParticipants");
                 });
 
             modelBuilder.Entity("Workspace.Backend.Models.Student", b =>
@@ -354,11 +318,11 @@ namespace Workspace.Backend.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Class")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -456,35 +420,16 @@ namespace Workspace.Backend.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Workspace.Backend.Models.CompetitionForm", b =>
+            modelBuilder.Entity("Workspace.Backend.Models.CompetitionParticipant", b =>
                 {
                     b.HasOne("Workspace.Backend.Models.Competition", "Competition")
-                        .WithMany("CompetitionForms")
-                        .HasForeignKey("CompetitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Workspace.Backend.Models.Form", "Form")
-                        .WithMany("CompetitionForms")
-                        .HasForeignKey("FormId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Competition");
-
-                    b.Navigation("Form");
-                });
-
-            modelBuilder.Entity("Workspace.Backend.Models.CompetitionStudent", b =>
-                {
-                    b.HasOne("Workspace.Backend.Models.Competition", "Competition")
-                        .WithMany("CompetitionStudents")
+                        .WithMany("CompetitionParticipants")
                         .HasForeignKey("CompetitionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Workspace.Backend.Models.Student", "Student")
-                        .WithMany("CompetitionStudents")
+                        .WithMany("CompetitionParticipants")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -496,19 +441,12 @@ namespace Workspace.Backend.Migrations
 
             modelBuilder.Entity("Workspace.Backend.Models.Competition", b =>
                 {
-                    b.Navigation("CompetitionForms");
-
-                    b.Navigation("CompetitionStudents");
-                });
-
-            modelBuilder.Entity("Workspace.Backend.Models.Form", b =>
-                {
-                    b.Navigation("CompetitionForms");
+                    b.Navigation("CompetitionParticipants");
                 });
 
             modelBuilder.Entity("Workspace.Backend.Models.Student", b =>
                 {
-                    b.Navigation("CompetitionStudents");
+                    b.Navigation("CompetitionParticipants");
                 });
 #pragma warning restore 612, 618
         }
