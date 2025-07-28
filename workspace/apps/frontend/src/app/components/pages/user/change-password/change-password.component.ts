@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, Location } from '@angular/common';
 import { AuthService } from '@/app/services/auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '@/app/services/notification.service';
 import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -23,7 +23,7 @@ export class ChangePasswordComponent implements OnDestroy {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private toastr: ToastrService,
+    private notification: NotificationService,
     private location: Location
   ) {
     this.passwordForm = this.fb.group({
@@ -95,7 +95,7 @@ export class ChangePasswordComponent implements OnDestroy {
       await firstValueFrom(this.authService.changePassword({ currentPassword, newPassword }));
       
       // Show success message
-      this.toastr.success('Jelszó sikeresen megváltoztatva');
+      this.notification.success('Jelszó sikeresen megváltoztatva');
       
       // Reset form and navigation state
       this.passwordForm.reset();
@@ -108,7 +108,7 @@ export class ChangePasswordComponent implements OnDestroy {
       
     } catch (error) {
       console.error('Error changing password:', error);
-      this.toastr.error('Hiba történt a jelszó módosítása közben');
+      this.notification.error('Hiba történt a jelszó módosítása közben');
     } finally {
       this.isSubmitting = false;
     }

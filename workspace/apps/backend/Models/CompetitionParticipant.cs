@@ -18,8 +18,14 @@ public class CompetitionParticipant
     [MaxLength(1)]
     public string ClassLetter { get; set; } = string.Empty;
 
+    private int _schoolYear;
+    
     [Required]
-    public int SchoolYear { get; set; }
+    public int SchoolYear 
+    { 
+        get => _schoolYear;
+        private set => _schoolYear = value; // Only allow setting through constructor or methods
+    }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
@@ -30,7 +36,7 @@ public class CompetitionParticipant
         StudentId = studentId;
         ClassYear = classYear;
         ClassLetter = classLetter;
-        SchoolYear = schoolYear;
+        _schoolYear = schoolYear; // Direct assignment to backing field
         CreatedAt = DateTime.UtcNow;
     }
 

@@ -4,7 +4,7 @@ import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validatio
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { UserService } from '@/app/services/user.service';
 import { Role } from '@/app/models/current-user';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '@/app/services/notification.service';
 import { firstValueFrom } from 'rxjs';
 import { RoleTranslatorService } from '@/app/services/role-translator.service';
 
@@ -57,7 +57,7 @@ export class UserEditorComponent implements OnInit {
     private userService: UserService,
     private route: ActivatedRoute,
     private router: Router,
-    private toastr: ToastrService
+    private notification: NotificationService
   ) {
     this.form = this.fb.group({
       firstName: ['', Validators.required],
@@ -115,7 +115,7 @@ export class UserEditorComponent implements OnInit {
         role: user.role
       });
     } catch (error) {
-      this.toastr.error('Failed to load user');
+      this.notification.error('Nem sikerült betölteni a felhasználót');
       console.error('Error loading user:', error);
       this.router.navigate(['../'], { relativeTo: this.route });
     }
@@ -137,15 +137,15 @@ export class UserEditorComponent implements OnInit {
           delete userData.password;
         }
         await firstValueFrom(this.userService.updateUser(this.userId, userData));
-        this.toastr.success('User updated successfully');
+        this.notification.success('Felhasználó sikeresen frissítve');
       } else {
         await firstValueFrom(this.userService.addUser(userData));
-        this.toastr.success('User created successfully');
+        this.notification.success('Felhasználó sikeresen létrehozva');
       }
       this.router.navigate(['/admin/users']);
     } catch (error) {
       const errorMessage = this.isEditMode ? 'updating' : 'creating';
-      this.toastr.error(`Error ${errorMessage} user`);
+      this.notification.error(`Hiba történt a felhasználó ${errorMessage === 'updating' ? 'frissítése' : 'létrehozása'} közben`);
       console.error(`Error ${errorMessage} user:`, error);
     } finally {
       this.isSubmitting = false;

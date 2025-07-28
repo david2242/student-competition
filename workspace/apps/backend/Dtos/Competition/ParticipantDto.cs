@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace Workspace.Backend.Dtos.Competition;
 
@@ -30,9 +31,8 @@ public class ParticipantDto
     [StringLength(1, ErrorMessage = "Class letter must be a single character")]
     public string ClassLetter { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "School year is required")]
-    [Range(2000, 2100, ErrorMessage = "Please enter a valid school year")]
-    public int SchoolYear { get; set; }
+    [JsonIgnore]
+    public int SchoolYear { get; set; } // Will be set by the service based on competition date
 }
 
 /// <summary>

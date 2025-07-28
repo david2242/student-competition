@@ -1,0 +1,43 @@
+.student-search-dropdown {
+  max-height: 300px;
+  overflow-y: auto;
+  transition: none !important;
+}
+
+.dropdown-item {
+  cursor: pointer;
+  white-space: normal;
+}
+
+.dropdown-item:not(.disabled) {
+  cursor: pointer;
+}
+
+.dropdown-item.disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.badge {
+  font-size: 0.875em;
+  padding: 0.35em 0.65em;
+}
+
+.btn-close {
+  font-size: 0.7em;
+  padding: 0.25em;
+  opacity: 0.7;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* Style for form controls inside dropdown */
+:host ::ng-deep .student-search-dropdown input:focus,
+:host ::ng-deep .student-search-dropdown select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+}

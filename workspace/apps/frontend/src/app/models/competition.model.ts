@@ -12,7 +12,6 @@ export interface Competition {
   created?: string;
   creatorId?: string;
   name: string;
-  students: Student[];
   location: string;
   subject: string[];
   teacher: string[];
@@ -22,6 +21,7 @@ export interface Competition {
   forms: (Form | null)[];
   result: Result;
   other: string;
+  participants: Student[];
 }
 
 export enum Level {

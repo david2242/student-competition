@@ -7,6 +7,7 @@ using Workspace.Backend.Data;
 using Workspace.Backend.Dtos.Competition;
 using Workspace.Backend.Models;
 using Workspace.Backend.Services;
+using Workspace.Backend.Utils;
 
 namespace Workspace.Backend.Services.CompetitionService;
 
@@ -213,18 +214,23 @@ public class CompetitionService : ICompetitionService
         {
           var student = await FindOrCreateStudentAsync(participantDto);
           
+          var schoolYear = SchoolYearHelper.GetSchoolYear(competition.Date.ToDateTime(TimeOnly.MinValue));
+          
           var participant = new CompetitionParticipant(
             competitionId: competition.Id,
             studentId: student.Id,
             classYear: participantDto.ClassYear,
             classLetter: participantDto.ClassLetter,
-            schoolYear: participantDto.SchoolYear
+            schoolYear: schoolYear
           )
           {
             UpdatedAt = DateTime.UtcNow
           };
           
           _context.CompetitionParticipants.Add(participant);
+          
+          // Update the DTO with the calculated school year for the response
+          participantDto.SchoolYear = schoolYear;
         }
         
         await _context.SaveChangesAsync();
@@ -288,12 +294,14 @@ public class CompetitionService : ICompetitionService
         {
           var student = await FindOrCreateStudentAsync(participantDto);
           
+          var schoolYear = SchoolYearHelper.GetSchoolYear(updatedCompetition.Date.ToDateTime(TimeOnly.MinValue));
+          
           var participant = new CompetitionParticipant(
             competitionId: competition.Id,
             studentId: student.Id,
             classYear: participantDto.ClassYear,
             classLetter: participantDto.ClassLetter,
-            schoolYear: updatedCompetition.Date.Year
+            schoolYear: schoolYear
           )
           {
             UpdatedAt = DateTime.UtcNow

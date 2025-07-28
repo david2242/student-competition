@@ -1,0 +1,515 @@
+import { ActivatedRoute, Router } from "@angular/router";
+import { BehaviorSubject, Subscription } from "rxjs";
+import { CommonModule } from '@angular/common';
+import { Competition, Form, Level, Round, Result } from "@/app/models/competition.model";
+import { CompetitionService, CreateCompetitionData } from "@/app/services/competition.service";
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Student, StudentSearchResult, NewParticipant, ExistingParticipant } from "@/app/models/student.model";
+import { NotificationService } from "@/app/services/notification.service";
+import { subjects } from "./subjects";
+import { teachers } from "./teachers";
+import { Role } from "@/app/models/current-user";
+import { AuthService } from "@/app/services/auth.service";
+import { schoolYearValidator } from "@/app/components/pages/competition/competition-editor/schoolYearValidator";
+import { StudentSearchComponent } from "@/app/components/shared/student-search/student-search.component";
+
+@Component({
+  selector: 'app-competition-editor',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    StudentSearchComponent,
+  ],
+  templateUrl: './competition-editor.component.html',
+  styleUrl: './competition-editor.component.css',
+})
+export class CompetitionEditorComponent implements OnInit, OnDestroy {
+
+  private subscriptions = new Subscription();
+
+  competitionService = inject(CompetitionService);
+  route = inject(ActivatedRoute);
+  router = inject(Router);
+  notification = inject(NotificationService);
+  authService = inject(AuthService);
+  userRole: Role = Role.VIEWER;
+  competition?: Competition;
+  positionEnablerSubsripction?: Subscription;
+  id: number | null = null;
+  $displayMode = new BehaviorSubject<'show' | 'edit'>('show');
+  subjects = subjects;
+  teachers = teachers;
+  protected readonly Level = Level;
+  protected readonly Form = Form;
+  protected readonly Round = Round;
+
+  competitionForm = new FormGroup({
+    name: new FormControl<string>('', { nonNullable: true, validators: [ Validators.required ] }),
+    location: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
+    subject: new FormArray([ (new FormControl('', {
+      nonNullable: true,
+      validators: [ Validators.required ]
+    })) ], Validators.required),
+    teacher: new FormArray<FormControl<string>>([]),
+    date: new FormControl('', { nonNullable: true, validators: [ Validators.required ] }),
+    level: new FormControl<Level | null>(null, { validators: [ Validators.required ] }),
+    round: new FormControl<Round | null>(null, { validators: [ Validators.required ] }),
+    participants: new FormArray<FormControl<StudentSearchResult>>([], { validators: [ Validators.required ] }),
+    forms: new FormArray([ (new FormControl<Form | null>(null, {
+      validators: [ Validators.required ]
+    })) ], Validators.required),
+    result: new FormGroup({
+      enablePosition: new FormControl(false, { nonNullable: true }),
+      position: new FormControl<number | null>({ value: null, disabled: true }, {
+        nonNullable: true,
+        validators: [ Validators.required ]
+      }),
+      specialPrize: new FormControl(false, { nonNullable: true }),
+      compliment: new FormControl(false, { nonNullable: true }),
+      nextRound: new FormControl(false, { nonNullable: true }),
+    }),
+    other: new FormControl('', { nonNullable: true })
+  });
+
+  oktv = false;
+  isLoading = false;
+
+  ngOnInit(): void {
+    this.saveIdFromParam();
+    if (this.id) {
+      this.$displayMode.next('show');
+      this.competitionService.getCompetition(this.id).subscribe({
+        next: (competition) => {
+          this.competition = competition;
+          this.fillForm(competition);
+        },
+        error: () => this.notification.error('Nem sikerült betölteni a versenyt!'),
+      });
+    } else {
+      this.$displayMode.next('edit');
+    }
+    this.positionEnabler();
+    this.$displayMode.subscribe((mode) => {
+      if (mode === 'show') {
+        this.toggleSelects(false);
+      } else {
+        this.toggleSelects(true)
+      }
+    })
+
+    this.authService.$currentUser.subscribe(user => {
+      this.userRole = user?.role || Role.VIEWER;
+      this.updateDateValidator();
+    });
+  }
+
+  private fillForm(competition: Competition) {
+    this.competitionForm.patchValue({
+      name: competition.name,
+      location: competition.location,
+      date: competition.date,
+      level: competition.level,
+      round: competition.round,
+      other: competition.other,
+      result: {
+        position: competition.result.position,
+        specialPrize: competition.result.specialPrize,
+        compliment: competition.result.compliment,
+        nextRound: competition.result.nextRound,
+        enablePosition: !!competition.result.position
+      }
+    });
+
+    // Set up form arrays
+    this.subject.clear();
+    competition.subject.forEach(subject => {
+      this.addSubject(subject);
+    });
+
+    this.teacher.clear();
+    competition.teacher.forEach(teacher => {
+      this.addTeacher(teacher);
+    });
+
+    this.forms.clear();
+    competition.forms.forEach(form => {
+      this.addForm(form);
+    });
+
+    // Handle participants
+    this.participants.clear();
+    competition.participants.forEach(participant => {
+      this.addParticipant({
+        ...participant,
+        isNew: false
+      });
+    });
+  }
+
+  private fillParticipants() {
+    // Clear existing participants
+    while (this.participants.length) {
+      this.participants.removeAt(0);
+    }
+
+    // Add participants from competition data if they exist
+    if (this.competition?.participants?.length) {
+      this.competition.participants.forEach(participant => {
+        // Convert participant to StudentSearchResult if needed
+        const participantWithDefaults: StudentSearchResult = {
+          ...participant,
+          participations: 'participations' in participant ? (participant as any).participations || [] : [],
+          fullName: 'fullName' in participant ? (participant as any).fullName : `${participant.lastName} ${participant.firstName}`.trim(),
+          currentClassYear: 'currentClassYear' in participant ? (participant as any).currentClassYear : participant.classYear,
+          currentClassLetter: 'currentClassLetter' in participant ? (participant as any).currentClassLetter : participant.classLetter
+        };
+        this.participants.push(new FormControl(participantWithDefaults, { nonNullable: true }));
+      });
+    }
+  }
+
+
+  private fillTeachers() {
+    this.teacher.clear();
+
+    if (this.competition?.teacher && this.competition.teacher.length > 0) {
+      this.competition.teacher.forEach((teacher: string) => {
+        this.teacher.push(new FormControl(teacher, Validators.required));
+      });
+    }
+  }
+
+  private fillSubjects() {
+    this.subject.clear();
+    this.competition?.subject.forEach((subject: string) => {
+      this.subject.push(new FormControl(subject, Validators.required));
+    });
+  }
+
+  private fillForms() {
+    this.forms.clear();
+    this.competition?.forms.forEach((form: Form | null) => {
+      this.forms.push(new FormControl<Form | null>(form, Validators.required));
+    });
+  }
+
+  private fillOKTV(round: Round | null) {
+    const oktvRounds = [ Round.OktvRoundOne, Round.OktvRoundTwo, Round.OktvFinal ];
+    if (round) {
+      this.oktv = oktvRounds.includes(round);
+    }
+  }
+
+  private saveIdFromParam() {
+    const idInParam = this.route.snapshot.paramMap.get('id');
+    this.id = idInParam ? parseInt(idInParam) : null;
+  }
+
+  private positionEnabler() {
+    const positionControl = this.competitionForm.controls.result.controls.position;
+    if (positionControl.value != null) {
+      this.competitionForm.controls.result.controls.enablePosition.setValue(true);
+    }
+    this.positionEnablerSubsripction = this.enablePosition.valueChanges.subscribe((checked: boolean) => {
+      if (checked) {
+        positionControl?.enable();
+      } else {
+        positionControl?.reset();
+        positionControl?.disable();
+      }
+    });
+  }
+
+  private updateDateValidator(): void {
+    const dateControl = this.competitionForm.get('date');
+    if (dateControl) {
+      dateControl.clearValidators();
+
+      dateControl.addValidators(Validators.required);
+
+      if (!(this.userRole === Role.ADMIN)) {
+        dateControl.addValidators(schoolYearValidator());
+      }
+
+      dateControl.updateValueAndValidity();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.positionEnablerSubsripction?.unsubscribe();
+    this.subscriptions.unsubscribe();
+  }
+
+  get enablePosition() {
+    return this.competitionForm.get('result.enablePosition') as FormControl;
+  }
+
+  get name(): FormControl {
+    return this.competitionForm.get('name') as FormControl;
+  }
+
+  get location(): FormControl {
+    return this.competitionForm.get('location') as FormControl;
+  }
+
+  get date(): FormControl {
+    return this.competitionForm.get('date') as FormControl;
+  }
+
+  get level(): FormControl {
+    return this.competitionForm.get('level') as FormControl;
+  }
+
+  get round(): FormControl {
+    return this.competitionForm.get('round') as FormControl;
+  }
+
+  get subject() {
+    return this.competitionForm.get('subject') as FormArray;
+  }
+
+  get teacher(): FormArray {
+    return this.competitionForm.get('teacher') as FormArray;
+  }
+
+  get forms(): FormArray {
+    return this.competitionForm.get('forms') as FormArray;
+  }
+
+  get participants(): FormArray {
+    return this.competitionForm.controls.participants;
+  }
+
+  get selectedStudents(): StudentSearchResult[] {
+    return this.participants.controls.map(control => {
+      const value = control.value;
+      // Ensure we have all required properties of StudentSearchResult
+      return {
+        ...value,
+        participations: value.participations || [],
+        fullName: value.fullName || `${value.lastName} ${value.firstName}`.trim(),
+        currentClassYear: value.currentClassYear || value.classYear,
+        currentClassLetter: value.currentClassLetter || value.classLetter
+      };
+    });
+  }
+
+  get filteredRounds(): { value: Round, text: string }[] {
+    return this.oktv
+      ? [
+        { value: Round.OktvRoundOne, text: 'OKTV. I. forduló' },
+        { value: Round.OktvRoundTwo, text: 'OKTV. II. forduló' },
+        { value: Round.OktvFinal, text: 'OKTV. döntő' }
+      ]
+      : [
+        { value: Round.School, text: 'Iskolai forduló' },
+        { value: Round.Regional, text: 'Regionális forduló' },
+        { value: Round.State, text: 'Országos forduló' },
+        { value: Round.National, text: 'Nemzeti forduló' }
+      ]
+  }
+
+  addSubject(subject: string): void {
+    this.subject.push(new FormControl(subject, Validators.required));
+  }
+
+  addTeacher(teacher: string): void {
+    this.teacher.push(new FormControl(teacher));
+  }
+
+  addForm(): void {
+    this.forms.push(new FormControl(null, Validators.required));
+  }
+
+  onStudentSelected(student: StudentSearchResult): void {
+    const isAlreadySelected = this.selectedStudents.some(s =>
+      s.studentId ? s.studentId === student.studentId :
+        (
+          s.firstName === student.firstName
+          && s.lastName === student.lastName
+          && s.classYear === student.classYear
+          && s.classLetter === student.classLetter
+        )
+    );
+
+    if (!isAlreadySelected) {
+      // Create a new student object with all required fields
+      const studentToAdd = { ...student };
+
+      // Ensure required fields are set for all students
+      studentToAdd.classYear = student.classYear || 9; // Default to 9th grade
+      studentToAdd.classLetter = student.classLetter || 'a'; // Default to 'a' class
+      studentToAdd.name = `${student.firstName} ${student.lastName}`.trim();
+
+      // Ensure we have the studentId for existing students
+      if (student.studentId && !student.studentId) {
+        studentToAdd.studentId = student.studentId;
+      }
+
+      this.participants.push(new FormControl(studentToAdd, { nonNullable: true }));
+    }
+  }
+
+  onStudentRemoved(student: StudentSearchResult): void {
+    const index = this.selectedStudents.findIndex(s => s.studentId === student.studentId);
+    if (index > -1) {
+      this.participants.removeAt(index);
+    }
+  }
+
+  onSubmit() {
+    if (this.competitionForm.invalid) {
+      this.competitionForm.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+    const formValue = this.competitionForm.getRawValue();
+
+    // Prepare the competition data
+    const competitionData: CreateCompetitionData = {
+      name: formValue.name,
+      location: formValue.location,
+      subject: formValue.subject,
+      teacher: formValue.teacher,
+      date: formValue.date,
+      level: formValue.level,
+      round: formValue.round,
+      forms: formValue.forms.filter(Boolean) as Form[],
+      result: {
+        position: formValue.result.enablePosition ? formValue.result.position : null,
+        specialPrize: formValue.result.specialPrize,
+        compliment: formValue.result.compliment,
+        nextRound: formValue.result.nextRound
+      },
+      other: formValue.other,
+      participants: this.prepareParticipants()
+    };
+
+    const competitionAction$ = this.id
+      ? this.competitionService.updateCompetition(this.id, competitionData)
+      : this.competitionService.createCompetition(competitionData);
+
+    competitionAction$.subscribe({
+      next: (competitions) => {
+        const competition = Array.isArray(competitions) ? competitions[0] : competitions;
+        this.notification.success(this.id ? 'Verseny sikeresen frissítve!' : 'Verseny sikeresen létrehozva!');
+        if (!this.id) {
+          this.router.navigate(['/competition', competition.id, 'edit']);
+        } else {
+          this.competition = competition;
+          this.fillForm(competition);
+          this.$displayMode.next('show');
+        }
+      },
+      error: (error) => {
+        console.error('Error saving competition:', error);
+        this.notification.error('Hiba történt a verseny mentése közben!');
+      },
+      complete: () => this.isLoading = false
+    });
+  }
+
+  private prepareParticipants(): Array<NewParticipant | ExistingParticipant> {
+    const participants = this.competitionForm.get('participants')?.value || [];
+    return participants.map(participant => {
+      if ('studentId' in participant && participant.studentId) {
+        return {
+          firstName: participant.firstName || '',
+          lastName: participant.lastName || '',
+          classYear: participant.classYear || 0,
+          classLetter: participant.classLetter || '',
+          schoolYear: participant.schoolYear || new Date().getFullYear(),
+          isNew: true as const
+        };
+      }
+      return {
+        id: participant.studentId,
+        studentId: participant.studentId,
+        firstName: participant.firstName,
+        lastName: participant.lastName,
+        classYear: participant.classYear,
+        classLetter: participant.classLetter
+      };
+    });
+  }
+
+  removeSubject(i: number) {
+    this.subject.removeAt(i);
+  }
+
+  removeTeacher(i: number) {
+    this.teacher.removeAt(i);
+  }
+
+  removeForm(i: number) {
+    this.forms.removeAt(i);
+  }
+
+  back() {
+    this.router.navigate([ 'competition' ]);
+  }
+
+  editMode() {
+    this.$displayMode.next('edit');
+  }
+
+  private toggleSelects(enable: boolean) {
+    if (enable) {
+      Object.values(this.competitionForm.controls).forEach(control => {
+        if (control instanceof FormControl) {
+          control.enable();
+        } else if (control instanceof FormArray) {
+          control.controls.forEach(c => c.enable());
+        } else if (control instanceof FormGroup) {
+          Object.values(control.controls).forEach(c => c.enable());
+        }
+      });
+
+      if (!this.competitionForm.controls.result.controls.position.value) {
+        this.competitionForm.controls.result.controls.position.disable();
+      }
+    } else {
+      Object.values(this.competitionForm.controls).forEach(control => {
+        if (control instanceof FormControl) {
+          control.disable();
+        } else if (control instanceof FormArray) {
+          control.controls.forEach(c => c.disable());
+        } else if (control instanceof FormGroup) {
+          Object.values(control.controls).forEach(c => c.disable());
+        }
+      });
+    }
+  }
+
+  showMode() {
+    if (this.competition) {
+      this.fillForm(this.competition);
+    }
+    this.$displayMode.next('show');
+  }
+
+  deleteCompetition() {
+    if (this.id == null) {
+      return;
+    }
+
+    if (window.confirm('Biztosan törölni szeretnéd ezt a versenyt?')) {
+      this.competitionService.deleteCompetition(this.id).subscribe(() => this.router.navigate([ 'competition' ]));
+    }
+  }
+
+
+  toggleOktv($event: Event) {
+    const event = $event as MouseEvent;
+    const checkbox = event.target as HTMLInputElement;
+    this.oktv = checkbox.checked;
+
+    this.round.reset(null, { emitEvent: false });
+  }
+
+  protected readonly Role = Role;
+}

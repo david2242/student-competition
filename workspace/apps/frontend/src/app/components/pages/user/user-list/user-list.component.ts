@@ -4,7 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { UserService } from '@/app/services/user.service';
 import { User } from '@/app/models/user.model';
 import { Role } from '@/app/models/current-user';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '@/app/services/notification.service';
 import { firstValueFrom } from 'rxjs';
 import { RoleTranslatorService } from '@/app/services/role-translator.service';
 
@@ -49,7 +49,7 @@ export class UserListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private toastr: ToastrService,
+    private notification: NotificationService,
     private router: Router
   ) {}
 
@@ -62,7 +62,7 @@ export class UserListComponent implements OnInit {
       this.isLoading = true;
       this.users = await firstValueFrom(this.userService.getAllUsers());
     } catch (error) {
-      this.toastr.error('Failed to load users');
+      this.notification.error('Nem sikerült betölteni a felhasználókat');
       console.error('Error loading users:', error);
     } finally {
       this.isLoading = false;
@@ -76,10 +76,10 @@ export class UserListComponent implements OnInit {
 
     try {
       await firstValueFrom(this.userService.deleteUser(userId));
-      this.toastr.success('User deleted successfully');
+      this.notification.success('Felhasználó sikeresen törölve');
       await this.loadUsers();
     } catch (error) {
-      this.toastr.error('Failed to delete user');
+      this.notification.error('Hiba történt a felhasználó törlése közben');
       console.error('Error deleting user:', error);
     }
   }

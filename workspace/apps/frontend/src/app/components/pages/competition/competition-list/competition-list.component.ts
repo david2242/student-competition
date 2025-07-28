@@ -17,8 +17,8 @@ import {
   RowStyleModule
 } from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
-import { ToastrService } from "ngx-toastr";
-import { translateLevel } from "@/app/shared/translations/competition.translations";
+import { NotificationService } from "@/app/services/notification.service";
+import { translateLevel } from "@/app/translations/competition.translations";
 import { AuthService } from "@/app/services/auth.service";
 
 ModuleRegistry.registerModules([
@@ -44,13 +44,27 @@ export class CompetitionListComponent implements OnInit {
 
   competitionService = inject(CompetitionService);
   router = inject(Router);
-  toastr = inject(ToastrService);
+  notification = inject(NotificationService);
   authService = inject(AuthService);
 
   ngOnInit(): void {
     this.competitionService.getCompetitions().subscribe({
-      next: (competitions) => this.rowData = competitions,
-      error: () => this.toastr.error('Nem sikerült betölteni a versenyeket!'),
+      next: (response) => {
+        // Ensure we always set an array, even if response is null/undefined
+        if (Array.isArray(response)) {
+          this.rowData = response;
+        } else {
+          // Fallback to empty array if response is not in expected format
+          console.warn('Unexpected response format, defaulting to empty array:', response);
+          this.rowData = [];
+        }
+      },
+      error: (error) => {
+        console.error('Error loading competitions:', error);
+        this.notification.error('Nem sikerült betölteni a versenyeket!');
+        // Ensure rowData is always an array, even on error
+        this.rowData = [];
+      }
     });
   }
 
