@@ -1,68 +1,61 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { CompetitionParticipant, StudentSearchResult } from '../models/participant.model';
+import { ServerResponse } from "@/app/models/server-response";
+import { environment } from "@/environments/environment";
+import { catchError, map } from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ParticipantService {
-  private participants = new BehaviorSubject<CompetitionParticipant[]>([]);
+  participants = new BehaviorSubject<CompetitionParticipant[]>([]);
   participants$ = this.participants.asObservable();
-  
-  constructor(private http: HttpClient) {}
-  
+
+  private apiUrl = environment.apiUrl;
+  private http = inject(HttpClient);
+
   /**
    * Search for students by name or class
    */
-  searchStudents(query: string): Observable<StudentSearchResult[]> {
-    // TODO: Replace with actual API call
-    // Example: return this.http.get<StudentSearchResult[]>(`/api/students/search?q=${encodeURIComponent(query)}`);
-    return of([
-      {
-        studentId: 1,
-        firstName: 'John',
-        lastName: 'Doe',
-        fullName: 'John Doe',
-        currentClassYear: 10,
-        currentClassLetter: 'a',
-        participations: []
-      },
-      {
-        studentId: 2,
-        firstName: 'Jane',
-        lastName: 'Smith',
-        fullName: 'Jane Smith',
-        currentClassYear: 11,
-        currentClassLetter: 'b',
-        participations: []
-      }
-    ]);
-  }
-  
+  searchStudents(query: string, filters?: any): Observable<StudentSearchResult[]> {
+      return this.http.get<ServerResponse<{ results: StudentSearchResult[], totalCount: number }>>(
+        `${this.apiUrl}/students/search`,
+        { params: { query, ...filters } }
+      ).pipe(
+        map(response => response.data?.results || []),
+        catchError(error => {
+          console.error('Error searching students', error);
+          return [];
+        })
+      );
+    }
+
   /**
    * Initialize with existing competition participants
    */
   initialize(participants: CompetitionParticipant[]): void {
     this.participants.next([...participants]);
   }
-  
+
   /**
    * Add a new or existing participant
    */
   addParticipant(participant: CompetitionParticipant): void {
+    debugger
     const current = this.participants.value;
     // Check if participant already exists
-    const exists = current.some(p => 
-      p.studentId ? p.studentId === participant.studentId : 
+    const exists = current.some(p =>
+      p.studentId ? p.studentId === participant.studentId :
       p.firstName === participant.firstName && p.lastName === participant.lastName
     );
-    
+
     if (!exists) {
       this.participants.next([...current, { ...participant }]);
     }
   }
-  
+
   /**
    * Remove participant by index
    */
@@ -74,14 +67,14 @@ export class ParticipantService {
       this.participants.next(updated);
     }
   }
-  
+
   /**
    * Clear all participants
    */
   clearParticipants(): void {
     this.participants.next([]);
   }
-  
+
   /**
    * Get participants in the format expected by the API
    */
@@ -93,7 +86,6 @@ export class ParticipantService {
           studentId: p.studentId,
           classYear: p.classYear,
           classLetter: p.classLetter,
-          result: p.result
         };
       } else {
         // New participant
@@ -102,9 +94,9 @@ export class ParticipantService {
           lastName: p.lastName,
           classYear: p.classYear,
           classLetter: p.classLetter,
-          result: p.result
         };
       }
     });
   }
+
 }

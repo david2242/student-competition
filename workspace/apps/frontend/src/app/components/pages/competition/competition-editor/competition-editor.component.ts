@@ -60,7 +60,6 @@ interface CompetitionForm extends FormGroup {
   ],
   templateUrl: './competition-editor.component.html',
   styleUrl: './competition-editor.component.css',
-  providers: [ParticipantService]
 })
 export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
@@ -317,10 +316,9 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-
     // Get participants from the participant service
     const participants = this.participantService.getParticipantsForSubmission();
-    
+
     // Check if there are any participants
     if (!participants || participants.length === 0) {
       this.notification.error('Legalább egy résztvevőt hozzá kell adni!');
@@ -451,7 +449,12 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     }
 
     if (window.confirm('Are you sure you want to delete this competition?')) {
-      // Add your delete logic here
+      this.competitionService
+        .deleteCompetition(this.id)
+        .subscribe(() => {
+          this.notification.success('Competition deleted successfully');
+          this.router.navigate(['/competitions']);
+        });
     }
   }
 

@@ -16,7 +16,6 @@ import { ParticipantService } from '../../services/participant.service';
   templateUrl: './participant-editor.component.html',
   styleUrls: ['./participant-editor.component.css'],
   // Provide the service at the component level
-  providers: [ParticipantService]
 })
 export class ParticipantEditorComponent implements OnInit, OnChanges {
   @Input() participants: CompetitionParticipant[] = [];
@@ -46,6 +45,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
       classYear: [null, [Validators.required, Validators.min(1), Validators.max(12)]],
       classLetter: ['', Validators.required]
     });
+    console.log('my service is created');
   }
 
   ngOnInit(): void {
@@ -78,6 +78,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
       next: (results) => {
         this.searchResults = results;
         this.isSearching = false;
+        console.log('Search results:', results);
       },
       error: (error) => {
         console.error('Error searching students:', error);
@@ -95,17 +96,11 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
       lastName: student.lastName,
       classYear: student.currentClassYear,
       classLetter: student.currentClassLetter,
-      // Add any other required fields with default values
-      id: 0, // Will be set by the backend
-      competitionId: 0, // Will be set by the parent
-      result: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
     };
 
     // Add the participant directly
     this.participantService.addParticipant(participant);
-    
+
     // Reset search
     this.searchQuery = '';
     this.searchResults = [];
