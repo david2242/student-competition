@@ -31,6 +31,7 @@
         <app-participant-editor
           [participants]="participants"
           (participantsChange)="onParticipantsChange($event)"
+          [disabled]="($displayMode | async) == 'show'"
         ></app-participant-editor>
         @if (participants.length === 0 && (competitionForm.get('participants')?.touched || competitionForm.get('participants')?.dirty)) {
           <div class="invalid-feedback d-block">Legalább egy résztvevőt meg kell adni</div>

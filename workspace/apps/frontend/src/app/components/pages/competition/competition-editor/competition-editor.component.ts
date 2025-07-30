@@ -214,6 +214,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
             }));
             this.participantService.initialize(participants);
           }
+          this.toggleSelects(false);
         },
         error: () => this.notification.error('Nem sikerült betölteni a versenyt!'),
       });

@@ -1,7 +1,7 @@
 <div class="participant-editor" [class.disabled]="disabled">
 
   <!-- Search for existing participants -->
-  <div class="search-container mb-3">
+  <div class="search-container mb-3" *ngIf="!disabled">
     <label for="participantSearch" class="form-label">Keresés létező diákok között</label>
     <div class="input-group">
       <input
@@ -171,9 +171,10 @@
               }
             </div>
             <button
-              type="button"
+              *ngIf="!disabled"
               class="btn btn-sm btn-outline-danger"
               (click)="onRemoveParticipant(i)"
+              type="button"
             >
               Törlés
             </button>
