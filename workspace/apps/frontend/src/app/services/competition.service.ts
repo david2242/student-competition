@@ -45,7 +45,7 @@ export class CompetitionService {
     }
 
     return this.httpClient.put<ServerResponse<Competition[]>>(
-      `${this.apiUrl}/competition`,
+      `${this.apiUrl}/competition/${id}`,
       competitionData,
     ).pipe(handleBackendResponse())
   }
