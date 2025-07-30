@@ -9,7 +9,7 @@ export interface CompetitionParticipant {
 
 // Search result for existing students
 export interface StudentSearchResult {
-  studentId: number;
+  id: number;
   firstName: string;
   lastName: string;
   fullName: string;

@@ -1,6 +1,5 @@
 <div class="participant-editor" [class.disabled]="disabled">
-  <h3>Résztvevők</h3>
-  
+
   <!-- Search for existing participants -->
   <div class="search-container mb-3">
     <label for="participantSearch" class="form-label">Keresés létező diákok között</label>
@@ -17,7 +16,7 @@
         Új diák hozzáadása
       </button>
     </div>
-    
+
     <!-- Search results -->
     @if (isSearching) {
       <div class="search-loading mt-2">
@@ -27,13 +26,13 @@
         Keresés folyamatban...
       </div>
     }
-    
+
     @if (searchResults.length > 0) {
       <div class="search-results mt-2">
         <div class="list-group">
-          @for (student of searchResults; track student.studentId) {
-            <button 
-              type="button" 
+          @for (student of searchResults; track student.id) {
+            <button
+              type="button"
               class="list-group-item list-group-item-action"
               (click)="onSelectStudent(student)"
             >
@@ -60,7 +59,7 @@
       </div>
     }
   </div>
-  
+
   <!-- Add new participant form -->
   @if (showAddForm) {
     <div class="card mb-3">
@@ -149,7 +148,7 @@
       </div>
     </div>
   }
-  
+
   <!-- Participants list -->
   <div class="participants-list">
     @if (participants.length === 0) {
@@ -171,8 +170,8 @@
                 <span class="badge bg-warning text-dark ms-2">Új diák</span>
               }
             </div>
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="btn btn-sm btn-outline-danger"
               (click)="onRemoveParticipant(i)"
             >

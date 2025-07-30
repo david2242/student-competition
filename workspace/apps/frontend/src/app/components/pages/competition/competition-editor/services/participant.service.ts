@@ -10,7 +10,7 @@ import { catchError, map } from "rxjs/operators";
   providedIn: 'root'
 })
 export class ParticipantService {
-  participants = new BehaviorSubject<CompetitionParticipant[]>([]);
+  private participants = new BehaviorSubject<CompetitionParticipant[]>([]);
   participants$ = this.participants.asObservable();
 
   private apiUrl = environment.apiUrl;
@@ -43,7 +43,6 @@ export class ParticipantService {
    * Add a new or existing participant
    */
   addParticipant(participant: CompetitionParticipant): void {
-    debugger
     const current = this.participants.value;
     // Check if participant already exists
     const exists = current.some(p =>

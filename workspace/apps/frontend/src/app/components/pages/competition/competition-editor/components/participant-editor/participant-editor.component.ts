@@ -91,7 +91,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
   onSelectStudent(student: StudentSearchResult): void {
     // Create a new participant from the selected student
     const participant: CompetitionParticipant = {
-      studentId: student.studentId,
+      studentId: student.id,
       firstName: student.firstName,
       lastName: student.lastName,
       classYear: student.currentClassYear,

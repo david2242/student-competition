@@ -111,7 +111,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     subject: new FormArray<FormControl<string>>([
       new FormControl<string>('', { nonNullable: true, validators: [Validators.required] })
     ], [Validators.required]),
-    teacher: new FormArray<FormControl<string>>([], [Validators.required]),
+    teacher: new FormArray<FormControl<string>>([]),
     date: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
     level: new FormControl<Level | null>(null, { nonNullable: false, validators: [Validators.required] }),
     round: new FormControl<Round | null>(null, { nonNullable: false, validators: [Validators.required] }),
@@ -357,6 +357,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
             ? 'A verseny sikeresen frissítve!'
             : 'A verseny sikeresen létrehozva!'
         );
+        this.participantService.clearParticipants();
         this.router.navigate(['/competitions']);
       },
       error: (error) => {
