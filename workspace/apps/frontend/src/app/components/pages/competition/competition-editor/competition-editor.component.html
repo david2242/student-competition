@@ -20,10 +20,24 @@
         <div class="invalid-feedback">Kérem töltse ki a versenyző nevét</div>
       </div>
       <div class="col-sm-12 col-md-1 form-check pt-3 ps-4">
-        <input [disabled]="($displayMode | async) == 'show'" class="form-check-input" type="checkbox" id="oktv"
-               (change)="toggleOktv($event)" [checked]="oktv">
+        <input class="form-check-input" type="checkbox" id="oktv"
+               (change)="toggleOktv($any($event.target).checked)" [checked]="oktv">
         <label class="form-check-label" for="oktv">OKTV</label>
       </div>
+
+      <!-- Participant Editor Component -->
+      <div class="col-12 mb-3">
+        <label class="form-label">Résztvevők</label>
+        <app-participant-editor
+          [participants]="participants"
+          (participantsChange)="onParticipantsChange($event)"
+          [disabled]="($displayMode | async) == 'show'"
+        ></app-participant-editor>
+        @if (participants.length === 0 && (competitionForm.get('participants')?.touched || competitionForm.get('participants')?.dirty)) {
+          <div class="invalid-feedback d-block">Legalább egy résztvevőt meg kell adni</div>
+        }
+      </div>
+
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="location" class="form-label">Helyszín</label>
         <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
@@ -99,35 +113,7 @@
         </select>
         <div class="invalid-feedback">Kérem adja meg a verseny körzetét!</div>
       </div>
-      <div class="col-sm-12 col-md-6 mb-3">
-        <label>Tanuló(k)</label>
-        <table class="table">
-          <thead>
-          <tr>
-            <th>Név</th>
-            <th>Osztály</th>
-            <th>
-              @if (($displayMode | async) == 'edit') {
-                <button type="button" class="btn btn-secondary" (click)="addStudentRow()">Hozzáad</button>
-              }
-            </th>
-          </tr>
-          </thead>
-          <tbody formArrayName="students">
-          <tr *ngFor="let student of students.controls; let i = index" [formGroupName]="i">
-            <td><input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
-                       formControlName="name" name="studentName{{i}}" required></td>
-            <td><input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
-                       formControlName="class" name="studentClass{{i}}" required></td>
-            <td>
-              @if (($displayMode | async) == 'edit' && i != 0) {
-                <button type="button" class="btn btn-danger" (click)="removeStudentRow(i)">Töröl</button>
-              }
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
+
       <div class="col-sm-12 col-md-6 mb-3">
         <label for="round" class="form-label">Verseny szintje</label>
         <select class="form-select"
@@ -162,34 +148,48 @@
           <button type="button" class="btn btn-secondary" (click)="addForm()">Több hozzáadása</button>
         }
       </div>
-      <div formGroupName="result" class="col-sm-12 col-md-6 mb-3">
-        <div class="d-flex gap-4">
-
-          <div class="form-check mt-2">
-            <input class="form-check-input" type="checkbox"
-                   id="enablePosition" formControlName="enablePosition">
-            <label class="form-check-label" for="enablePosition">Helyezés</label>
+      <div class="col-12 mb-3">
+        <h4>Eredmény</h4>
+        <div formGroupName="result" class="row">
+          <div class="col-md-6 mb-3">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="enablePosition"
+                     formControlName="enablePosition"
+                     (change)="onPositionToggle($any($event.target).checked)">
+              <label class="form-check-label" for="enablePosition">Helyezés megjelenítése</label>
+            </div>
+            <div class="input-group">
+              <input [readonly]="($displayMode | async) === 'show'"
+                     type="number"
+                     class="form-control"
+                     [ngClass]="{'is-invalid': position.invalid && (position.touched || position.dirty)}"
+                     id="position"
+                     formControlName="position"
+                     [disabled]="!enablePosition.value"
+                     min="1">
+              <span class="input-group-text">. helyezés</span>
+              @if (position.invalid && (position.touched || position.dirty)) {
+                <div class="invalid-feedback">Kérem adjon meg egy érvényes helyezést</div>
+              }
+            </div>
           </div>
-          <input [readonly]="($displayMode | async) == 'show'" type="number" class="form-control w-25" min="1"
-                 formControlName="position">
-        </div>
-
-        <div class="form-check mt-2">
-          <input  class="form-check-input" type="checkbox"
-                 id="specialPrize" formControlName="specialPrize">
-          <label class="form-check-label" for="specialPrize">Különdíj</label>
-        </div>
-
-        <div class="form-check mt-2">
-          <input  class="form-check-input" type="checkbox" id="compliment"
-                 formControlName="compliment">
-          <label class="form-check-label" for="compliment">Dicséret</label>
-        </div>
-
-        <div class="form-check mt-2">
-          <input class="form-check-input" type="checkbox" id="nextRound"
-                 formControlName="nextRound">
-          <label class="form-check-label" for="nextRound">Továbbjutás</label>
+          <div class="col-md-6 mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="specialPrize"
+                     formControlName="specialPrize">
+              <label class="form-check-label" for="specialPrize">Különdíj</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="compliment"
+                     formControlName="compliment">
+              <label class="form-check-label" for="compliment">Dicséret</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="nextRound"
+                     formControlName="nextRound">
+              <label class="form-check-label" for="nextRound">Továbbjutás</label>
+            </div>
+          </div>
         </div>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">

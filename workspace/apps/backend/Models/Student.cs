@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace Workspace.Backend.Models;
@@ -6,16 +7,19 @@ namespace Workspace.Backend.Models;
 public class Student
 {
   public int Id { get; set; }
-  public string Name { get; set; }
-  public string Class { get; set; }
+  public string FirstName { get; set; } = string.Empty;
+  public string LastName { get; set; } = string.Empty;
+  
+  [NotMapped]
+  [JsonIgnore]
+  public string FullName => $"{FirstName} {LastName}";
 
   [JsonIgnore]
-  public List<CompetitionStudent> CompetitionStudents { get; set; }
+  public ICollection<CompetitionParticipant> CompetitionParticipants { get; set; } = new List<CompetitionParticipant>();
 
   public Student()
   {
-    Name = string.Empty;
-    Class = string.Empty;
-    CompetitionStudents = new List<CompetitionStudent>();
+    FirstName = string.Empty;
+    LastName = string.Empty;
   }
 }

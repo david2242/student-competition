@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule, Location } from '@angular/common';
 import { AuthService } from '@/app/services/auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from '@/app/services/notification.service';
 import { firstValueFrom, Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -25,7 +25,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private toastr: ToastrService,
+    private notification: NotificationService,
     private location: Location
   ) {
     this.profileForm = this.fb.group({
@@ -58,10 +58,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     try {
       await firstValueFrom(this.authService.updateProfile(this.profileForm.value));
-      this.toastr.success('Profil sikeresen frissítve');
+      this.notification.success('Profil sikeresen frissítve');
     } catch (error) {
       console.error('Error updating profile:', error);
-      this.toastr.error('Hiba történt a profil frissítése közben');
+      this.notification.error('Hiba történt a profil frissítése közben');
     } finally {
       this.isSubmitting = false;
     }

@@ -1,1 +1,39 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Prevent blue highlight on tap/click for all elements */
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Re-enable text selection for input and textarea */
+input,
+textarea,
+[contenteditable] {
+  -webkit-user-select: text !important;
+  -khtml-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+/* Remove focus outline for all elements */
+:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Specific fix for dropdown items */
+.dropdown-item:active,
+.dropdown-item:focus,
+.dropdown-item:focus-visible,
+.dropdown-item:focus-within {
+  background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

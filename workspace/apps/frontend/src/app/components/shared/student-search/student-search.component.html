@@ -1,0 +1,133 @@
+<div class="mb-3 position-relative">
+  <label *ngIf="label" class="form-label">{{ label }}</label>
+  <div class="input-group">
+    <input
+      #searchInput
+      type="text"
+      class="form-control"
+      [formControl]="searchControl"
+      [placeholder]="placeholder"
+      (focus)="onFocus()"
+      (click)="onInputClick($event)"
+      autocomplete="off"
+    >
+    <span class="input-group-text" *ngIf="isLoading">
+      <app-loading-spinner [size]="'sm'"></app-loading-spinner>
+    </span>
+  </div>
+
+  <!-- Search results dropdown -->
+  <div class="dropdown-menu w-100 show d-block position-static border border-primary student-search-dropdown"
+       *ngIf="!disabled && isDropdownOpen && searchResults.length > 0"
+       (click)="onDropdownClick($event)"
+       style="z-index: 1000; background: white;">
+
+    <!-- New Student Form (always first) -->
+    <div *ngIf="searchResults[0]?.isNew" class="dropdown-item p-2 border-bottom">
+      <ng-template #newStudentTemplate let-student="$implicit">
+        <div class="d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-medium text-primary">
+              <i class="bi bi-plus-circle me-1"></i> Új diák felvétele:
+            </span>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-5">
+              <input type="text" class="form-control form-control-sm"
+                     [(ngModel)]="student.firstName"
+                     placeholder="Keresztnév"
+                     (click)="$event.stopPropagation()">
+            </div>
+            <div class="col-md-5">
+              <input type="text" class="form-control form-control-sm"
+                     [(ngModel)]="student.lastName"
+                     placeholder="Vezetéknév"
+                     (click)="$event.stopPropagation()">
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-sm btn-success w-100"
+                      (click)="$event.preventDefault(); $event.stopPropagation(); onSelectStudent(student);"
+                      [disabled]="!student.firstName || !student.lastName">
+                Hozzáad
+              </button>
+            </div>
+          </div>
+          <div class="row g-2 mt-2">
+            <div class="col-6">
+              <select class="form-select form-select-sm"
+                      [(ngModel)]="student.classYear"
+                      (click)="$event.stopPropagation()"
+                      (mousedown)="$event.stopPropagation()">
+                <option *ngFor="let year of [5,6,7,8,9,10,11,12,13]" [value]="year">{{ year }}. évfolyam</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <select class="form-select form-select-sm"
+                      [(ngModel)]="student.classLetter"
+                      (click)="$event.stopPropagation()"
+                      (mousedown)="$event.stopPropagation()">
+                <option *ngFor="let letter of ['a','b','c','d','e']" [value]="letter">{{ letter | uppercase }} osztály</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+
+      <ng-container *ngTemplateOutlet="newStudentTemplate; context: {$implicit: searchResults[0]}"></ng-container>
+    </div>
+
+    <!-- Search Results -->
+    <div class="dropdown-header small fw-bold" *ngIf="searchResults.length > 1">Találatok</div>
+
+    <div *ngFor="let student of searchResults; let i = index; trackBy: trackByStudentId" class="dropdown-item p-2">
+      <div *ngIf="!student.isNew"
+           class="d-flex flex-column"
+           (click)="!isStudentSelected(student) && onSelectStudent(student)"
+           [class.cursor-pointer]="!isStudentSelected(student)"
+           [title]="getStudentTooltip(student)">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-medium">
+            {{ student.firstName }} {{ student.lastName }}
+            <span *ngIf="student.participations.length > 0" class="text-muted ms-1">
+              {{ student.participations.length }} részvétel
+            </span>
+          </span>
+          <span class="badge bg-secondary rounded-pill ms-2" *ngIf="student.participations.length > 0">
+            {{ student.participations.length }}
+          </span>
+        </div>
+        <div *ngIf="student.participations.length > 0" class="small text-muted mt-1">
+          <span *ngIf="getMostRecentParticipation(student) as participation">
+            {{ participation.competitionDate | date:'yyyy' }} - {{ participation.classYear }}. {{ participation.classLetter }}
+          </span>
+        </div>
+      </div>
+
+
+    </div>
+    <div class="dropdown-item text-muted small" *ngIf="searchResults.length === 1 && searchResults[0].isNew">
+      Írd be a diák nevét a keresőbe, hogy megtaláld, vagy hozz létre újat fent
+    </div>
+  </div>
+
+  <!-- Selected students -->
+  <div class="mt-2" *ngIf="selectedStudents.length > 0">
+    <div class="d-flex flex-wrap gap-2">
+      <div *ngFor="let student of selectedStudents" class="position-relative">
+        <span class="badge bg-primary d-flex align-items-center">
+          {{ student.firstName }} {{ student.lastName }} ({{ student.classYear }}. {{ student.classLetter }})
+          <button
+            *ngIf="!disabled"
+            type="button"
+            class="btn-close btn-close-white btn-sm ms-2"
+            (click)="onRemoveStudent(student)"
+            aria-label="Eltávolítás"
+          ></button>
+        </span>
+        <div *ngIf="student.isNew" class="position-absolute top-0 start-100 translate-middle">
+          <span class="badge bg-success rounded-pill">Új</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

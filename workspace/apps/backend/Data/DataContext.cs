@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Workspace.Backend.Models;
+using System.Linq;
 
 namespace Workspace.Backend.Data
 {
@@ -11,9 +13,23 @@ namespace Workspace.Backend.Data
 
     public DbSet<Competition> Competitions => Set<Competition>();
     public DbSet<Student> Students => Set<Student>();
-    public DbSet<CompetitionStudent> CompetitionStudent { get; set; }
-    public DbSet<Form> Forms { get; set; }
-    public DbSet<CompetitionForm> CompetitionForms { get; set; }
+    public DbSet<CompetitionParticipant> CompetitionParticipants => Set<CompetitionParticipant>();
+    
+    // Override SaveChanges to ensure we don't have any tracking issues
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+      // Only detach modified students, not newly added ones
+      var modifiedStudents = ChangeTracker
+          .Entries()
+          .Where(e => e.Entity is Student && e.State == Microsoft.EntityFrameworkCore.EntityState.Modified);
+
+      foreach (var entityEntry in modifiedStudents)
+      {
+          entityEntry.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
+      }
+      
+      return await base.SaveChangesAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -28,35 +44,28 @@ namespace Workspace.Backend.Data
           r.Property(p => p.NextRound);
         });
 
-      modelBuilder.Entity<CompetitionStudent>()
-        .HasKey(cs => new { cs.CompetitionId, cs.StudentId });
+      modelBuilder.Entity<CompetitionParticipant>(entity =>
+      {
+        entity.HasKey(cp => new { cp.CompetitionId, cp.StudentId });
 
-      modelBuilder.Entity<CompetitionStudent>()
-        .HasOne(cs => cs.Competition)
-        .WithMany(c => c.CompetitionStudents)
-        .HasForeignKey(cs => cs.CompetitionId)
-        .OnDelete(DeleteBehavior.Cascade);
+        entity.HasOne(cp => cp.Competition)
+          .WithMany(c => c.CompetitionParticipants)
+          .HasForeignKey(cp => cp.CompetitionId)
+          .OnDelete(DeleteBehavior.Cascade);
 
-      modelBuilder.Entity<CompetitionStudent>()
-        .HasOne(cs => cs.Student)
-        .WithMany(s => s.CompetitionStudents)
-        .HasForeignKey(cs => cs.StudentId)
-        .OnDelete(DeleteBehavior.Cascade);
+        entity.HasOne(cp => cp.Student)
+          .WithMany(s => s.CompetitionParticipants)
+          .HasForeignKey(cp => cp.StudentId)
+          .OnDelete(DeleteBehavior.Cascade);
 
-      modelBuilder.Entity<CompetitionForm>()
-        .HasKey(cf => new { cf.CompetitionId, cf.FormId });
-
-      modelBuilder.Entity<CompetitionForm>()
-        .HasOne(cf => cf.Competition)
-        .WithMany(c => c.CompetitionForms)
-        .HasForeignKey(cf => cf.CompetitionId)
-        .OnDelete(DeleteBehavior.Cascade);
-
-      modelBuilder.Entity<CompetitionForm>()
-        .HasOne(cf => cf.Form)
-        .WithMany(f => f.CompetitionForms)
-        .HasForeignKey(cf => cf.FormId)
-        .OnDelete(DeleteBehavior.Cascade);
+        entity.Property(cp => cp.ClassLetter)
+          .IsRequired()
+          .HasMaxLength(1);
+          
+        entity.Property(cp => cp.CreatedAt)
+          .IsRequired()
+          .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+      });
 
       modelBuilder.Entity<Competition>()
         .HasOne(c => c.Creator)
@@ -64,12 +73,17 @@ namespace Workspace.Backend.Data
         .HasForeignKey(c => c.CreatorId)
         .OnDelete(DeleteBehavior.Restrict);
 
-      modelBuilder.Entity<Form>().HasData(
-        new Form { Id = 1, Name = "WRITTEN", Description = "Written competition form" },
-        new Form { Id = 2, Name = "ORAL", Description = "Oral competition form" },
-        new Form { Id = 3, Name = "SPORT", Description = "Sport competition form" },
-        new Form { Id = 4, Name = "SUBMISSION", Description = "Submission-based competition form" }
-      );
+      modelBuilder.Entity<Competition>()
+        .Property(c => c.Forms)
+        .HasConversion(
+          v => string.Join(',', v),
+          v => v.Split(',', StringSplitOptions.RemoveEmptyEntries),
+          new ValueComparer<string[]>(
+            (c1, c2) => c1.SequenceEqual(c2),
+            c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+            c => c.ToArray()
+          )
+        );
     }
   }
 }

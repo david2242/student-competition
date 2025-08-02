@@ -4,7 +4,7 @@ import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { AuthService } from "@/app/services/auth.service";
 import { ILoginRequest } from "@/app/services/auth.types";
-import { ToastrService } from "ngx-toastr";
+import { NotificationService } from "@/app/services/notification.service";
 
 @Component({
   selector: 'app-login',
@@ -16,7 +16,7 @@ import { ToastrService } from "ngx-toastr";
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
-  private toastr = inject(ToastrService);
+  private notification = inject(NotificationService);
 
   credentials: ILoginRequest = {
     email: '',
@@ -30,11 +30,11 @@ export class LoginComponent {
     this.isLoading = true;
     const subscription = this.authService.login(this.credentials).subscribe({
       next: () => {
-        this.toastr.success('Sikeres bejelentkezés!');
+        this.notification.success('Sikeres bejelentkezés!');
         this.router.navigate([ '/' ]);
       },
       error: () => {
-        this.toastr.error('Sikertelen bejelentkezés!');
+        this.notification.error('Sikertelen bejelentkezés!');
         this.isLoading = false;
         subscription.unsubscribe();
       },
