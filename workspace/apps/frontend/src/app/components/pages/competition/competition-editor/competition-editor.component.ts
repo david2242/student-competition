@@ -1,25 +1,22 @@
 import { ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, Subscription } from "rxjs";
 import { CommonModule } from '@angular/common';
-import { Competition, Form, Level, Round, Result } from "@/app/models/competition.model";
+import { Competition, Form, Level, Round } from "@/app/models/competition.model";
 import { CompetitionService, CreateCompetitionData } from "@/app/services/competition.service";
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import {
   FormArray,
-  FormBuilder,
   FormControl,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
-import { Student, StudentSearchResult } from "@/app/models/student.model";
 import { NotificationService } from "@/app/services/notification.service";
 import { subjects } from "./subjects";
 import { teachers } from "./teachers";
 import { Role } from "@/app/models/current-user";
 import { AuthService } from "@/app/services/auth.service";
-import { schoolYearValidator } from "@/app/components/pages/competition/competition-editor/schoolYearValidator";
 import { ParticipantEditorComponent } from "./components/participant-editor/participant-editor.component";
 import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
@@ -115,6 +112,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     date: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
     level: new FormControl<Level | null>(null, { nonNullable: false, validators: [Validators.required] }),
     round: new FormControl<Round | null>(null, { nonNullable: false, validators: [Validators.required] }),
+    oktv: new FormControl<boolean>(false, { nonNullable: true }),
     forms: new FormArray<FormControl<Form | null>>([
       new FormControl<Form | null>(null, { nonNullable: false, validators: [Validators.required] })
     ], [Validators.required]),
@@ -128,7 +126,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     other: new FormControl<string>('', { nonNullable: true })
   }) as CompetitionForm;
 
-  oktv = false;
+  // oktv is now managed by the form control
   isLoading = false;
   participants: CompetitionParticipant[] = [];
   private participantService = inject(ParticipantService);
@@ -249,6 +247,12 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.round.setValue(competition.round);
     this.other.setValue(competition.other);
 
+    // Set OKTV mode based on round
+    const isOktv = competition.round === Round.OktvRoundOne ||
+                  competition.round === Round.OktvRoundTwo ||
+                  competition.round === Round.OktvFinal;
+    this.competitionForm.get('oktv')?.setValue(isOktv);
+
     // Set result values
     this.position.setValue(competition.result.position);
     this.specialPrize.setValue(competition.result.specialPrize);
@@ -312,7 +316,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   onSubmit(): void {
     if (this.competitionForm.invalid) {
       this.competitionForm.markAllAsTouched();
-      this.notification.error('Kérem töltse ki az összes kötelező mezőt!');
       return;
     }
 
@@ -404,23 +407,14 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       this.forms.enable();
       this.forms.controls.forEach(c => c.enable());
       this.result.enable();
-      this.enablePosition.enable();
-      this.position.enable();
-      this.specialPrize.enable();
-      this.compliment.enable();
-      this.nextRound.enable();
       this.other.enable();
-
-      // Re-apply the position enabler state
-      if (!this.enablePosition.value) {
-        this.position.disable();
-      }
+      // Enable OKTV control
+      this.competitionForm.get('oktv')?.enable();
     } else {
       // Disable all form controls
       this.name.disable();
       this.location.disable();
       this.subject.disable();
-      this.subject.controls.forEach(c => c.disable());
       this.teacher.disable();
       this.teacher.controls.forEach(c => c.disable());
       this.date.disable();
@@ -466,7 +460,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.oktv) {
+    if (this.competitionForm.get('oktv')?.value) {
       this.filteredRounds = this.allRounds.filter(round =>
         round.value === Round.OktvRoundOne ||
         round.value === Round.OktvRoundTwo ||
@@ -527,7 +521,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
    * @param checked Whether OKTV mode is enabled
    */
   toggleOktv(checked: boolean): void {
-    this.oktv = checked;
+    // Update the form control value
+    this.competitionForm.get('oktv')?.setValue(checked);
 
     // Reset the round when toggling OKTV mode
     this.round.reset();

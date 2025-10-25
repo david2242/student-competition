@@ -105,7 +105,6 @@
             <div class="invalid-feedback" *ngIf="form.get('password')?.errors?.['specialChar']">
               A jelszónak tartalmaznia kell legalább egy speciális karaktert (pl. !"&#64;"#$%^&*)
             </div>
-            {{form.get('password')?.errors | json}}
             <div class="form-text">
               A jelszónak legalább 8 karakter hosszúnak kell lennie, és tartalmaznia kell kis- és nagybetűket, számot és
               speciális karaktert
