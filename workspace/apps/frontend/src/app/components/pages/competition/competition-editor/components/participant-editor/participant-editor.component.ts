@@ -45,7 +45,6 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
       classYear: [null, [Validators.required, Validators.min(1), Validators.max(12)]],
       classLetter: ['', Validators.required]
     });
-    console.log('my service is created');
   }
 
   ngOnInit(): void {
@@ -78,7 +77,6 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
       next: (results) => {
         this.searchResults = results;
         this.isSearching = false;
-        console.log('Search results:', results);
       },
       error: (error) => {
         console.error('Error searching students:', error);

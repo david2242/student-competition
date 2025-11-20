@@ -17,11 +17,12 @@
         <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
                [ngClass]="{'is-invalid': ($displayMode | async) == 'edit' && name.touched && name.errors, 'is-valid': ($displayMode | async) == 'edit' && name.touched && !name.errors}"
                id="name" formControlName="name">
-        <div class="invalid-feedback">Kérem töltse ki a versenyző nevét</div>
+        <div class="invalid-feedback">Kérem töltse ki a verseny nevét</div>
       </div>
       <div class="col-sm-12 col-md-1 form-check pt-3 ps-4">
         <input class="form-check-input" type="checkbox" id="oktv"
-               (change)="toggleOktv($any($event.target).checked)" [checked]="oktv">
+               formControlName="oktv"
+               (click)="toggleOktv($any($event.target).checked)">
         <label class="form-check-label" for="oktv">OKTV</label>
       </div>
 
@@ -33,9 +34,6 @@
           (participantsChange)="onParticipantsChange($event)"
           [disabled]="($displayMode | async) == 'show'"
         ></app-participant-editor>
-        @if (participants.length === 0 && (competitionForm.get('participants')?.touched || competitionForm.get('participants')?.dirty)) {
-          <div class="invalid-feedback d-block">Legalább egy résztvevőt meg kell adni</div>
-        }
       </div>
 
       <div class="col-sm-12 col-md-6 mb-3">
@@ -165,7 +163,6 @@
                      [ngClass]="{'is-invalid': position.invalid && (position.touched || position.dirty)}"
                      id="position"
                      formControlName="position"
-                     [disabled]="!enablePosition.value"
                      min="1">
               <span class="input-group-text">. helyezés</span>
               @if (position.invalid && (position.touched || position.dirty)) {
@@ -206,7 +203,7 @@
             <button type="button" class="btn btn-outline-secondary" (click)="showMode()">Mégse</button>
           }
           @if (($displayMode | async) == 'edit') {
-            <button [disabled]="competitionForm.invalid || isLoading" type="submit" class="btn btn-primary">
+            <button [disabled]="isLoading" type="submit" class="btn btn-primary">
               <span *ngIf="!isLoading">Mentés</span>
               <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <span *ngIf="isLoading" class="visually-hidden">Mentés...</span>
