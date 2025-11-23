@@ -86,8 +86,10 @@ export class CompetitionListComponent implements OnInit {
       field: "students",
       headerName: "Versenyző",
       valueGetter: (data) => {
-        const students = data.data.students || [];
-        return students.length === 1 ? students[0].name : 'Csapatverseny';
+        const students = data.data.participants || [];
+        if (students.length === 1) {
+          return students[0].firstName + ' ' + students[0].lastName;
+        } else return 'Csapatverseny'
       }
     },
     {
@@ -138,5 +140,4 @@ export class CompetitionListComponent implements OnInit {
     }
     return undefined;
   }
-
 }
