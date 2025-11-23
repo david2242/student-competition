@@ -1,54 +1,44 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CompetitionParticipant, StudentSearchResult } from '../../models/participant.model';
 import { ParticipantService } from '../../services/participant.service';
+import { ParticipantSearchComponent } from './components/participant-search/participant-search.component';
+import { ParticipantFormComponent } from './components/participant-form/participant-form.component';
+import { ParticipantListComponent } from './components/participant-list/participant-list.component';
 
 @Component({
   selector: 'app-participant-editor',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule,
-    FormsModule,
-    // Add any other standalone components or directives you might need
+    ParticipantSearchComponent,
+    ParticipantFormComponent,
+    ParticipantListComponent
   ],
   templateUrl: './participant-editor.component.html',
-  styleUrls: ['./participant-editor.component.css'],
-  // Provide the service at the component level
+  styleUrls: ['./participant-editor.component.css']
 })
-export class ParticipantEditorComponent implements OnInit, OnChanges {
+export class ParticipantEditorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() participants: CompetitionParticipant[] = [];
   @Input() disabled = false;
   @Output() participantsChange = new EventEmitter<CompetitionParticipant[]>();
 
   private formInitialized = false;
-
-  searchQuery = '';
-  searchResults: StudentSearchResult[] = [];
-  isSearching = false;
   showAddForm = false;
-
-  participantForm: FormGroup;
+  isSearching = false;
+  searchResults: StudentSearchResult[] = [];
+  newParticipantData: { firstName?: string; lastName?: string } = {};
 
   // For demo purposes - replace with actual class options
   readonly CLASS_YEARS = Array.from({ length: 12 }, (_, i) => i + 1);
   readonly CLASS_LETTERS = ['a', 'b', 'c', 'd'];
 
-  constructor(
-    private fb: FormBuilder,
-    private participantService: ParticipantService
-  ) {
-    this.participantForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      classYear: [null, [Validators.required, Validators.min(1), Validators.max(12)]],
-      classLetter: ['', Validators.required]
-    });
-  }
+  constructor(private participantService: ParticipantService) {}
+
+  private subscription: any;
 
   ngOnInit(): void {
-    this.participantService.participants$.subscribe(participants => {
+    this.subscription = this.participantService.participants$.subscribe(participants => {
       this.participants = participants;
       this.participantsChange.emit(participants);
     });
@@ -62,11 +52,13 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
   }
 
   ngOnDestroy(): void {
-    // Clean up any subscriptions if needed
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    this.participantService.clearParticipants();
   }
 
   onSearch(query: string): void {
-    this.searchQuery = query;
     if (query.length < 2) {
       this.searchResults = [];
       return;
@@ -87,7 +79,6 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
   }
 
   onSelectStudent(student: StudentSearchResult): void {
-    // Create a new participant from the selected student
     const participant: CompetitionParticipant = {
       studentId: student.id,
       firstName: student.firstName,
@@ -95,43 +86,41 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
       classYear: student.currentClassYear,
       classLetter: student.currentClassLetter,
     };
-
-    // Add the participant directly
     this.participantService.addParticipant(participant);
-
-    // Reset search
-    this.searchQuery = '';
     this.searchResults = [];
   }
 
-  onAddNew(): void {
-    this.participantForm.reset();
+  onAddNew(searchQuery: string = ''): void {
+    const [lastName, ...firstNameParts] = searchQuery.trim().split(' ');
+    const firstName = firstNameParts.join(' ');
+
+    this.newParticipantData = {
+      firstName: firstName || '',
+      lastName: lastName || ''
+    };
+
     this.showAddForm = true;
   }
 
-  onAddParticipant(): void {
-    if (this.participantForm.invalid) {
-      this.participantForm.markAllAsTouched();
-      return;
+  onAddParticipant(participant: CompetitionParticipant): void {
+    if (participant.firstName && participant.lastName) {
+      this.participantService.addParticipant(participant);
+      this.showAddForm = false;
+      this.newParticipantData = {}; // Reset the form data
     }
-
-    const newParticipant: CompetitionParticipant = {
-      ...this.participantForm.value,
-      id: 0, // Will be set by the backend
-      studentId: 0, // Will be set after creation
-      competitionId: 0, // Will be set by the parent
-      result: null,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    this.participantService.addParticipant(newParticipant);
-    this.participantForm.reset();
-    this.showAddForm = false;
   }
 
   onRemoveParticipant(index: number): void {
     this.participantService.removeParticipant(index);
+  }
+
+  onCancelAdd(): void {
+    this.showAddForm = false;
+    this.newParticipantData = {};
+  }
+
+  onFormInteraction(): void {
+    this.searchResults = [];
   }
 
   trackByIndex(index: number): number {

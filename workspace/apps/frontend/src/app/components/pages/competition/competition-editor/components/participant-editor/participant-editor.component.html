@@ -1,186 +1,28 @@
 <div class="participant-editor" [class.disabled]="disabled">
-
-  <!-- Search for existing participants -->
-  <div class="search-container mb-3" *ngIf="!disabled">
-    <label for="participantSearch" class="form-label">Keresés létező diákok között</label>
-    <div class="input-group">
-      <input
-        type="text"
-        id="participantSearch"
-        class="form-control"
-        [(ngModel)]="searchQuery"
-        (ngModelChange)="onSearch($event)"
-        placeholder="Keresés név vagy osztály szerint..."
-      >
-      <button class="btn btn-outline-secondary" type="button" (click)="onAddNew()">
-        Új diák hozzáadása
-      </button>
-    </div>
-
-    <!-- Search results -->
-    @if (isSearching) {
-      <div class="search-loading mt-2">
-        <div class="spinner-border spinner-border-sm" role="status">
-          <span class="visually-hidden">Keresés...</span>
-        </div>
-        Keresés folyamatban...
-      </div>
-    }
-
-    @if (searchResults.length > 0) {
-      <div class="search-results mt-2">
-        <div class="list-group">
-          @for (student of searchResults; track student.id) {
-            <button
-              type="button"
-              class="list-group-item list-group-item-action"
-              (click)="onSelectStudent(student)"
-            >
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>{{ student.fullName }}</strong>
-                  <span class="ms-2 text-muted">
-                    {{ student.currentClassYear }}. {{ student.currentClassLetter }}
-                  </span>
-                </div>
-                <span class="badge bg-primary rounded-pill">
-                  {{ student.participations.length }} verseny
-                </span>
-              </div>
-              @if (student.participations.length > 0) {
-                <div class="mt-1 small text-muted">
-                  Utoljára: {{ student.participations[0].competitionName }}
-                  ({{ student.participations[0].competitionDate | date: 'yyyy. MM. dd.' }})
-                </div>
-              }
-            </button>
-          }
-        </div>
-      </div>
-    }
-  </div>
-
-  <!-- Add new participant form -->
-  @if (showAddForm) {
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">Diák hozzáadása</h5>
-        <form [formGroup]="participantForm" (ngSubmit)="onAddParticipant()">
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label for="firstName" class="form-label">Keresztnév</label>
-              <input
-                type="text"
-                id="firstName"
-                class="form-control"
-                formControlName="firstName"
-                [class.is-invalid]="participantForm.get('firstName')?.invalid && participantForm.get('firstName')?.touched"
-              >
-              @if (participantForm.get('firstName')?.invalid && participantForm.get('firstName')?.touched) {
-                <div class="invalid-feedback">
-                  Kérem adja meg a keresztnevet
-                </div>
-              }
-            </div>
-            <div class="col-md-6">
-              <label for="lastName" class="form-label">Vezetéknév</label>
-              <input
-                type="text"
-                id="lastName"
-                class="form-control"
-                formControlName="lastName"
-                [class.is-invalid]="participantForm.get('lastName')?.invalid && participantForm.get('lastName')?.touched"
-              >
-              @if (participantForm.get('lastName')?.invalid && participantForm.get('lastName')?.touched) {
-                <div class="invalid-feedback">
-                  Kérem adja meg a vezetéknevet
-                </div>
-              }
-            </div>
-            <div class="col-md-6">
-              <label for="classYear" class="form-label">Osztály évfolyam</label>
-              <select
-                id="classYear"
-                class="form-select"
-                formControlName="classYear"
-                [class.is-invalid]="participantForm.get('classYear')?.invalid && participantForm.get('classYear')?.touched"
-              >
-                <option [ngValue]="null" disabled>Válasszon évfolyamot...</option>
-                @for (year of CLASS_YEARS; track year) {
-                  <option [value]="year">{{ year }}. évfolyam</option>
-                }
-              </select>
-              @if (participantForm.get('classYear')?.invalid && participantForm.get('classYear')?.touched) {
-                <div class="invalid-feedback">
-                  Kérem válasszon évfolyamot
-                </div>
-              }
-            </div>
-            <div class="col-md-6">
-              <label for="classLetter" class="form-label">Osztály betűjele</label>
-              <select
-                id="classLetter"
-                class="form-select"
-                formControlName="classLetter"
-                [class.is-invalid]="participantForm.get('classLetter')?.invalid && participantForm.get('classLetter')?.touched"
-              >
-                <option value="" disabled>Válasszon osztályt...</option>
-                @for (letter of CLASS_LETTERS; track letter) {
-                  <option [value]="letter">{{ letter | uppercase }} osztály</option>
-                }
-              </select>
-              @if (participantForm.get('classLetter')?.invalid && participantForm.get('classLetter')?.touched) {
-                <div class="invalid-feedback">
-                  Kérem válasszon osztályt
-                </div>
-              }
-            </div>
-            <div class="col-12">
-              <button type="submit" class="btn btn-primary me-2" [disabled]="participantForm.invalid">
-                Hozzáadás
-              </button>
-              <button type="button" class="btn btn-outline-secondary" (click)="showAddForm = false">
-                Mégse
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+  @if (!disabled) {
+    <app-participant-search
+      [isSearching]="isSearching"
+      [searchResults]="searchResults"
+      (search)="onSearch($event)"
+      (selectStudent)="onSelectStudent($event)"
+      (addNew)="onAddNew($event)"
+    ></app-participant-search>
   }
 
-  <!-- Participants list -->
-  <div class="participants-list">
-    @if (participants.length === 0) {
-      <div class="alert alert-info">
-        Még nincsenek résztvevők a versenyen.
-      </div>
-    } @else {
-      <div class="list-group">
-        @for (participant of participants; track trackByIndex($index); let i = $index) {
-          <div class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-              <strong>{{ participant.lastName }} {{ participant.firstName }}</strong>
-              <span class="ms-2 text-muted">
-                {{ participant.classYear }}. {{ participant.classLetter }}
-              </span>
-              @if (participant.studentId) {
-                <span class="badge bg-success ms-2">Létező diák</span>
-              } @else {
-                <span class="badge bg-warning text-dark ms-2">Új diák</span>
-              }
-            </div>
-            <button
-              *ngIf="!disabled"
-              class="btn btn-sm btn-outline-danger"
-              (click)="onRemoveParticipant(i)"
-              type="button"
-            >
-              Törlés
-            </button>
-          </div>
-        }
-      </div>
-    }
-  </div>
+  @if (showAddForm) {
+    <app-participant-form
+      [classYears]="CLASS_YEARS"
+      [classLetters]="CLASS_LETTERS"
+      [initialData]="newParticipantData"
+      (submitForm)="onAddParticipant($event)"
+      (cancel)="onCancelAdd()"
+      (formInteraction)="onFormInteraction()"
+    ></app-participant-form>
+  }
+
+  <app-participant-list
+    [participants]="participants"
+    [disabled]="disabled"
+    (remove)="onRemoveParticipant($event)"
+  ></app-participant-list>
 </div>
