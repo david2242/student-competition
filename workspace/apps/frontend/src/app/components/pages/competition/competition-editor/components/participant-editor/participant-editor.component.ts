@@ -55,6 +55,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges, OnDestroy 
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    this.participantService.clearParticipants();
   }
 
   onSearch(query: string): void {
