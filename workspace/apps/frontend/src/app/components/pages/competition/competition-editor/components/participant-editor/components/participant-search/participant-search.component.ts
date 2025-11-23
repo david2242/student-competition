@@ -83,7 +83,7 @@ export class ParticipantSearchComponent {
   @Input() searchResults: StudentSearchResult[] = [];
   @Output() search = new EventEmitter<string>();
   @Output() selectStudent = new EventEmitter<StudentSearchResult>();
-  @Output() addNew = new EventEmitter<void>();
+  @Output() addNew = new EventEmitter<string>();
 
   searchQuery = '';
 
@@ -97,6 +97,6 @@ export class ParticipantSearchComponent {
   }
 
   onAddNewClick(): void {
-    this.addNew.emit();
+    this.addNew.emit(this.searchQuery);
   }
 }

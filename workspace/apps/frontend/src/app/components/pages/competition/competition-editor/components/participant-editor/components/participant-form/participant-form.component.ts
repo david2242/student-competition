@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, FormControl } from '@angular/forms';
 import { CompetitionParticipant } from "@/app/components/pages/competition/competition-editor";
@@ -99,45 +99,43 @@ import { CompetitionParticipant } from "@/app/components/pages/competition/compe
     </div>
   `
 })
-export class ParticipantFormComponent {
-  @Input({ required: true }) classYears: number[] = [];
-  @Input({ required: true }) classLetters: string[] = [];
-  @Output() submitForm = new EventEmitter<Partial<CompetitionParticipant>>();
+export class ParticipantFormComponent implements OnInit {
+  @Input() classYears: number[] = [];
+  @Input() classLetters: string[] = [];
+  @Input() participant?: CompetitionParticipant;
+  @Input() initialData: { firstName?: string; lastName?: string } = {};
+  @Output() submitForm = new EventEmitter<CompetitionParticipant>();
   @Output() cancel = new EventEmitter<void>();
   @Output() formInteraction = new EventEmitter<void>();
 
-  form: FormGroup<{
+  form!: FormGroup<{
     firstName: FormControl<string | null>;
     lastName: FormControl<string | null>;
     classYear: FormControl<number | null>;
     classLetter: FormControl<string | null>;
   }>;
 
-  get formControls() {
-    return this.form.controls;
-  }
+  constructor(private fb: FormBuilder) { }
 
-  constructor(private fb: FormBuilder) {
+  ngOnInit(): void {
     this.form = this.fb.group({
-      firstName: ['', [Validators.required, Validators.maxLength(50)]],
-      lastName: ['', [Validators.required, Validators.maxLength(50)]],
-      classYear: [null as number | null, [
+      firstName: [this.initialData.firstName || this.participant?.firstName || '', [
         Validators.required,
-        Validators.min(1),
-        Validators.max(12)
+        Validators.maxLength(50)
       ]],
-      classLetter: ['', [
+      lastName: [this.initialData.lastName || this.participant?.lastName || '', [
         Validators.required,
-        Validators.minLength(1),
-        Validators.maxLength(1)
-      ]]
+        Validators.maxLength(50)
+      ]],
+      classYear: [this.participant?.classYear || null, Validators.required],
+      classLetter: [this.participant?.classLetter || '', Validators.required]
     });
   }
 
   onSubmit(): void {
     if (this.form.valid) {
       const formValue = this.form.getRawValue();
-      const participant: Partial<CompetitionParticipant> = {
+      const participant: CompetitionParticipant = {
         firstName: formValue.firstName || '',
         lastName: formValue.lastName || '',
         classYear: formValue.classYear || 0,

@@ -5,7 +5,7 @@
       [searchResults]="searchResults"
       (search)="onSearch($event)"
       (selectStudent)="onSelectStudent($event)"
-      (addNew)="onAddNew()"
+      (addNew)="onAddNew($event)"
     ></app-participant-search>
   }
 
@@ -13,6 +13,7 @@
     <app-participant-form
       [classYears]="CLASS_YEARS"
       [classLetters]="CLASS_LETTERS"
+      [initialData]="newParticipantData"
       (submitForm)="onAddParticipant($event)"
       (cancel)="onCancelAdd()"
       (formInteraction)="onFormInteraction()"

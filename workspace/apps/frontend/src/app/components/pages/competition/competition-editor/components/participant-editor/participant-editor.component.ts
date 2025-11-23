@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CompetitionParticipant, StudentSearchResult } from '../../models/participant.model';
 import { ParticipantService } from '../../services/participant.service';
@@ -18,7 +18,7 @@ import { ParticipantListComponent } from './components/participant-list/particip
   templateUrl: './participant-editor.component.html',
   styleUrls: ['./participant-editor.component.css']
 })
-export class ParticipantEditorComponent implements OnInit, OnChanges {
+export class ParticipantEditorComponent implements OnInit, OnChanges, OnDestroy {
   @Input() participants: CompetitionParticipant[] = [];
   @Input() disabled = false;
   @Output() participantsChange = new EventEmitter<CompetitionParticipant[]>();
@@ -27,6 +27,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
   showAddForm = false;
   isSearching = false;
   searchResults: StudentSearchResult[] = [];
+  newParticipantData: { firstName?: string; lastName?: string } = {};
 
   // For demo purposes - replace with actual class options
   readonly CLASS_YEARS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -88,22 +89,23 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
     this.searchResults = [];
   }
 
-  onAddNew(): void {
+  onAddNew(searchQuery: string = ''): void {
+    const [lastName, ...firstNameParts] = searchQuery.trim().split(' ');
+    const firstName = firstNameParts.join(' ');
+
+    this.newParticipantData = {
+      firstName: firstName || '',
+      lastName: lastName || ''
+    };
+
     this.showAddForm = true;
   }
 
-  onAddParticipant(participantData: Partial<CompetitionParticipant>): void {
-    if (participantData.firstName && participantData.lastName && participantData.classYear && participantData.classLetter) {
-      const newParticipant: CompetitionParticipant = {
-        studentId: 0,
-        firstName: participantData.firstName,
-        lastName: participantData.lastName,
-        classYear: participantData.classYear,
-        classLetter: participantData.classLetter
-      };
-
-      this.participantService.addParticipant(newParticipant);
+  onAddParticipant(participant: CompetitionParticipant): void {
+    if (participant.firstName && participant.lastName) {
+      this.participantService.addParticipant(participant);
       this.showAddForm = false;
+      this.newParticipantData = {}; // Reset the form data
     }
   }
 
@@ -113,6 +115,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
 
   onCancelAdd(): void {
     this.showAddForm = false;
+    this.newParticipantData = {};
   }
 
   onFormInteraction(): void {
