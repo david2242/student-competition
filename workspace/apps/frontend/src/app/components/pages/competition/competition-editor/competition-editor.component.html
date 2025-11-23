@@ -85,12 +85,15 @@
         }
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
-        <label for="date" class="form-label">Verseny dátuma</label>
+        <label for="date" class="form-label">Verseny (vagy eredményhirdetés) dátuma</label>
         <input [readonly]="($displayMode | async) == 'show'" type="date" class="form-control"
                [ngClass]="{'is-invalid': date.touched && date.errors, 'is-valid': date.touched && !date.errors}"
                id="date" formControlName="date">
         @if (competitionForm.get('date')?.errors?.['required']) {
-          <div class="invalid-feedback">Kérem adja meg melyik tanévben kezdődött a verseny!</div>
+          <div class="invalid-feedback">Kérem adja meg a verseny (vagy az eredményhirdetés) időpontját!</div>
+        }
+        @if (competitionForm.get('date')?.errors?.['futureDate']) {
+          <div class="invalid-feedback">Nem adhat meg jövőbeni dátumot!</div>
         }
         @if (competitionForm.get('date')?.errors?.['schoolYear']) {
           <div *ngIf="competitionForm.get('date')?.errors?.['schoolYear']" class="invalid-feedback">
