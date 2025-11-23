@@ -21,6 +21,7 @@ import { ParticipantEditorComponent } from "./components/participant-editor/part
 import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
 import { NgFor, NgIf, AsyncPipe } from '@angular/common';
+import { schoolYearValidator } from "./schoolYearValidator";
 
 interface CompetitionForm extends FormGroup {
   controls: {
@@ -140,15 +141,14 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     const dateControl = this.competitionForm.get('date');
     if (!dateControl) return;
 
-    // Clear existing validators
     dateControl.clearValidators();
 
-    // Add validators based on user role
     if (this.userRole === Role.ADMIN) {
-      // Admins can add past competitions
-      dateControl.addValidators(Validators.required);
+      dateControl.addValidators([
+        Validators.required,
+        schoolYearValidator()
+      ]);
     } else {
-      // Regular users can only add future or current date competitions
       dateControl.addValidators([
         Validators.required,
         (control) => {
@@ -156,15 +156,15 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
           const today = new Date();
           today.setHours(0, 0, 0, 0);
 
-          if (selectedDate < today) {
-            return { pastDate: true };
+          if (selectedDate > today) {
+            return { futureDate: true };
           }
           return null;
-        }
+        },
+        schoolYearValidator()
       ]);
     }
 
-    // Update validation status
     dateControl.updateValueAndValidity();
   }
 
