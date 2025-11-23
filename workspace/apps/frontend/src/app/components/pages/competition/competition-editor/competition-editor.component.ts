@@ -34,7 +34,6 @@ interface CompetitionForm extends FormGroup {
     round: FormControl<Round | null>;
     forms: FormArray<FormControl<Form | null>>;
     result: FormGroup<{
-      enablePosition: FormControl<boolean>;
       position: FormControl<number | null>;
       specialPrize: FormControl<boolean>;
       compliment: FormControl<boolean>;
@@ -93,15 +92,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     { value: Round.OktvFinal, text: 'OKTV döntő' }
   ];
 
-  // Position toggle handler
-  onPositionToggle(checked: boolean): void {
-    if (checked) {
-      this.position.enable();
-    } else {
-      this.position.disable();
-      this.position.setValue(null);
-    }
-  }
 
   competitionForm: CompetitionForm = new FormGroup({
     name: new FormControl<string>('', { nonNullable: true, validators: [Validators.required] }),
@@ -118,8 +108,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       new FormControl<Form | null>(null, { nonNullable: false, validators: [Validators.required] })
     ], [Validators.required]),
     result: new FormGroup({
-      enablePosition: new FormControl<boolean>(false, { nonNullable: true }),
-      position: new FormControl<number | null>({ value: null, disabled: true }, { nonNullable: false }),
+      position: new FormControl<number | null>(null, { nonNullable: false }),
       specialPrize: new FormControl<boolean>(false, { nonNullable: true }),
       compliment: new FormControl<boolean>(false, { nonNullable: true }),
       nextRound: new FormControl<boolean>(false, { nonNullable: true })
@@ -168,22 +157,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     dateControl.updateValueAndValidity();
   }
 
-  private positionEnabler(): void {
-    if (!this.enablePosition.value) {
-      this.position.disable();
-    }
-
-    this.subscriptions.add(
-      this.enablePosition.valueChanges.subscribe(checked => {
-        if (checked) {
-          this.position.enable();
-        } else {
-          this.position.disable();
-          this.position.setValue(null);
-        }
-      })
-    );
-  }
 
   ngOnInit(): void {
     // Set up round filtering based on level changes
@@ -223,7 +196,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     // Subscribe to participant changes
     this.participantService.participants$.subscribe(participants => this.onParticipantsChange(participants));
 
-    this.positionEnabler();
     this.$displayMode.subscribe((mode) => {
       if (mode === 'show') {
         this.toggleSelects(false);
@@ -258,7 +230,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     this.specialPrize.setValue(competition.result.specialPrize);
     this.compliment.setValue(competition.result.compliment);
     this.nextRound.setValue(competition.result.nextRound);
-    this.enablePosition.setValue(!!competition.result.position);
 
     // Set up form arrays
     this.subject.clear();
@@ -278,7 +249,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.positionEnablerSubsripction?.unsubscribe();
     this.subscriptions.unsubscribe();
   }
 
@@ -294,7 +264,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   get round() { return this.competitionForm.controls.round; }
   get forms() { return this.competitionForm.controls.forms; }
   get result() { return this.competitionForm.controls.result; }
-  get enablePosition() { return this.result.controls.enablePosition; }
   get position() { return this.result.controls.position; }
   get specialPrize() { return this.result.controls.specialPrize; }
   get compliment() { return this.result.controls.compliment; }
@@ -423,7 +392,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       this.forms.disable();
       this.forms.controls.forEach(c => c.disable());
       this.result.disable();
-      this.enablePosition.disable();
       this.position.disable();
       this.specialPrize.disable();
       this.compliment.disable();
