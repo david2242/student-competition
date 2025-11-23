@@ -5,8 +5,8 @@
       <h4 class="mb-3">Bejelentkezés</h4>
       <form #credentialsFrom=ngForm (ngSubmit)="login()">
         <div class="mb-3">
-          <label for="name" class="form-label">Felhasználói név</label>
-          <input type="text" class="form-control" id="name" placeholder="felhasználói név" required [(ngModel)]="credentials.email" name="email">
+          <label for="name" class="form-label">Email cím</label>
+          <input type="text" class="form-control" id="name" placeholder="email cím" required [(ngModel)]="credentials.email" name="email">
           <div class="invalid-feedback">
             Please choose a username.
           </div>
