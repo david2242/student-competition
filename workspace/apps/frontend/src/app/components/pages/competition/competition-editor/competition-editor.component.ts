@@ -1,5 +1,5 @@
 import { ActivatedRoute, Router } from "@angular/router";
-import { BehaviorSubject, Subscription } from "rxjs";
+import { BehaviorSubject, Subscription, map, combineLatest } from "rxjs";
 import { CommonModule } from '@angular/common';
 import { Competition, Form, Level, Round } from "@/app/models/competition.model";
 import { CompetitionService, CreateCompetitionData } from "@/app/services/competition.service";
@@ -61,6 +61,7 @@ interface CompetitionForm extends FormGroup {
 export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
   private subscriptions = new Subscription();
+  private competition$ = new BehaviorSubject<Competition | null>(null);
 
   competitionService = inject(CompetitionService);
   route = inject(ActivatedRoute);
@@ -77,6 +78,17 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   protected readonly Level = Level;
   protected readonly Form = Form;
   protected readonly Round = Round;
+
+  isCompetitionDeletable$ = combineLatest([
+    this.authService.$currentUser,
+    this.competition$
+  ]).pipe(
+    map(([user, competition]) => {
+      if (!user || !competition) return false;
+      return user.role === Role.ADMIN ||
+        (user.role === Role.CONTRIBUTOR && competition.creatorId === user.id);
+    })
+  );
 
   // Available rounds based on competition level
   filteredRounds: { value: Round, text: string }[] = [];
@@ -173,6 +185,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
       this.competitionService.getCompetition(this.id).subscribe({
         next: (competition) => {
           this.competition = competition;
+          this.competition$.next(competition);
           this.fillForm(competition);
           // Initialize participants from competition data
           if (competition.participants) {
@@ -187,10 +200,14 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
           }
           this.toggleSelects(false);
         },
-        error: () => this.notification.error('Nem sikerült betölteni a versenyt!'),
+        error: () => {
+          this.notification.error('Nem sikerült betölteni a versenyt!')
+          this.competition$.next(null);
+        }
       });
     } else {
       this.$displayMode.next('edit');
+      this.competition$.next(null);
     }
 
     // Subscribe to participant changes
