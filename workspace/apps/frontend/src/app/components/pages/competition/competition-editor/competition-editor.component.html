@@ -2,8 +2,12 @@
   @if (id != null && userRole !== Role.VIEWER) {
     <div class="row">
       <div class="col d-flex flex-row-reverse">
-        <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="deleteCompetition()">Verseny törlése
-        </button>
+        @if (isCompetitionDeletable$ | async) {
+          <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="deleteCompetition()">Verseny törlése
+          </button>
+        } @else {
+          <div class="form-text">A verseny törlése számodra nem lehetséges</div>
+        }
       </div>
     </div>
   }
