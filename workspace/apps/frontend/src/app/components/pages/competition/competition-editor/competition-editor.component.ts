@@ -1,3 +1,5 @@
+import { FlatpickrDirective, provideFlatpickrDefaults } from "angularx-flatpickr";
+import { Hungarian } from 'flatpickr/dist/l10n/hu.js';
 import { ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, Subscription, map, combineLatest } from "rxjs";
 import { CommonModule } from '@angular/common';
@@ -53,8 +55,14 @@ interface CompetitionForm extends FormGroup {
     ParticipantEditorComponent,
     NgFor,
     NgIf,
-    AsyncPipe
+    AsyncPipe,
+    FlatpickrDirective
   ],
+  providers: [provideFlatpickrDefaults({
+    altFormat: 'Y.m.d.',
+    allowInput: true,
+    locale: Hungarian
+  })],
   templateUrl: './competition-editor.component.html',
   styleUrl: './competition-editor.component.css',
 })
