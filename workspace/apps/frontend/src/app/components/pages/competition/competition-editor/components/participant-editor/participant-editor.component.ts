@@ -115,6 +115,10 @@ export class ParticipantEditorComponent implements OnInit, OnChanges {
     this.showAddForm = false;
   }
 
+  onFormInteraction(): void {
+    this.searchResults = [];
+  }
+
   trackByIndex(index: number): number {
     return index;
   }

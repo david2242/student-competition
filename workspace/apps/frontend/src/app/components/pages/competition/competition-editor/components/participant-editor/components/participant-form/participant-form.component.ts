@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, FormControl } from '@angular/forms';
 import { CompetitionParticipant } from "@/app/components/pages/competition/competition-editor";
@@ -20,6 +20,7 @@ import { CompetitionParticipant } from "@/app/components/pages/competition/compe
                 id="lastName"
                 class="form-control"
                 formControlName="lastName"
+                (focus)="onFieldFocus()"
                 [class.is-invalid]="form.get('lastName')?.invalid && form.get('lastName')?.touched"
               >
               @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
@@ -35,6 +36,7 @@ import { CompetitionParticipant } from "@/app/components/pages/competition/compe
                 id="firstName"
                 class="form-control"
                 formControlName="firstName"
+                (focus)="onFieldFocus()"
                 [class.is-invalid]="form.get('firstName')?.invalid && form.get('firstName')?.touched"
               >
               @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
@@ -49,6 +51,7 @@ import { CompetitionParticipant } from "@/app/components/pages/competition/compe
                 id="classYear"
                 class="form-select"
                 formControlName="classYear"
+                (focus)="onFieldFocus()"
                 [class.is-invalid]="form.get('classYear')?.invalid && form.get('classYear')?.touched"
               >
                 <option [ngValue]="null" disabled>Válasszon évfolyamot...</option>
@@ -68,6 +71,7 @@ import { CompetitionParticipant } from "@/app/components/pages/competition/compe
                 id="classLetter"
                 class="form-select"
                 formControlName="classLetter"
+                (focus)="onFieldFocus()"
                 [class.is-invalid]="form.get('classLetter')?.invalid && form.get('classLetter')?.touched"
               >
                 <option value="" disabled>Válasszon osztályt...</option>
@@ -100,6 +104,7 @@ export class ParticipantFormComponent {
   @Input({ required: true }) classLetters: string[] = [];
   @Output() submitForm = new EventEmitter<Partial<CompetitionParticipant>>();
   @Output() cancel = new EventEmitter<void>();
+  @Output() formInteraction = new EventEmitter<void>();
 
   form: FormGroup<{
     firstName: FormControl<string | null>;
@@ -147,5 +152,9 @@ export class ParticipantFormComponent {
 
   onCancel(): void {
     this.cancel.emit();
+  }
+
+  onFieldFocus(): void {
+    this.formInteraction.emit();
   }
 }
