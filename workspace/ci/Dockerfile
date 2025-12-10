@@ -23,5 +23,6 @@ WORKDIR /app
 COPY --from=build /app/out ./
 COPY --from=build /workspace/dist/apps/frontend/browser/ /app/wwwroot/
 ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 
 ENTRYPOINT ["dotnet", "Workspace.Backend.dll"]
