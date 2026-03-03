@@ -44,10 +44,19 @@ The codebase is covered by a comprehensive suite of unit tests.
 - **Frameworks**: NUnit, Moq (for mocking), and FluentAssertions (for readable assertions).
 - **Base Class**: `Workspace.Backend.Test.Infrastructure.TestBase<T>` provides common setup for `AutoMapper` and Logging mocks.
 
-### Running Tests
-To run the backend tests, use the following command from the project root:
+To run all backend tests, use the following command from the project root:
 ```powershell
 dotnet test workspace/apps/backend-test/Workspace.Backend.Test.csproj
+```
+
+To run only **Integration Tests**:
+```powershell
+dotnet test workspace/apps/backend-test/Workspace.Backend.Test.csproj --filter "Category=Integration"
+```
+
+To run only **Unit Tests**:
+```powershell
+dotnet test workspace/apps/backend-test/Workspace.Backend.Test.csproj --filter "Category!=Integration"
 ```
 
 ### Coverage
