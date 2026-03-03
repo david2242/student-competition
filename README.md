@@ -11,34 +11,68 @@ This is an nx monorepo project, which contains the following applications:
 - In `./workspace/` `npm install`
 
 ## Development
-### Running the backend API:
-`nx serve backend`
 
-### Running the frontend application:
-`nx serve frontend`
+### Local Development Flow
+For the best development experience, you can run the backend and frontend locally while using a Dockerized Postgres database.
 
-### Building the image
-from the root directory run the following command:
-`./workspace/ci/image_creator.ps1`
+1. **Start the database:**
+   In the `./workspace/ci` folder, run:
+   ```bash
+   docker-compose up postgres
+   ```
 
-### Running the app in docker
-Docker compose file is created to run the backend in docker.
-First, build the image (see above).
+2. **Run the backend API:**
+   In the root directory, run:
+   ```bash
+   nx serve backend
+   ```
+   The backend will be available at [http://localhost:5000](http://localhost:5000) (Swagger: [http://localhost:5000/swagger](http://localhost:5000/swagger)).
 
-Then run the following command in the ./workspace/ci folder to start the backend in docker:
-`docker-compose up`
+3. **Run the frontend application:**
+   In the root directory, run:
+   ```bash
+   nx serve frontend
+   ```
+   The frontend will be available at [http://localhost:4200](http://localhost:4200). Requests starting with `/api` are automatically proxied to the local backend.
+
+### Running Tests
+Both frontend and backend have automated tests.
+
+#### Backend
+From the root directory, run:
+```powershell
+dotnet test workspace/apps/backend-test/Workspace.Backend.Test.csproj
+```
+For more advanced testing options (like filtering for integration tests), see the [Backend README](./workspace/apps/backend/README.md#running-tests).
+
+#### Frontend
+From the root directory, run:
+```bash
+nx test frontend
+```
+
+### Full Containerized Deployment (Frontend hosted in Backend)
+This method creates a production-ready image where the Angular frontend is built and placed into the `.NET` `wwwroot` folder, being served directly by the backend.
+
+1. **Building the image:**
+   From the root directory, run:
+   ```powershell
+   ./workspace/ci/image_creator.ps1
+   ```
+
+2. **Running the full stack:**
+   In the `./workspace/ci` folder, run:
+   ```bash
+   docker-compose up
+   ```
 
 This command does the following:
-- starts a PostgresSQL Server
-- attaches a volume to the SQL Server to persist the data
-- seeds the database with the initial data
-- starts the backend API
-- seeds the database with the initial authentication related tables
-- creates a user with the following credentials:
-  - username: admin
-  - password: Admin123!
-- frontend is available at http://localhost:8080
-- the backend API is available at http://localhost:8080/competition
-
-### Swagger
-http://localhost:8080/swagger/index.html
+- Starts a PostgresSQL Server with a persistent volume.
+- Seeds the database and creates a default admin user:
+  - **Username:** `admin`
+  - **Password:** `Admin123!`
+- Starts the backend container (which hosts the frontend).
+- **Access Points:**
+  - **Frontend:** [http://localhost:8080](http://localhost:8080)
+  - **Backend API:** [http://localhost:8080/competition](http://localhost:8080/competition)
+  - **Swagger:** [http://localhost:8080/swagger](http://localhost:8080/swagger)
