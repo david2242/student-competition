@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Workspace.Backend.Dtos.Student;
-using Workspace.Backend.Exceptions;
 using Workspace.Backend.Models;
 using Workspace.Backend.Services.StudentService;
 
@@ -47,57 +45,38 @@ public class StudentsController : ControllerBase
     [ProducesResponseType(typeof(ServiceResponse<StudentSearchResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ServiceResponse<StudentSearchResponseDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ServiceResponse<StudentSearchResponseDto>), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<ServiceResponse<StudentSearchResponseDto>>> SearchStudents(
+    public async Task<IActionResult> SearchStudents(
         [FromQuery, Required(ErrorMessage = "Search query is required")] string query,
         [FromQuery, Range(1, 50, ErrorMessage = "Limit must be between 1 and 50")] int? limit = null,
         [FromQuery] int? schoolYear = null,
         [FromQuery, Range(1, 12, ErrorMessage = "Class year must be between 1 and 12")] int? classYear = null,
         [FromQuery, StringLength(1, ErrorMessage = "Class letter must be a single character")] string? classLetter = null)
     {
-        var response = new ServiceResponse<StudentSearchResponseDto>();
-
-        try
+        var searchRequest = new StudentSearchRequestDto
         {
-            var searchRequest = new StudentSearchRequestDto
+            Query = query.Trim(),
+            Limit = limit ?? DefaultSearchLimit,
+            SchoolYear = schoolYear,
+            ClassYear = classYear,
+            ClassLetter = classLetter
+        };
+
+        if (!TryValidateModel(searchRequest))
+        {
+            var validationErrors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
+
+            return BadRequest(new ServiceResponse<StudentSearchResponseDto>
             {
-                Query = query.Trim(),
-                Limit = limit ?? DefaultSearchLimit,
-                SchoolYear = schoolYear,
-                ClassYear = classYear,
-                ClassLetter = classLetter
-            };
-
-            if (!TryValidateModel(searchRequest))
-            {
-                var validationErrors = ModelState.Values
-                    .SelectMany(v => v.Errors)
-                    .Select(e => e.ErrorMessage)
-                    .ToList();
-
-                response.Success = false;
-                response.Message = "Invalid request parameters";
-                response.Errors = validationErrors;
-                return BadRequest(response);
-            }
-
-
-            var searchResult = await _studentService.SearchStudentsAsync(searchRequest);
-            response.Data = searchResult;
-            return Ok(response);
+                Success = false,
+                Message = "Invalid request parameters",
+                Errors = validationErrors
+            });
         }
-        catch (System.ComponentModel.DataAnnotations.ValidationException ex)
-        {
-            _logger.LogWarning(ex, "Validation error in student search");
-            response.Success = false;
-            response.Message = ex.Message;
-            return BadRequest(response);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in student search");
-            response.Success = false;
-            response.Message = "An error occurred while processing your request.";
-            return StatusCode(StatusCodes.Status500InternalServerError, response);
-        }
+
+        var result = await _studentService.SearchStudentsAsync(searchRequest);
+        return Ok(new ServiceResponse<StudentSearchResponseDto> { Data = result });
     }
 }
