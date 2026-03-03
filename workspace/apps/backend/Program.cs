@@ -27,3 +27,5 @@ app.UseApplicationMiddlewares();
 await app.InitializeDatabaseAsync();
 
 app.Run();
+
+public partial class Program { }

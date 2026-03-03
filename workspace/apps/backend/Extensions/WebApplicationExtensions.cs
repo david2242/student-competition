@@ -19,9 +19,10 @@ public static class WebApplicationExtensions
 
     public static WebApplication UseApplicationMiddlewares(this WebApplication app)
     {
+        app.UseMiddleware<Middlewares.ExceptionMiddleware>();
+
         if (app.Environment.IsDevelopment())
         {
-            app.UseDeveloperExceptionPage();
             app.UseCors("_myAllowSpecificOrigins");
         }
 
