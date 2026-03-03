@@ -6,21 +6,24 @@ using System.Threading.Tasks;
 using Workspace.Backend.Data;
 using Workspace.Backend.Dtos.Student;
 using Workspace.Backend.Exceptions;
-using Workspace.Backend.Models;
 using Workspace.Backend.Services.StudentService;
 using Workspace.Backend.Services;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
 
 namespace Workspace.Backend.Services.StudentService;
 
 public class StudentService : IStudentService
 {
     private readonly DataContext _context;
+    private readonly IMapper _mapper;
     private const int DefaultSearchLimit = 5;
     private readonly ILogger<StudentService> _logger;
 
-    public StudentService(DataContext context, ILogger<StudentService> logger)
+    public StudentService(DataContext context, IMapper mapper, ILogger<StudentService> logger)
     {
         _context = context;
+        _mapper = mapper;
         _logger = logger;
     }
 
@@ -38,10 +41,10 @@ public class StudentService : IStudentService
         {
             foreach (var term in searchTerms)
             {
-                var term1 = term;
+                var term1 = term.ToLower();
                 query = query.Where(s =>
-                    EF.Functions.ILike(s.FirstName, $"%{term1}%") ||
-                    EF.Functions.ILike(s.LastName, $"%{term1}%"));
+                    s.FirstName.ToLower().Contains(term1) ||
+                    s.LastName.ToLower().Contains(term1));
             }
         }
 
@@ -70,36 +73,7 @@ public class StudentService : IStudentService
             .OrderBy(s => s.LastName)
             .ThenBy(s => s.FirstName)
             .Take(searchRequest.Limit > 0 ? searchRequest.Limit : DefaultSearchLimit)
-            .Select(s => new StudentSearchResultDto
-            {
-                Id = s.Id,
-                FirstName = s.FirstName,
-                LastName = s.LastName,
-                CurrentClassYear = s.CompetitionParticipants
-                    .OrderByDescending(cp => cp.SchoolYear)
-                    .ThenByDescending(cp => cp.CreatedAt)
-                    .Select(cp => (int?)cp.ClassYear)
-                    .FirstOrDefault(),
-                CurrentClassLetter = s.CompetitionParticipants
-                    .OrderByDescending(cp => cp.SchoolYear)
-                    .ThenByDescending(cp => cp.CreatedAt)
-                    .Select(cp => cp.ClassLetter)
-                    .FirstOrDefault(),
-                Participations = s.CompetitionParticipants
-                    .OrderByDescending(cp => cp.SchoolYear)
-                    .ThenByDescending(cp => cp.Competition.Date)
-                    .Select(cp => new StudentParticipationDto
-                    {
-                        CompetitionId = cp.CompetitionId,
-                        CompetitionName = cp.Competition.Name,
-                        CompetitionDate = cp.Competition.Date.ToDateTime(TimeOnly.MinValue),
-                        ClassYear = cp.ClassYear,
-                        ClassLetter = cp.ClassLetter,
-                        SchoolYear = cp.SchoolYear,
-                        CreatedAt = cp.CreatedAt
-                    })
-                    .ToList()
-            })
+            .ProjectTo<StudentSearchResultDto>(_mapper.ConfigurationProvider)
             .ToListAsync();
 
         try
