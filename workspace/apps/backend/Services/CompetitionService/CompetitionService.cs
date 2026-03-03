@@ -115,43 +115,6 @@ public class CompetitionService : ICompetitionService
     }
   }
 
-  private GetCompetitionResponseDto? MapCompetitionToDto(Competition? competition, string? creatorId = null)
-  {
-    if (competition == null)
-    {
-      return null;
-    }
-
-    var dto = new GetCompetitionResponseDto
-    {
-      Id = competition.Id,
-      Name = competition.Name,
-      Location = competition.Location,
-      Subject = competition.Subject,
-      Teacher = competition.Teacher,
-      Date = competition.Date,
-      Level = competition.Level,
-      Round = competition.Round,
-      Other = competition.Other,
-      CreatorId = creatorId ?? competition.CreatorId,
-      Created = competition.Created,
-      UpdatedAt = competition.UpdatedAt,
-      Result = competition.Result,
-      Participants = competition.CompetitionParticipants?.Select(cp => new ParticipantDto
-      {
-        StudentId = cp.StudentId,
-        FirstName = cp.Student?.FirstName ?? "Unknown",
-        LastName = cp.Student?.LastName ?? "Student",
-        ClassYear = cp.ClassYear,
-        ClassLetter = cp.ClassLetter,
-        SchoolYear = cp.SchoolYear
-      }).ToArray() ?? Array.Empty<ParticipantDto>(),
-      Forms = competition.Forms ?? Array.Empty<string>()
-    };
-
-    return dto;
-  }
-
   private static IQueryable<Competition> CompetitionIncludes(IQueryable<Competition> query)
   {
     return query
@@ -166,9 +129,7 @@ public class CompetitionService : ICompetitionService
       .ToListAsync();
 
     return competitions
-      .Select(c => MapCompetitionToDto(c, c.CreatorId))
-      .Where(dto => dto != null)
-      .Select(dto => dto!)
+      .Select(c => _mapper.Map<GetCompetitionResponseDto>(c))
       .ToList();
   }
 
@@ -182,7 +143,7 @@ public class CompetitionService : ICompetitionService
       throw new KeyNotFoundException($"Competition with ID {id} not found");
     }
 
-    var result = MapCompetitionToDto(competition, competition.CreatorId);
+    var result = _mapper.Map<GetCompetitionResponseDto>(competition);
     if (result == null)
     {
       throw new InvalidOperationException($"Failed to map competition with ID {id} to DTO");
@@ -243,9 +204,7 @@ public class CompetitionService : ICompetitionService
         .ToListAsync();
 
       return allCompetitions
-        .Select(c => MapCompetitionToDto(c, c.CreatorId))
-        .Where(dto => dto != null)
-        .Select(dto => dto!)
+        .Select(c => _mapper.Map<GetCompetitionResponseDto>(c))
         .ToList();
     }
     catch (DbUpdateException dbEx)
@@ -321,8 +280,7 @@ public class CompetitionService : ICompetitionService
         .FirstOrDefaultAsync(c => c.Id == id) ?? 
         throw new KeyNotFoundException($"Competition with ID {id} not found after update");
 
-      return MapCompetitionToDto(updatedCompetitionResult, updatedCompetitionResult.CreatorId) ??
-        throw new InvalidOperationException($"Failed to map updated competition with ID {id} to DTO");
+      return _mapper.Map<GetCompetitionResponseDto>(updatedCompetitionResult);
     }
     catch (Exception ex)
     {
