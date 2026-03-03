@@ -8,6 +8,7 @@ using Workspace.Backend.Dtos.User;
 using Workspace.Backend.Models;
 using Workspace.Backend.Services.UserService;
 using Workspace.Backend.Test.Infrastructure;
+using MockQueryable.Moq;
 
 namespace Workspace.Backend.Test.Services;
 
