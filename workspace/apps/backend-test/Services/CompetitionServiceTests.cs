@@ -103,4 +103,100 @@ public class CompetitionServiceTests : TestBase<CompetitionService>
         // Assert
         act.Should().ThrowAsync<KeyNotFoundException>();
     }
+    [Test]
+    public async Task AddCompetition_WhenSuccessful_CreatesCompetitionAndParticipants()
+    {
+        // Arrange
+        var userId = "user-123";
+        var user = new IdentityUser { Id = userId, UserName = "test@example.com" };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.IsInRoleAsync(user, "admin")).ReturnsAsync(true);
+
+        var request = new AddCompetitionRequestDto
+        {
+            Name = "New Competition",
+            Location = "Test Loc",
+            Date = DateOnly.FromDateTime(DateTime.Today),
+            Participants = new List<ParticipantDto>
+            {
+                new() { FirstName = "New", LastName = "Student", ClassYear = 10, ClassLetter = "A" }
+            }
+        };
+
+        // Act
+        var result = await _service.AddCompetition(request, userId);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("New Competition");
+        
+        var competitions = await _context.Competitions.Include(c => c.CompetitionParticipants).ToListAsync();
+        competitions.Should().HaveCount(1);
+        competitions[0].CompetitionParticipants.Should().HaveCount(1);
+        
+        var students = await _context.Students.ToListAsync();
+        students.Should().HaveCount(1);
+        students[0].FirstName.Should().Be("New");
+    }
+
+    [Test]
+    public async Task UpdateCompetition_WhenUserIsCreator_UpdatesSuccessfully()
+    {
+        // Arrange
+        var userId = "creator-123";
+        var user = new IdentityUser { Id = userId };
+        _context.Users.Add(user);
+
+        var competition = new Competition 
+        { 
+            Id = 1, 
+            Name = "Old Name", 
+            CreatorId = userId,
+            Date = DateOnly.FromDateTime(DateTime.Today)
+        };
+        _context.Competitions.Add(competition);
+        await _context.SaveChangesAsync();
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(userId)).ReturnsAsync(user);
+        _userManagerMock.Setup(x => x.IsInRoleAsync(user, "admin")).ReturnsAsync(false);
+
+        var updateRequest = new UpdateCompetitionRequestDto
+        {
+            Name = "New Name",
+            Date = DateOnly.FromDateTime(DateTime.Today)
+        };
+
+        // Act
+        var result = await _service.UpdateCompetition(1, updateRequest, userId);
+
+        // Assert
+        result.Name.Should().Be("New Name");
+        var dbComp = await _context.Competitions.FindAsync(1);
+        dbComp!.Name.Should().Be("New Name");
+    }
+
+    [Test]
+    public async Task UpdateCompetition_WhenUserNotCreatorAndNotAdmin_ThrowsUnauthorizedAccessException()
+    {
+        // Arrange
+        var creatorId = "creator-123";
+        var otherUserId = "other-123";
+        var otherUser = new IdentityUser { Id = otherUserId };
+        
+        var competition = new Competition { Id = 1, CreatorId = creatorId };
+        _context.Competitions.Add(competition);
+        await _context.SaveChangesAsync();
+
+        _userManagerMock.Setup(x => x.FindByIdAsync(otherUserId)).ReturnsAsync(otherUser);
+        _userManagerMock.Setup(x => x.IsInRoleAsync(otherUser, "admin")).ReturnsAsync(false);
+
+        // Act
+        Func<Task> act = async () => await _service.UpdateCompetition(1, new UpdateCompetitionRequestDto(), otherUserId);
+
+        // Assert
+        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
 }
