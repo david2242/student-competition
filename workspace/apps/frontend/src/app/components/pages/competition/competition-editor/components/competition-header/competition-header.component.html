@@ -1,0 +1,36 @@
+@if (location === 'top') {
+<div class="container-fluid mt-2">
+    @if (id != null && userRole !== Role.VIEWER) {
+    <div class="row">
+        <div class="col d-flex flex-row-reverse">
+            @if (isDeletable) {
+            <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="onDelete()">Verseny törlése
+            </button>
+            } @else {
+            <div class="form-text">A verseny törlése számodra nem lehetséges</div>
+            }
+        </div>
+    </div>
+    }
+</div>
+}
+
+@if (location === 'bottom') {
+<div class="row mt-3">
+    <div class="col d-flex flex-row justify-content-between">
+        @if (mode === 'show' && userRole !== Role.VIEWER) {
+        <button type="button" class="btn btn-outline-secondary" (click)="onEdit()">Szerkesztés</button>
+        }
+        @if (mode === 'edit' && id != null) {
+        <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">Mégse</button>
+        }
+        @if (mode === 'edit') {
+        <button [disabled]="isLoading" type="submit" (click)="onSave()" class="btn btn-primary">
+            <span *ngIf="!isLoading">Mentés</span>
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span *ngIf="isLoading" class="visually-hidden">Mentés...</span>
+        </button>
+        }
+    </div>
+</div>
+}
