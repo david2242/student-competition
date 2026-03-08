@@ -7,6 +7,8 @@ using Moq;
 using NUnit.Framework;
 using Workspace.Backend.Data;
 using Workspace.Backend.Models;
+using Workspace.Backend.Dtos.Competition;
+using Workspace.Backend.Dtos.Student;
 using Workspace.Backend.Services.CompetitionService;
 using Workspace.Backend.Test.Infrastructure;
 
@@ -27,6 +29,7 @@ public class CompetitionServiceTests : TestBase<CompetitionService>
 
         var options = new DbContextOptionsBuilder<DataContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
         _context = new DataContext(options);

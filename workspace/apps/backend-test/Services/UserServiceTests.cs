@@ -2,13 +2,16 @@ using System.Security.Claims;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MockQueryable;
+using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
 using Workspace.Backend.Dtos.User;
 using Workspace.Backend.Models;
 using Workspace.Backend.Services.UserService;
 using Workspace.Backend.Test.Infrastructure;
-using MockQueryable.Moq;
+using System.Linq;
 
 namespace Workspace.Backend.Test.Services;
 
@@ -122,7 +125,8 @@ public class UserServiceTests : TestBase<UserService>
             .ReturnsAsync(IdentityResult.Success);
 
         // Mock GetAll() behavior
-        _userManagerMock.Setup(x => x.Users).Returns(new List<IdentityUser>().AsQueryable().BuildMock());
+        var userList = new List<IdentityUser>();
+        _userManagerMock.Setup(x => x.Users).Returns(userList.BuildMock());
 
         // Act
         var result = await _service.AddUser(newUser);
