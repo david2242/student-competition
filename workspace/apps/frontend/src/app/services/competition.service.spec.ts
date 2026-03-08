@@ -18,7 +18,7 @@ describe('CompetitionService', () => {
     date: '',
     level: Level.Local,
     round: Round.State,
-    forms: [ Form.Oral ],
+    forms: [Form.Oral],
     result: {
       position: 0,
       specialPrize: false,
@@ -29,7 +29,7 @@ describe('CompetitionService', () => {
   }
 
   const stubGetAllResponse: ServerResponse<Competition[]> = {
-    data: [ stubCompetition ],
+    data: [stubCompetition],
     message: 'Success',
     success: true
   }
@@ -71,42 +71,33 @@ describe('CompetitionService', () => {
 
   it('should get competition', (done) => {
     service.getCompetition(1).subscribe(data => {
-        expect(data).toEqual(stubGetResponse.data);
-        done();
-      }
+      expect(data).toEqual(stubGetResponse.data);
+      done();
+    }
     );
     const req = httpTesting.expectOne(`${service.apiUrl}/competition/1`);
     req.flush(stubGetResponse);
     expect(req.request.method).toBe('GET');
   });
 
-  // it('should create the competition', (done) => {
-  //   service.createCompetition(stubCompetition).subscribe((data) => {
-  //     expect(data).toEqual(stubGetResponse.data);
-  //     done();
-  //   });
-  //   const req = httpTesting.expectOne(`${service.apiUrl}/competition`);
-  //   expect(req.request.method).toBe('POST');
-  //   req.flush(stubGetResponse);
-  // });
 
   it('should update the competition', (done) => {
     service.updateCompetition(1, stubCompetition).subscribe((data) => {
-      expect(data).toEqual(stubGetResponse.data);
+      expect(data).toEqual(stubGetAllResponse.data);
       done();
     });
     const req = httpTesting.expectOne(`${service.apiUrl}/competition/1`);
-    req.flush(stubGetResponse);
+    req.flush(stubGetAllResponse);
     expect(req.request.method).toBe('PUT');
   });
 
   it('should delete the competition', (done) => {
     service.deleteCompetition(1).subscribe((data) => {
-      expect(data).toEqual(stubGetAllResponse.data);
+      expect(data).toBe(true);
       done();
     });
     const req = httpTesting.expectOne(`${service.apiUrl}/competition/1`);
     expect(req.request.method).toBe('DELETE');
-    req.flush(stubGetAllResponse);
+    req.flush({ success: true, data: null });
   });
 });

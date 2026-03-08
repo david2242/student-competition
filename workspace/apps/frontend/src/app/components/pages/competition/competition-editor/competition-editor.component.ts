@@ -209,8 +209,9 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
           this.toggleSelects(false);
         },
         error: () => {
-          this.notification.error('Nem sikerült betölteni a versenyt!')
+          this.notification.error('Nem sikerült betölteni a versenyt!');
           this.competition$.next(null);
+          this.router.navigate(['/competitions']);
         }
       });
     } else {
@@ -246,8 +247,8 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
 
     // Set OKTV mode based on round
     const isOktv = competition.round === Round.OktvRoundOne ||
-                  competition.round === Round.OktvRoundTwo ||
-                  competition.round === Round.OktvFinal;
+      competition.round === Round.OktvRoundTwo ||
+      competition.round === Round.OktvFinal;
     this.competitionForm.get('oktv')?.setValue(isOktv);
 
     // Set result values
@@ -379,7 +380,7 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   }
 
   back() {
-    this.router.navigate([ 'competition' ]);
+    this.router.navigate(['competition']);
   }
 
   editMode() {
@@ -440,9 +441,14 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
     if (window.confirm('Are you sure you want to delete this competition?')) {
       this.competitionService
         .deleteCompetition(this.id)
-        .subscribe(() => {
-          this.notification.success('Competition deleted successfully');
-          this.router.navigate(['/competitions']);
+        .subscribe({
+          next: () => {
+            this.notification.success('Competition deleted successfully');
+            this.router.navigate(['/competitions']);
+          },
+          error: () => {
+            this.notification.error('Hiba történt a törlés során.');
+          }
         });
     }
   }

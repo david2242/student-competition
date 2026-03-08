@@ -1,13 +1,14 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { of, BehaviorSubject, throwError, map, take } from "rxjs";
+import { of, BehaviorSubject, throwError } from "rxjs";
 import { ActivatedRoute, Router } from "@angular/router";
-import { CompetitionEditorComponent } from './competition-editor.component';
+import { Competition, Form, Level, Round } from "@/app/models/competition.model";
 import { CompetitionService } from "@/app/services/competition.service";
+import { CompetitionEditorComponent } from './competition-editor.component';
+import { Role } from "@/app/models/current-user";
+import { take } from "rxjs/operators";
 import { NotificationService } from "@/app/services/notification.service";
 import { AuthService } from "@/app/services/auth.service";
 import { ParticipantService } from "./services/participant.service";
-import { Role } from "@/app/models/current-user";
-import { Level, Round, Form } from "@/app/models/competition.model";
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('CompetitionEditorComponent', () => {
@@ -15,12 +16,10 @@ describe('CompetitionEditorComponent', () => {
   let fixture: ComponentFixture<CompetitionEditorComponent>;
   let competitionService: any;
   let notificationService: any;
-  let authService: any;
-  let participantService: any;
   let router: any;
-
-  const currentUserSubject = new BehaviorSubject<any>({ role: Role.ADMIN, id: 1 });
-  const participantsSubject = new BehaviorSubject<any[]>([]);
+  let participantService: any;
+  let authService: any;
+  let currentUserSubject: BehaviorSubject<any>;
 
   beforeEach(async () => {
     competitionService = {
@@ -28,18 +27,18 @@ describe('CompetitionEditorComponent', () => {
         id: 1,
         name: 'Test Competition',
         location: 'Test Location',
-        date: '2026.01.01',
-        level: Level.State,
-        round: Round.State,
+        date: '2024.01.01',
+        level: Level.Local,
+        round: Round.School,
         subject: ['Math'],
-        teacher: ['Teacher 1'],
+        teacher: ['Teacher'],
         forms: [Form.Written],
         result: { position: 1, specialPrize: false, compliment: false, nextRound: false },
-        participants: [],
-        other: ''
+        other: 'Notes',
+        participants: []
       })),
-      createCompetition: jest.fn().mockReturnValue(of({})),
-      updateCompetition: jest.fn().mockReturnValue(of({})),
+      createCompetition: jest.fn(),
+      updateCompetition: jest.fn(),
       deleteCompetition: jest.fn().mockReturnValue(of({}))
     };
 
@@ -48,19 +47,20 @@ describe('CompetitionEditorComponent', () => {
       error: jest.fn()
     };
 
-    authService = {
-      $currentUser: currentUserSubject.asObservable(),
+    router = {
+      navigate: jest.fn()
     };
 
     participantService = {
-      participants$: participantsSubject.asObservable(),
       initialize: jest.fn(),
       clearParticipants: jest.fn(),
-      getParticipantsForSubmission: jest.fn().mockReturnValue([{ studentId: 101, classYear: 9, classLetter: 'A' }])
+      getParticipantsForSubmission: jest.fn().mockReturnValue([{ studentId: 1 }]),
+      participants$: new BehaviorSubject([])
     };
 
-    router = {
-      navigate: jest.fn()
+    currentUserSubject = new BehaviorSubject({ role: Role.ADMIN, id: 1 });
+    authService = {
+      $currentUser: currentUserSubject.asObservable()
     };
 
     await TestBed.configureTestingModule({
@@ -68,19 +68,10 @@ describe('CompetitionEditorComponent', () => {
       providers: [
         { provide: CompetitionService, useValue: competitionService },
         { provide: NotificationService, useValue: notificationService },
-        { provide: AuthService, useValue: authService },
-        { provide: ParticipantService, useValue: participantService },
         { provide: Router, useValue: router },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              paramMap: {
-                get: jest.fn().mockReturnValue(null)
-              }
-            }
-          }
-        }
+        { provide: ParticipantService, useValue: participantService },
+        { provide: AuthService, useValue: authService },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute(null) }
       ]
     }).compileComponents();
 
@@ -178,14 +169,14 @@ describe('CompetitionEditorComponent', () => {
   describe('Round Filtering Logic', () => {
     it('should filter rounds for Local level', () => {
       component.level.setValue(Level.Local);
-      expect(component.filteredRounds.every(r =>
+      expect(component.filteredRounds.every((r: any) =>
         r.value === Round.School || r.value === Round.Regional
       )).toBeTruthy();
     });
 
     it('should filter rounds for National level', () => {
       component.level.setValue(Level.National);
-      expect(component.filteredRounds.every(r =>
+      expect(component.filteredRounds.every((r: any) =>
         r.value === Round.Regional || r.value === Round.National
       )).toBeTruthy();
     });
@@ -200,7 +191,7 @@ describe('CompetitionEditorComponent', () => {
 
     it('should filter for OKTV rounds when OKTV is enabled', () => {
       component.toggleOktv(true);
-      expect(component.filteredRounds.every(r =>
+      expect(component.filteredRounds.every((r: any) =>
         [Round.OktvRoundOne, Round.OktvRoundTwo, Round.OktvFinal].includes(r.value)
       )).toBeTruthy();
     });
@@ -235,7 +226,7 @@ describe('CompetitionEditorComponent', () => {
 
       it('should be deletable for ADMIN', (done) => {
         currentUserSubject.next({ role: Role.ADMIN, id: 1 });
-        component.isCompetitionDeletable$.pipe(take(1)).subscribe(deletable => {
+        component.isCompetitionDeletable$.pipe(take(1)).subscribe((deletable: boolean) => {
           expect(deletable).toBe(true);
           done();
         });
@@ -243,7 +234,7 @@ describe('CompetitionEditorComponent', () => {
 
       it('should be deletable for Creator CONTRIBUTOR', (done) => {
         currentUserSubject.next({ role: Role.CONTRIBUTOR, id: 10 });
-        component.isCompetitionDeletable$.pipe(take(1)).subscribe(deletable => {
+        component.isCompetitionDeletable$.pipe(take(1)).subscribe((deletable: boolean) => {
           expect(deletable).toBe(true);
           done();
         });
@@ -251,7 +242,7 @@ describe('CompetitionEditorComponent', () => {
 
       it('should NOT be deletable for other CONTRIBUTOR', (done) => {
         currentUserSubject.next({ role: Role.CONTRIBUTOR, id: 11 });
-        component.isCompetitionDeletable$.pipe(take(1)).subscribe(deletable => {
+        component.isCompetitionDeletable$.pipe(take(1)).subscribe((deletable: boolean) => {
           expect(deletable).toBe(false);
           done();
         });
@@ -271,6 +262,7 @@ describe('CompetitionEditorComponent', () => {
     });
 
     it('should call createCompetition on submit when ID is null', fakeAsync(() => {
+      competitionService.createCompetition.mockReturnValue(of({}));
       component.onSubmit();
       tick();
       expect(competitionService.createCompetition).toHaveBeenCalled();
@@ -278,8 +270,26 @@ describe('CompetitionEditorComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
     }));
 
+    it('should call updateCompetition on submit when ID is provided', fakeAsync(() => {
+      competitionService.updateCompetition.mockReturnValue(of({}));
+      // Mock ActivatedRoute to provide an ID
+      const activatedRoute = TestBed.inject(ActivatedRoute);
+      (activatedRoute.snapshot.paramMap.get as jest.Mock).mockReturnValue('1');
+
+      // Re-initialize to trigger ngOnInit with ID
+      component.ngOnInit();
+      tick();
+      fixture.detectChanges();
+
+      component.onSubmit();
+      tick();
+      expect(competitionService.updateCompetition).toHaveBeenCalled();
+      expect(notificationService.success).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+    }));
+
     it('should show error notification on failed submission', fakeAsync(() => {
-      competitionService.createCompetition.mockReturnValue(throwError(() => new Error('API Error')));
+      competitionService.createCompetition.mockReturnValue(throwError(() => new Error('UNIQUE API ERROR')));
       component.onSubmit();
       tick();
       expect(notificationService.error).toHaveBeenCalled();
@@ -292,4 +302,83 @@ describe('CompetitionEditorComponent', () => {
       expect(competitionService.createCompetition).not.toHaveBeenCalled();
     });
   });
+
+  describe('Initialization with ID', () => {
+    it('should load competition data when ID is provided in route', fakeAsync(() => {
+      const activatedRoute = TestBed.inject(ActivatedRoute);
+      (activatedRoute.snapshot.paramMap.get as jest.Mock).mockReturnValue('1');
+
+      component.ngOnInit();
+      tick();
+      fixture.detectChanges();
+
+      expect(competitionService.getCompetition).toHaveBeenCalledWith(1);
+      expect(component.name.value).toBe('Test Competition');
+    }));
+
+    it('should handle error when competition loading fails', fakeAsync(() => {
+      const activatedRoute = TestBed.inject(ActivatedRoute);
+      (activatedRoute.snapshot.paramMap.get as jest.Mock).mockReturnValue('999');
+      competitionService.getCompetition.mockReturnValue(throwError(() => new Error('Not Found')));
+
+      component.ngOnInit();
+      tick();
+
+      expect(notificationService.error).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+    }));
+  });
+
+  describe('Deletion', () => {
+    beforeEach(() => {
+      const activatedRoute = TestBed.inject(ActivatedRoute);
+      (activatedRoute.snapshot.paramMap.get as jest.Mock).mockReturnValue('1');
+      component.ngOnInit();
+    });
+
+    it('should call deleteCompetition and navigate back on success', fakeAsync(() => {
+      // Mock confirm
+      window.confirm = jest.fn().mockReturnValue(true);
+
+      component.deleteCompetition();
+      tick();
+
+      expect(competitionService.deleteCompetition).toHaveBeenCalledWith(1);
+      expect(notificationService.success).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+    }));
+
+    it('should handle error on deletion failure', fakeAsync(() => {
+      window.confirm = jest.fn().mockReturnValue(true);
+      competitionService.deleteCompetition.mockReturnValue(throwError(() => new Error('Delete failed')));
+
+      component.deleteCompetition();
+      tick();
+
+      expect(notificationService.error).toHaveBeenCalled();
+    }));
+
+    it('should not call delete if user cancels confirmation', fakeAsync(() => {
+      window.confirm = jest.fn().mockReturnValue(false);
+
+      component.deleteCompetition();
+      tick();
+
+      expect(competitionService.deleteCompetition).not.toHaveBeenCalled();
+    }));
+  });
 });
+
+const mockCompetitionService = {
+  createCompetitions: () => of()
+};
+
+function mockActivatedRoute(id: string | null) {
+  return {
+    snapshot: {
+      paramMap: {
+        get: jest.fn().mockReturnValue(id)
+      }
+    }
+  }
+}

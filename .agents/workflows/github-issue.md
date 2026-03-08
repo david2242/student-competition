@@ -17,19 +17,33 @@ Use this step when you identify a new bug, improvement, or task that needs track
 3. **Record the Issue ID**: Note the issue number (e.g., #105).
 
 ## 1. Branch Setup
-Create or checkout the branch associated with the issue using the user's naming convention: `[id]-[slug]`.
+Create or checkout the branch associated with the issue. Using `gh issue develop` ensures a consistent "nice slug" naming convention linked to the issue.
 
-1. **Checkout or Create Branch**:
-   // turbo
+1. **Stash Local Changes (Optional)**:
+   If you have uncommitted work, stash it first:
    ```powershell
-   gh issue checkout [issue-number]
+   git stash
    ```
-   *Note: If the branch doesn't exist, ensure the name follows the `[id]-[descriptive-name]` pattern (e.g., `105-implement-error-handling`).*
 
-2. **Sync with Origin**:
+2. **Create/Checkout Branch via Issue**:
    // turbo
    ```powershell
-   git fetch origin
+   gh issue develop [issue-number]
+   ```
+   *Note: This creates a branch on the remote and links it to the issue. Then checkout the branch locally:*
+   ```powershell
+   git checkout [branch-name]
+   ```
+   *Tip: Use `gh issue develop [issue-number] --name "[id]-[slug]-phase-[n]"` if the task has multiple phases (e.g., `113-refactor-competition-editor-phase-0`). This avoids confusion in future steps.*
+
+3. **Pop Stash (Optional)**:
+   ```powershell
+   git stash pop
+   ```
+
+4. **Sync with Origin**:
+   // turbo
+   ```powershell
    git pull origin
    ```
 
