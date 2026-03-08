@@ -20,6 +20,7 @@ import { teachers } from "./teachers";
 import { Role } from "@/app/models/current-user";
 import { AuthService } from "@/app/services/auth.service";
 import { ParticipantEditorComponent } from "./components/participant-editor/participant-editor.component";
+import { CompetitionHeaderComponent } from "./components/competition-header/competition-header.component";
 import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
 import { NgFor, NgIf, AsyncPipe } from '@angular/common';
@@ -53,6 +54,7 @@ interface CompetitionForm extends FormGroup {
     ReactiveFormsModule,
     FormsModule,
     ParticipantEditorComponent,
+    CompetitionHeaderComponent,
     NgFor,
     NgIf,
     AsyncPipe,

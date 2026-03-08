@@ -6,6 +6,7 @@ Ez a dokumentum részletezi a `CompetitionEditorComponent` szétbontásának lé
 1.  **Single Responsibility**: Minden új komponens csak egy logikai egységért feleljen.
 2.  **Kód tisztaság**: A fő komponens méretének drasztikus csökkentése.
 3.  **Változatlan Design**: A refaktorálás során a vizuális megjelenés nem módosulhat.
+4.  **Struktúra**: Az elemeknek ugyanott kell lenniük, ugyanazzal a desig-nal mint eddig. 
 
 ## Javasolt Új Komponensek
 
