@@ -30,7 +30,7 @@ public class StringSimilarityServiceTests
     [TestCase("abc", "", 0.0)]
     [TestCase(null, "abc", 0.0)]
     [TestCase("abc", "abd", 2.0/3.0)]
-    public void CalculateSimilarity_ReturnsCorrectScore(string s1, string s2, double expectedScore)
+    public void CalculateSimilarity_ReturnsCorrectScore(string? s1, string? s2, double expectedScore)
     {
         // Act
         double result = StringSimilarityService.CalculateSimilarity(s1, s2);
