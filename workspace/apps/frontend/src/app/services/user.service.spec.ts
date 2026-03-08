@@ -6,6 +6,8 @@ import { ServerResponse } from "@/app/models/server-response";
 import { UserService } from './user.service';
 
 
+import { Role } from '@/app/models/current-user';
+
 describe('UserService', () => {
   let service: UserService;
   let httpTesting: HttpTestingController;
@@ -13,10 +15,13 @@ describe('UserService', () => {
   const stubUser: User = {
     id: '1',
     email: 'testuser@example.com',
+    firstName: 'Test',
+    lastName: 'User',
+    role: Role.VIEWER
   };
 
   const stubGetAllResponse: ServerResponse<User[]> = {
-    data: [ stubUser ],
+    data: [stubUser],
     message: 'Success',
     success: true
   };
@@ -83,13 +88,13 @@ describe('UserService', () => {
     req.flush(stubGetResponse);
   });
 
-  it('should delete a user and return all the users', (done) => {
+  it('should delete a user and return the user', (done) => {
     service.deleteUser('1').subscribe(data => {
-      expect(data).toEqual(stubGetAllResponse.data);
+      expect(data).toEqual(stubGetResponse.data);
       done();
     });
     const req = httpTesting.expectOne(`${service.apiUrl}/user/1`);
     expect(req.request.method).toBe('DELETE');
-    req.flush(stubGetAllResponse);
+    req.flush(stubGetResponse);
   });
 });

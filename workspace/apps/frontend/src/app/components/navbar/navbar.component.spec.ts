@@ -4,6 +4,10 @@ import { AuthService } from "@/app/services/auth.service";
 import { BehaviorSubject } from "rxjs";
 import { RouterTestingModule } from "@angular/router/testing";
 
+const mockAuthService = {
+  $isLoggedIn: new BehaviorSubject(false)
+};
+
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
@@ -25,7 +29,3 @@ describe('NavbarComponent', () => {
     expect(component).toBeTruthy();
   });
 });
-
-const mockAuthService = {
-  $isLoggedIn: new BehaviorSubject(false)
-};
