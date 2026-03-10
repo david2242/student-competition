@@ -1,0 +1,19 @@
+<label [for]="id" class="form-label">{{ label }}</label>
+
+@if (type === 'textarea') {
+<textarea [readonly]="displayMode === 'show'" class="form-control" [id]="id" [formControl]="control" [ngClass]="{
+      'is-invalid': displayMode === 'edit' && control.touched && control.errors
+    }"></textarea>
+} @else {
+<input [readonly]="displayMode === 'show'" [type]="type" class="form-control" [id]="id" [formControl]="control"
+    [ngClass]="{
+      'is-invalid': displayMode === 'edit' && control.touched && control.errors, 
+      'is-valid': displayMode === 'edit' && control.touched && !control.errors
+    }">
+}
+
+@if (displayMode === 'edit' && control.touched && control.errors) {
+<div class="invalid-feedback d-block">
+    {{ errorMessage }}
+</div>
+}

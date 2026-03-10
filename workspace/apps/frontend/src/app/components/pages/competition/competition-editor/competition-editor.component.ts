@@ -24,6 +24,7 @@ import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
 import { NgFor, NgIf, AsyncPipe } from '@angular/common';
 import { schoolYearValidator } from "./schoolYearValidator";
+import { CompetitionFieldComponent } from "./components/competition-field/competition-field.component";
 
 interface CompetitionForm extends FormGroup {
   controls: {
@@ -56,7 +57,8 @@ interface CompetitionForm extends FormGroup {
     NgFor,
     NgIf,
     AsyncPipe,
-    FlatpickrDirective
+    FlatpickrDirective,
+    CompetitionFieldComponent
   ],
   providers: [provideFlatpickrDefaults({
     altFormat: 'Y.m.d.',
