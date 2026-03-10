@@ -1,0 +1,42 @@
+<label class="form-label d-block">{{ label }}</label>
+
+@if (controls.length > 0) {
+<div *ngFor="let control of controls; let i = index" class="input-group mb-2">
+    @if (inputType === 'text') {
+    <input [readonly]="displayMode === 'show'" type="text" class="form-control" [formControl]="control"
+        [attr.list]="label + '-list-' + i" [ngClass]="{
+          'is-invalid': displayMode === 'edit' && control.touched && control.errors,
+          'is-valid': displayMode === 'edit' && control.touched && !control.errors
+        }">
+    <datalist [id]="label + '-list-' + i">
+        @for (opt of options; track opt) {
+        <option [value]="opt"></option>
+        }
+    </datalist>
+    } @else {
+    <select class="form-select" [formControl]="control" [ngClass]="{
+          'is-invalid': displayMode === 'edit' && control.touched && control.errors,
+          'is-valid': displayMode === 'edit' && control.touched && !control.errors
+        }">
+        <option [ngValue]="null" disabled selected>Válasszon!</option>
+        @for (opt of options; track opt.value) {
+        <option [ngValue]="opt.value">{{ opt.text }}</option>
+        }
+    </select>
+    }
+
+    @if (displayMode === 'edit' && (i !== 0 || canDeleteFirst)) {
+    <button class="btn btn-outline-danger" type="button" (click)="removeItem(i)">Törlés</button>
+    }
+
+    @if (displayMode === 'edit' && control.touched && control.errors) {
+    <div class="invalid-feedback d-block">{{ errorMessage }}</div>
+    }
+</div>
+} @else if (displayMode === 'show') {
+<div class="text-muted">{{ emptyMessage }}</div>
+}
+
+@if (displayMode === 'edit') {
+<button type="button" class="btn btn-secondary" (click)="addItem()">{{ addButtonLabel }}</button>
+}
