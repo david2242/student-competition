@@ -23,9 +23,10 @@ import { ParticipantEditorComponent } from "./components/participant-editor/part
 import { CompetitionHeaderComponent } from "./components/competition-header/competition-header.component";
 import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
-import { NgFor, NgIf, AsyncPipe } from '@angular/common';
+import { NgIf, AsyncPipe } from '@angular/common';
 import { schoolYearValidator } from "./schoolYearValidator";
 import { CompetitionFieldComponent } from "./components/competition-field/competition-field.component";
+import { CompetitionListFieldComponent } from "./components/competition-list-field/competition-list-field.component";
 
 interface CompetitionForm extends FormGroup {
   controls: {
@@ -56,11 +57,11 @@ interface CompetitionForm extends FormGroup {
     FormsModule,
     ParticipantEditorComponent,
     CompetitionHeaderComponent,
-    NgFor,
     NgIf,
     AsyncPipe,
     FlatpickrDirective,
-    CompetitionFieldComponent
+    CompetitionFieldComponent,
+    CompetitionListFieldComponent
   ],
   providers: [provideFlatpickrDefaults({
     altFormat: 'Y.m.d.',
