@@ -1,5 +1,3 @@
-import { FlatpickrDirective, provideFlatpickrDefaults } from "angularx-flatpickr";
-import { Hungarian } from 'flatpickr/dist/l10n/hu.js';
 import { ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, Subscription, map, combineLatest } from "rxjs";
 import { CommonModule } from '@angular/common';
@@ -10,7 +8,6 @@ import {
   FormArray,
   FormControl,
   FormGroup,
-  FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
@@ -23,12 +20,14 @@ import { ParticipantEditorComponent } from "./components/participant-editor/part
 import { CompetitionHeaderComponent } from "./components/competition-header/competition-header.component";
 import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { schoolYearValidator } from "./schoolYearValidator";
 import { CompetitionFieldComponent } from "./components/competition-field/competition-field.component";
 import { CompetitionListFieldComponent } from "./components/competition-list-field/competition-list-field.component";
 import { CompetitionSelectFieldComponent } from "./components/competition-select-field/competition-select-field.component";
 import { CompetitionCheckboxFieldComponent } from "./components/competition-checkbox-field/competition-checkbox-field.component";
+import { CompetitionDateFieldComponent } from "./components/competition-date-field/competition-date-field.component";
+import { CompetitionResultComponent } from "./components/competition-result/competition-result.component";
 
 interface CompetitionForm extends FormGroup {
   controls: {
@@ -56,22 +55,16 @@ interface CompetitionForm extends FormGroup {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule,
     ParticipantEditorComponent,
     CompetitionHeaderComponent,
-    NgIf,
     AsyncPipe,
-    FlatpickrDirective,
     CompetitionFieldComponent,
     CompetitionListFieldComponent,
     CompetitionSelectFieldComponent,
-    CompetitionCheckboxFieldComponent
+    CompetitionCheckboxFieldComponent,
+    CompetitionDateFieldComponent,
+    CompetitionResultComponent
   ],
-  providers: [provideFlatpickrDefaults({
-    altFormat: 'Y.m.d.',
-    allowInput: true,
-    locale: Hungarian
-  })],
   templateUrl: './competition-editor.component.html',
   styleUrl: './competition-editor.component.css',
 })
@@ -87,7 +80,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   userRole: Role = Role.VIEWER;
   competition?: Competition;
-  positionEnablerSubsripction?: Subscription;
   id: number | null = null;
   $displayMode = new BehaviorSubject<'show' | 'edit'>('show');
   subjects = subjects;
