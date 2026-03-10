@@ -6,11 +6,9 @@
     [ngClass]="{'needs-validation': ($displayMode | async) == 'edit'}" class="mb-4" novalidate>
     <div class="row flex flex-row align-items-center">
       <div class="col-sm-12 col-md-5 mb-3">
-        <label for="name" class="form-label">Verseny neve</label>
-        <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
-          [ngClass]="{'is-invalid': ($displayMode | async) == 'edit' && name.touched && name.errors, 'is-valid': ($displayMode | async) == 'edit' && name.touched && !name.errors}"
-          id="name" formControlName="name">
-        <div class="invalid-feedback">Kérem töltse ki a verseny nevét</div>
+        <app-competition-field [label]="'Verseny neve'" [id]="'name'" [control]="name"
+          [displayMode]="($displayMode | async) || 'show'"
+          [errorMessage]="'Kérem töltse ki a verseny nevét'"></app-competition-field>
       </div>
       <div class="col-sm-12 col-md-1 form-check pt-3 ps-4">
         <input class="form-check-input" type="checkbox" id="oktv" formControlName="oktv"
@@ -26,11 +24,9 @@
       </div>
 
       <div class="col-sm-12 col-md-6 mb-3">
-        <label for="location" class="form-label">Helyszín</label>
-        <input [readonly]="($displayMode | async) == 'show'" type="text" class="form-control"
-          [ngClass]="{'is-invalid': location.touched && location.errors, 'is-valid': location.touched && !location.errors}"
-          id="location" formControlName="location">
-        <div class="invalid-feedback">Kérem töltse ki a verseny helyszínét</div>
+        <app-competition-field [label]="'Helyszín'" [id]="'location'" [control]="location"
+          [displayMode]="($displayMode | async) || 'show'"
+          [errorMessage]="'Kérem töltse ki a verseny helyszínét'"></app-competition-field>
       </div>
       <div formArrayName="subject" class="col-sm-12 col-md-6 mb-3">
         <label class="form-label d-block">Tantárgy / Téma</label>
@@ -170,9 +166,8 @@
         </div>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
-        <label for="note" class="form-label">Megjegyzés</label>
-        <textarea [readonly]="($displayMode | async) == 'show'" class="form-control" id="note"
-          formControlName="other"></textarea>
+        <app-competition-field [label]="'Megjegyzés'" [id]="'note'" [control]="other"
+          [displayMode]="($displayMode | async) || 'show'" [type]="'textarea'"></app-competition-field>
       </div>
       <app-competition-header location="bottom" [mode]="($displayMode | async) || 'show'" [id]="id"
         [userRole]="userRole" [isLoading]="isLoading" (edit)="editMode()" (cancel)="showMode()" (save)="onSubmit()">
