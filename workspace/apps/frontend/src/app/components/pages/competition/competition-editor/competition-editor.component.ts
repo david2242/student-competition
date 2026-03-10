@@ -29,6 +29,8 @@ import { CompetitionFieldComponent } from "./components/competition-field/compet
 import { CompetitionListFieldComponent } from "./components/competition-list-field/competition-list-field.component";
 import { CompetitionSelectFieldComponent } from "./components/competition-select-field/competition-select-field.component";
 import { CompetitionCheckboxFieldComponent } from "./components/competition-checkbox-field/competition-checkbox-field.component";
+import { CompetitionDateFieldComponent } from "./components/competition-date-field/competition-date-field.component";
+import { CompetitionResultComponent } from "./components/competition-result/competition-result.component";
 
 interface CompetitionForm extends FormGroup {
   controls: {
@@ -65,7 +67,9 @@ interface CompetitionForm extends FormGroup {
     CompetitionFieldComponent,
     CompetitionListFieldComponent,
     CompetitionSelectFieldComponent,
-    CompetitionCheckboxFieldComponent
+    CompetitionCheckboxFieldComponent,
+    CompetitionDateFieldComponent,
+    CompetitionResultComponent
   ],
   providers: [provideFlatpickrDefaults({
     altFormat: 'Y.m.d.',

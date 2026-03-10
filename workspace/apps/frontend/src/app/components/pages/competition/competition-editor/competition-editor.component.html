@@ -42,21 +42,8 @@
           (remove)="removeTeacher($event)"></app-competition-list-field>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
-        <label for="date" class="form-label">Verseny (vagy eredményhirdetés) dátuma</label>
-        <input type="text" class="form-control" formControlName="date" mwlFlatpickr placeholder="ÉÉÉÉ.HH.NN"
-          [readonly]="($displayMode | async) == 'show'"
-          [ngClass]="{'is-invalid': date.touched && date.errors, 'is-valid': date.touched && !date.errors}" id="date">
-        @if (competitionForm.get('date')?.errors?.['required']) {
-        <div class="invalid-feedback">Kérem adja meg a verseny (vagy az eredményhirdetés) időpontját!</div>
-        }
-        @if (competitionForm.get('date')?.errors?.['futureDate']) {
-        <div class="invalid-feedback">Nem adhat meg jövőbeni dátumot!</div>
-        }
-        @if (competitionForm.get('date')?.errors?.['schoolYear']) {
-        <div *ngIf="competitionForm.get('date')?.errors?.['schoolYear']" class="invalid-feedback">
-          A verseny dátumának az aktuális tanévben kell lennie (szeptember 1. - augusztus 31. között).
-        </div>
-        }
+        <app-competition-date-field [label]="'Verseny (vagy eredményhirdetés) dátuma'" [id]="'date'" [control]="date"
+          [displayMode]="($displayMode | async) || 'show'"></app-competition-date-field>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <app-competition-select-field [label]="'Verseny típusa'" [id]="'level'" [control]="level"
@@ -85,35 +72,8 @@
       </div>
       <div class="col-12 mb-3">
         <h4>Eredmény</h4>
-        <div formGroupName="result" class="row">
-          <div class="col-md-6 mb-3">
-            <label for="position" class="form-label">Helyezés</label>
-            <div class="input-group">
-              <input [readonly]="($displayMode | async) === 'show'" type="number" class="form-control"
-                [ngClass]="{'is-invalid': position.invalid && (position.touched || position.dirty)}" id="position"
-                formControlName="position" min="1">
-              <span class="input-group-text">. helyezés</span>
-              @if (position.invalid && (position.touched || position.dirty)) {
-              <div class="invalid-feedback">Kérem adjon meg egy érvényes helyezést</div>
-              }
-            </div>
-            <div class="form-text">Hagyja üresen, ha nincs helyezés</div>
-          </div>
-          <div class="col-md-6 mb-3">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="specialPrize" formControlName="specialPrize">
-              <label class="form-check-label" for="specialPrize">Különdíj</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="compliment" formControlName="compliment">
-              <label class="form-check-label" for="compliment">Dicséret</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="nextRound" formControlName="nextRound">
-              <label class="form-check-label" for="nextRound">Továbbjutás</label>
-            </div>
-          </div>
-        </div>
+        <app-competition-result [formGroup]="$any(competitionForm.get('result'))"
+          [displayMode]="($displayMode | async) || 'show'"></app-competition-result>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <app-competition-field [label]="'Megjegyzés'" [id]="'note'" [control]="other"
