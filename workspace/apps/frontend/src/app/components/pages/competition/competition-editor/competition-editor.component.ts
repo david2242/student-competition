@@ -1,5 +1,3 @@
-import { FlatpickrDirective, provideFlatpickrDefaults } from "angularx-flatpickr";
-import { Hungarian } from 'flatpickr/dist/l10n/hu.js';
 import { ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, Subscription, map, combineLatest } from "rxjs";
 import { CommonModule } from '@angular/common';
@@ -10,7 +8,6 @@ import {
   FormArray,
   FormControl,
   FormGroup,
-  FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
@@ -58,7 +55,6 @@ interface CompetitionForm extends FormGroup {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule,
     ParticipantEditorComponent,
     CompetitionHeaderComponent,
     AsyncPipe,
@@ -69,11 +65,6 @@ interface CompetitionForm extends FormGroup {
     CompetitionDateFieldComponent,
     CompetitionResultComponent
   ],
-  providers: [provideFlatpickrDefaults({
-    altFormat: 'Y.m.d.',
-    allowInput: true,
-    locale: Hungarian
-  })],
   templateUrl: './competition-editor.component.html',
   styleUrl: './competition-editor.component.css',
 })
@@ -89,7 +80,6 @@ export class CompetitionEditorComponent implements OnInit, OnDestroy {
   authService = inject(AuthService);
   userRole: Role = Role.VIEWER;
   competition?: Competition;
-  positionEnablerSubsripction?: Subscription;
   id: number | null = null;
   $displayMode = new BehaviorSubject<'show' | 'edit'>('show');
   subjects = subjects;
