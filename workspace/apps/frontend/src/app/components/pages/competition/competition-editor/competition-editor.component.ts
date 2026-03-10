@@ -23,7 +23,7 @@ import { ParticipantEditorComponent } from "./components/participant-editor/part
 import { CompetitionHeaderComponent } from "./components/competition-header/competition-header.component";
 import { CompetitionParticipant } from "./models/participant.model";
 import { ParticipantService } from "./services/participant.service";
-import { NgIf, AsyncPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { schoolYearValidator } from "./schoolYearValidator";
 import { CompetitionFieldComponent } from "./components/competition-field/competition-field.component";
 import { CompetitionListFieldComponent } from "./components/competition-list-field/competition-list-field.component";
@@ -61,9 +61,7 @@ interface CompetitionForm extends FormGroup {
     FormsModule,
     ParticipantEditorComponent,
     CompetitionHeaderComponent,
-    NgIf,
     AsyncPipe,
-    FlatpickrDirective,
     CompetitionFieldComponent,
     CompetitionListFieldComponent,
     CompetitionSelectFieldComponent,
