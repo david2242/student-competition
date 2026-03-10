@@ -1,0 +1,15 @@
+<label [for]="id" class="form-label">{{ label }}</label>
+
+<select class="form-select" [id]="id" [formControl]="control" [ngClass]="{
+    'is-invalid': displayMode === 'edit' && control.touched && control.errors,
+    'is-valid': displayMode === 'edit' && control.touched && !control.errors
+  }">
+    <option [ngValue]="null" disabled selected>{{ placeholder }}</option>
+    @for (opt of options; track opt.value) {
+    <option [ngValue]="opt.value">{{ opt.text }}</option>
+    }
+</select>
+
+@if (displayMode === 'edit' && control.touched && control.errors) {
+<div class="invalid-feedback">{{ errorMessage }}</div>
+}

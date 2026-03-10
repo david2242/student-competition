@@ -27,6 +27,8 @@ import { NgIf, AsyncPipe } from '@angular/common';
 import { schoolYearValidator } from "./schoolYearValidator";
 import { CompetitionFieldComponent } from "./components/competition-field/competition-field.component";
 import { CompetitionListFieldComponent } from "./components/competition-list-field/competition-list-field.component";
+import { CompetitionSelectFieldComponent } from "./components/competition-select-field/competition-select-field.component";
+import { CompetitionCheckboxFieldComponent } from "./components/competition-checkbox-field/competition-checkbox-field.component";
 
 interface CompetitionForm extends FormGroup {
   controls: {
@@ -61,7 +63,9 @@ interface CompetitionForm extends FormGroup {
     AsyncPipe,
     FlatpickrDirective,
     CompetitionFieldComponent,
-    CompetitionListFieldComponent
+    CompetitionListFieldComponent,
+    CompetitionSelectFieldComponent,
+    CompetitionCheckboxFieldComponent
   ],
   providers: [provideFlatpickrDefaults({
     altFormat: 'Y.m.d.',
