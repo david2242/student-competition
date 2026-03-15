@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { of, BehaviorSubject, throwError } from "rxjs";
 import { ActivatedRoute, Router } from "@angular/router";
-import { Competition, Form, Level, Round } from "@/app/models/competition.model";
+import { Form, Level, Round } from "@/app/models/competition.model";
 import { CompetitionService } from "@/app/services/competition.service";
 import { CompetitionEditorComponent } from './competition-editor.component';
 import { Role } from "@/app/models/current-user";
@@ -10,6 +10,7 @@ import { NotificationService } from "@/app/services/notification.service";
 import { AuthService } from "@/app/services/auth.service";
 import { ParticipantService } from "./services/participant.service";
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { CompetitionFormService } from "./services/competition-form.service";
 
 describe('CompetitionEditorComponent', () => {
   let component: CompetitionEditorComponent;
@@ -69,10 +70,16 @@ describe('CompetitionEditorComponent', () => {
         { provide: CompetitionService, useValue: competitionService },
         { provide: NotificationService, useValue: notificationService },
         { provide: Router, useValue: router },
-        { provide: ParticipantService, useValue: participantService },
         { provide: AuthService, useValue: authService },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute(null) }
+        { provide: ActivatedRoute, useValue: mockActivatedRoute(null) },
       ]
+    }).overrideComponent(CompetitionEditorComponent, {
+      set: {
+        providers: [
+          { provide: ParticipantService, useValue: participantService },
+          CompetitionFormService
+        ]
+      }
     }).compileComponents();
 
     fixture = TestBed.createComponent(CompetitionEditorComponent);
@@ -86,11 +93,11 @@ describe('CompetitionEditorComponent', () => {
 
   describe('Form Validation', () => {
     it('should be invalid when empty', () => {
-      expect(component.competitionForm.valid).toBeFalsy();
+      expect(component.formService.competitionForm.valid).toBeFalsy();
     });
 
     it('should require name, location, subject, date, level, and round', () => {
-      const controls = component.competitionForm.controls;
+      const controls = component.formService.competitionForm.controls;
       expect(controls.name.errors?.['required']).toBeTruthy();
       expect(controls.location.errors?.['required']).toBeTruthy();
       expect(controls.date.errors?.['required']).toBeTruthy();
@@ -99,7 +106,7 @@ describe('CompetitionEditorComponent', () => {
     });
 
     it('should validate date format (schoolYearValidator)', () => {
-      const dateControl = component.competitionForm.controls.date;
+      const dateControl = component.formService.competitionForm.controls.date;
       dateControl.setValue('2020.01.01');
       expect(dateControl.errors?.['schoolYear']).toBeTruthy();
     });
@@ -107,16 +114,16 @@ describe('CompetitionEditorComponent', () => {
 
   describe('OKTV Logic', () => {
     it('should update filtered rounds when OKTV is toggled ON', () => {
-      component.toggleOktv(true);
-      expect(component.filteredRounds.some(r => r.value === Round.OktvRoundOne)).toBeTruthy();
-      expect(component.filteredRounds.some(r => r.value === Round.School)).toBeFalsy();
+      component.formService.toggleOktv(true);
+      expect(component.formService.filteredRounds.some(r => r.value === Round.OktvRoundOne)).toBeTruthy();
+      expect(component.formService.filteredRounds.some(r => r.value === Round.School)).toBeFalsy();
     });
 
     it('should update filtered rounds when level changes', () => {
-      component.level.setValue(Level.Local);
+      component.formService.level.setValue(Level.Local);
       fixture.detectChanges();
-      expect(component.filteredRounds.some(r => r.value === Round.School)).toBeTruthy();
-      expect(component.filteredRounds.some(r => r.value === Round.National)).toBeFalsy();
+      expect(component.formService.filteredRounds.some(r => r.value === Round.School)).toBeTruthy();
+      expect(component.formService.filteredRounds.some(r => r.value === Round.National)).toBeFalsy();
     });
   });
 
@@ -124,76 +131,134 @@ describe('CompetitionEditorComponent', () => {
     it('should disable controls in show mode', () => {
       component.$displayMode.next('show');
       fixture.detectChanges();
-      expect(component.name.disabled).toBeTruthy();
-      expect(component.location.disabled).toBeTruthy();
+      expect(component.formService.name.disabled).toBeTruthy();
+      expect(component.formService.location.disabled).toBeTruthy();
     });
 
     it('should enable controls in edit mode', () => {
       component.$displayMode.next('edit');
       fixture.detectChanges();
-      expect(component.name.enabled).toBeTruthy();
+      expect(component.formService.name.enabled).toBeTruthy();
     });
   });
 
   describe('Form Array Manipulation', () => {
     it('should add and remove subjects', () => {
-      const initialCount = component.subject.length;
-      component.addSubject('New Subject');
-      expect(component.subject.length).toBe(initialCount + 1);
-      expect(component.subject.at(initialCount).value).toBe('New Subject');
+      const initialCount = component.formService.subject.length;
+      component.formService.addSubject('New Subject');
+      expect(component.formService.subject.length).toBe(initialCount + 1);
+      expect(component.formService.subject.at(initialCount).value).toBe('New Subject');
 
-      component.removeSubject(initialCount);
-      expect(component.subject.length).toBe(initialCount);
+      component.formService.removeSubject(initialCount);
+      expect(component.formService.subject.length).toBe(initialCount);
     });
 
     it('should add and remove teachers', () => {
-      component.addTeacher('New Teacher');
-      expect(component.teacher.length).toBe(1);
-      expect(component.teacher.at(0).value).toBe('New Teacher');
+      component.formService.addTeacher('New Teacher');
+      expect(component.formService.teacher.length).toBe(1);
+      expect(component.formService.teacher.at(0).value).toBe('New Teacher');
 
-      component.removeTeacher(0);
-      expect(component.teacher.length).toBe(0);
+      component.formService.removeTeacher(0);
+      expect(component.formService.teacher.length).toBe(0);
     });
 
     it('should add and remove forms', () => {
-      const initialCount = component.forms.length;
-      component.addForm(Form.Oral);
-      expect(component.forms.length).toBe(initialCount + 1);
-      expect(component.forms.at(initialCount).value).toBe(Form.Oral);
+      const initialCount = component.formService.forms.length;
+      component.formService.addForm(Form.Oral);
+      expect(component.formService.forms.length).toBe(initialCount + 1);
+      expect(component.formService.forms.at(initialCount).value).toBe(Form.Oral);
 
-      component.removeForm(initialCount);
-      expect(component.forms.length).toBe(initialCount);
+      component.formService.removeForm(initialCount);
+      expect(component.formService.forms.length).toBe(initialCount);
     });
   });
 
   describe('Round Filtering Logic', () => {
     it('should filter rounds for Local level', () => {
-      component.level.setValue(Level.Local);
-      expect(component.filteredRounds.every((r: any) =>
+      component.formService.level.setValue(Level.Local);
+      expect(component.formService.filteredRounds.every((r: any) =>
         r.value === Round.School || r.value === Round.Regional
       )).toBeTruthy();
     });
 
     it('should filter rounds for National level', () => {
-      component.level.setValue(Level.National);
-      expect(component.filteredRounds.every((r: any) =>
+      component.formService.level.setValue(Level.National);
+      expect(component.formService.filteredRounds.every((r: any) =>
         r.value === Round.Regional || r.value === Round.National
       )).toBeTruthy();
     });
 
     it('should reset round if not valid for new level', () => {
-      component.level.setValue(Level.National);
-      component.round.setValue(Round.National);
+      component.formService.level.setValue(Level.National);
+      component.formService.round.setValue(Round.National);
 
-      component.level.setValue(Level.Local);
-      expect(component.round.value).toBeNull();
+      component.formService.level.setValue(Level.Local);
+      expect(component.formService.round.value).toBeNull();
     });
 
     it('should filter for OKTV rounds when OKTV is enabled', () => {
-      component.toggleOktv(true);
-      expect(component.filteredRounds.every((r: any) =>
+      component.formService.toggleOktv(true);
+      expect(component.formService.filteredRounds.every((r: any) =>
         [Round.OktvRoundOne, Round.OktvRoundTwo, Round.OktvFinal].includes(r.value)
       )).toBeTruthy();
+    });
+
+    it('should set level to State if Local/null when OKTV is enabled', () => {
+      component.formService.level.setValue(Level.Local);
+      component.formService.toggleOktv(true);
+      expect(component.formService.level.value).toBe(Level.State);
+
+      component.formService.level.setValue(null);
+      component.formService.toggleOktv(true);
+      expect(component.formService.level.value).toBe(Level.State);
+    });
+
+    it('should reset round when OKTV is toggled', () => {
+      component.formService.level.setValue(Level.Local);
+      component.formService.round.setValue(Round.School);
+      component.formService.toggleOktv(true);
+      expect(component.formService.round.value).toBeNull();
+    });
+
+    it('should filter rounds for State level', () => {
+      component.formService.level.setValue(Level.State);
+      const values = component.formService.filteredRounds.map(r => r.value);
+      expect(values).toContain(Round.School);
+      expect(values).toContain(Round.State);
+      expect(values).toContain(Round.Regional);
+      expect(values.length).toBe(3);
+    });
+
+    it('should filter rounds for International level', () => {
+      component.formService.level.setValue(Level.International);
+      const values = component.formService.filteredRounds.map(r => r.value);
+      expect(values).toContain(Round.National);
+      expect(values).toContain(Round.OktvFinal);
+      expect(values.length).toBe(2);
+    });
+  });
+
+  describe('Form Restoration', () => {
+    it('should restore form to original values when showMode is called', () => {
+      const originalCompetition = {
+        name: 'Original',
+        location: 'Original Loc',
+        date: '2024.01.01',
+        level: Level.Local,
+        round: Round.School,
+        subject: ['Math'],
+        teacher: ['Teacher'],
+        forms: [Form.Written],
+        result: { position: 1, specialPrize: false, compliment: false, nextRound: false },
+        other: 'Notes'
+      };
+
+      component.competition = originalCompetition as any;
+      component.formService.name.setValue('Modified');
+      component.showMode();
+
+      expect(component.formService.name.value).toBe('Original');
+      expect(component.$displayMode.value).toBe('show');
     });
   });
 
@@ -204,8 +269,8 @@ describe('CompetitionEditorComponent', () => {
       futureDate.setFullYear(futureDate.getFullYear() + 1);
       const dateStr = `${futureDate.getFullYear()}.09.01`;
 
-      component.date.setValue(dateStr);
-      expect(component.date.errors?.['futureDate']).toBeFalsy();
+      component.formService.date.setValue(dateStr);
+      expect(component.formService.date.errors?.['futureDate']).toBeFalsy();
     });
 
     it('should NOT allow future dates for CONTRIBUTOR', () => {
@@ -214,8 +279,8 @@ describe('CompetitionEditorComponent', () => {
       futureDate.setFullYear(futureDate.getFullYear() + 1);
       const dateStr = `${futureDate.getFullYear()}.09.01`;
 
-      component.date.setValue(dateStr);
-      expect(component.date.errors?.['futureDate']).toBeTruthy();
+      component.formService.date.setValue(dateStr);
+      expect(component.formService.date.errors?.['futureDate']).toBeTruthy();
     });
 
     describe('Deletable logic', () => {
@@ -252,13 +317,13 @@ describe('CompetitionEditorComponent', () => {
 
   describe('Submission', () => {
     beforeEach(() => {
-      component.name.setValue('Test');
-      component.location.setValue('Test');
-      component.date.setValue('2026.01.01');
-      component.level.setValue(Level.State);
-      component.round.setValue(Round.State);
-      component.subject.at(0).setValue('Math');
-      component.forms.at(0).setValue(Form.Written);
+      component.formService.name.setValue('Test');
+      component.formService.location.setValue('Test');
+      component.formService.date.setValue('2026.01.01');
+      component.formService.level.setValue(Level.State);
+      component.formService.round.setValue(Round.State);
+      component.formService.subject.at(0).setValue('Math');
+      component.formService.forms.at(0).setValue(Form.Written);
     });
 
     it('should call createCompetition on submit when ID is null', fakeAsync(() => {
@@ -313,7 +378,7 @@ describe('CompetitionEditorComponent', () => {
       fixture.detectChanges();
 
       expect(competitionService.getCompetition).toHaveBeenCalledWith(1);
-      expect(component.name.value).toBe('Test Competition');
+      expect(component.formService.name.value).toBe('Test Competition');
     }));
 
     it('should handle error when competition loading fails', fakeAsync(() => {
@@ -368,10 +433,6 @@ describe('CompetitionEditorComponent', () => {
     }));
   });
 });
-
-const mockCompetitionService = {
-  createCompetitions: () => of()
-};
 
 function mockActivatedRoute(id: string | null) {
   return {

@@ -1,14 +1,12 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CompetitionParticipant, StudentSearchResult } from '../models/participant.model';
 import { ServerResponse } from "@/app/models/server-response";
 import { environment } from "@/environments/environment";
 import { catchError, map } from "rxjs/operators";
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class ParticipantService {
   private participants = new BehaviorSubject<CompetitionParticipant[]>([]);
   participants$ = this.participants.asObservable();

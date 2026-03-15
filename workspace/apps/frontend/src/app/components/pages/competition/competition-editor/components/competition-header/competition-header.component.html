@@ -25,7 +25,7 @@
         <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">Mégse</button>
         }
         @if (mode === 'edit') {
-        <button [disabled]="isLoading" type="submit" (click)="onSave()" class="btn btn-primary">
+        <button [disabled]="isLoading" type="button" (click)="onSave()" class="btn btn-primary">
             <span *ngIf="!isLoading">Mentés</span>
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             <span *ngIf="isLoading" class="visually-hidden">Mentés...</span>

@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, DestroyRef, Input, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { CompetitionParticipant, StudentSearchResult } from '../../models/participant.model';
 import { ParticipantService } from '../../services/participant.service';
@@ -18,44 +19,25 @@ import { ParticipantListComponent } from './components/participant-list/particip
   templateUrl: './participant-editor.component.html',
   styleUrls: ['./participant-editor.component.css']
 })
-export class ParticipantEditorComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() participants: CompetitionParticipant[] = [];
+export class ParticipantEditorComponent {
   @Input() disabled = false;
-  @Output() participantsChange = new EventEmitter<CompetitionParticipant[]>();
 
-  private formInitialized = false;
+  participants: CompetitionParticipant[] = [];
   showAddForm = false;
   isSearching = false;
   searchResults: StudentSearchResult[] = [];
   newParticipantData: { firstName?: string; lastName?: string } = {};
 
-  // For demo purposes - replace with actual class options
   readonly CLASS_YEARS = Array.from({ length: 12 }, (_, i) => i + 1);
   readonly CLASS_LETTERS = ['a', 'b', 'c', 'd'];
 
-  constructor(private participantService: ParticipantService) {}
+  private participantService = inject(ParticipantService);
+  private destroyRef = inject(DestroyRef);
 
-  private subscription: any;
-
-  ngOnInit(): void {
-    this.subscription = this.participantService.participants$.subscribe(participants => {
-      this.participants = participants;
-      this.participantsChange.emit(participants);
-    });
-    this.formInitialized = true;
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['participants'] && !changes['participants'].firstChange && this.formInitialized) {
-      this.participantService.initialize(this.participants);
-    }
-  }
-
-  ngOnDestroy(): void {
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-    this.participantService.clearParticipants();
+  constructor() {
+    this.participantService.participants$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(participants => { this.participants = participants; });
   }
 
   onSearch(query: string): void {
@@ -106,7 +88,7 @@ export class ParticipantEditorComponent implements OnInit, OnChanges, OnDestroy 
     if (participant.firstName && participant.lastName) {
       this.participantService.addParticipant(participant);
       this.showAddForm = false;
-      this.newParticipantData = {}; // Reset the form data
+      this.newParticipantData = {};
     }
   }
 
