@@ -121,16 +121,17 @@ export class CompetitionFormService {
     }
 
     updateFilteredRounds(level: Level | null): void {
-        if (!level) {
-            this.filteredRounds = [];
-            return;
-        }
-
         if (this.oktv.value) {
             this.filteredRounds = this.allRounds.filter(round =>
                 round.value === Round.OktvRoundOne ||
                 round.value === Round.OktvRoundTwo ||
                 round.value === Round.OktvFinal
+            );
+        } else if (!level) {
+            this.filteredRounds = this.allRounds.filter(round =>
+                round.value !== Round.OktvRoundOne &&
+                round.value !== Round.OktvRoundTwo &&
+                round.value !== Round.OktvFinal
             );
         } else {
             switch (level) {
