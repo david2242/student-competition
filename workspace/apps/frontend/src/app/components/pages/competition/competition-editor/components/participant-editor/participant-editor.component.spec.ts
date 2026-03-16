@@ -37,18 +37,11 @@ describe('ParticipantEditorComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should initialize service with input participants', () => {
-        const inputParticipants = [{ firstName: 'John', lastName: 'Doe', classYear: 9, classLetter: 'a' }];
-        component.participants = inputParticipants;
-        component.ngOnChanges({
-            participants: {
-                currentValue: inputParticipants,
-                previousValue: [],
-                firstChange: false,
-                isFirstChange: () => false
-            }
-        });
-        expect(participantService.initialize).toHaveBeenCalledWith(inputParticipants);
+    it('should reflect participants emitted by the service', () => {
+        const ps = [{ firstName: 'John', lastName: 'Doe', classYear: 9, classLetter: 'a' }];
+        participantsSubject.next(ps as any);
+        fixture.detectChanges();
+        expect(component.participants).toEqual(ps);
     });
 
     describe('Search Logic', () => {
