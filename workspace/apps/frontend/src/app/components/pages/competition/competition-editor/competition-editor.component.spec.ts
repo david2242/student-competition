@@ -253,7 +253,7 @@ describe('CompetitionEditorComponent', () => {
         other: 'Notes'
       };
 
-      component.competition = originalCompetition as any;
+      (component as any).competition$.next(originalCompetition as any);
       component.formService.name.setValue('Modified');
       component.showMode();
 

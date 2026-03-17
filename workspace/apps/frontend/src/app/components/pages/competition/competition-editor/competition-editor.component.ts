@@ -1,27 +1,30 @@
-import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, map, combineLatest } from 'rxjs';
-import { CommonModule } from '@angular/common';
-import { Competition, Level } from '@/app/models/competition.model';
-import { CompetitionService, CreateCompetitionData } from '@/app/services/competition.service';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { BehaviorSubject, combineLatest, map } from 'rxjs';
+
+import { Competition, Level } from '@/app/models/competition.model';
+import { Student } from '@/app/models/student.model';
+import { CompetitionParticipant } from './models/participant.model';
+import { CompetitionService } from '@/app/services/competition.service';
 import { NotificationService } from '@/app/services/notification.service';
+import { AuthService } from '@/app/services/auth.service';
+import { Role } from '@/app/models/current-user';
 import { subjects } from './subjects';
 import { teachers } from './teachers';
-import { Role } from '@/app/models/current-user';
-import { AuthService } from '@/app/services/auth.service';
+import { CompetitionFormService } from './services/competition-form.service';
+import { ParticipantService } from './services/participant.service';
 import { ParticipantEditorComponent } from './components/participant-editor/participant-editor.component';
 import { CompetitionHeaderComponent } from './components/competition-header/competition-header.component';
-import { ParticipantService } from './services/participant.service';
-import { AsyncPipe } from '@angular/common';
 import { CompetitionFieldComponent } from './components/competition-field/competition-field.component';
 import { CompetitionListFieldComponent } from './components/competition-list-field/competition-list-field.component';
 import { CompetitionSelectFieldComponent } from './components/competition-select-field/competition-select-field.component';
 import { CompetitionCheckboxFieldComponent } from './components/competition-checkbox-field/competition-checkbox-field.component';
 import { CompetitionDateFieldComponent } from './components/competition-date-field/competition-date-field.component';
 import { CompetitionResultComponent } from './components/competition-result/competition-result.component';
-import { CompetitionFormService } from './services/competition-form.service';
 
 @Component({
   selector: 'app-competition-editor',
@@ -29,10 +32,10 @@ import { CompetitionFormService } from './services/competition-form.service';
   providers: [CompetitionFormService, ParticipantService],
   imports: [
     CommonModule,
+    AsyncPipe,
     ReactiveFormsModule,
     ParticipantEditorComponent,
     CompetitionHeaderComponent,
-    AsyncPipe,
     CompetitionFieldComponent,
     CompetitionListFieldComponent,
     CompetitionSelectFieldComponent,
@@ -46,25 +49,24 @@ import { CompetitionFormService } from './services/competition-form.service';
 export class CompetitionEditorComponent implements OnInit {
 
   private destroyRef = inject(DestroyRef);
-  private competition$ = new BehaviorSubject<Competition | null>(null);
-
   private competitionService = inject(CompetitionService);
-  formService = inject(CompetitionFormService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notification = inject(NotificationService);
   private authService = inject(AuthService);
   private participantService = inject(ParticipantService);
+  formService = inject(CompetitionFormService);
 
-  userRole: Role = Role.VIEWER;
-  competition?: Competition;
   id: number | null = null;
   $displayMode = new BehaviorSubject<'show' | 'edit'>('show');
-  subjects = subjects;
-  teachers = teachers;
+  private competition$ = new BehaviorSubject<Competition | null>(null);
+  userRole: Role = Role.VIEWER;
   isLoading = false;
   protected readonly Level = Level;
   protected readonly Role = Role;
+
+  subjects = subjects;
+  teachers = teachers;
 
   readonly levelOptions = [
     { value: Level.Local, text: 'Helyi' },
@@ -90,43 +92,60 @@ export class CompetitionEditorComponent implements OnInit {
     })
   );
 
-  saveIdFromParam(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
-    this.id = idParam ? +idParam : null;
+  ngOnInit(): void {
+    this.id = this.resolveIdFromRoute();
+    this.loadCompetition();
+    this.subscribeToDisplayMode();
+    this.subscribeToCurrentUser();
   }
 
-  ngOnInit(): void {
-    this.saveIdFromParam();
-    if (this.id) {
-      this.$displayMode.next('show');
-      this.competitionService.getCompetition(this.id).subscribe({
-        next: (competition) => {
-          this.competition = competition;
-          this.competition$.next(competition);
-          this.formService.fillForm(competition);
-          if (competition.participants) {
-            const participants = competition.participants.map(p => ({
-              studentId: p.studentId,
-              firstName: p.firstName || '',
-              lastName: p.lastName || '',
-              classYear: p.classYear || 9,
-              classLetter: p.classLetter || 'a'
-            }));
-            this.participantService.initialize(participants);
-          }
-          this.formService.toggleSelects(false);
-        },
-        error: () => {
-          this.notification.error('Nem sikerült betölteni a versenyt!');
-          this.competition$.next(null);
-          this.router.navigate(['/competitions']);
-        }
-      });
-    } else {
-      this.$displayMode.next('edit');
-      this.competition$.next(null);
+  private resolveIdFromRoute(): number | null {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    return idParam ? +idParam : null;
+  }
+
+  private loadCompetition(): void {
+    if (!this.id) {
+      this.initializeNewCompetition();
+      return;
     }
 
+    this.$displayMode.next('show');
+    this.competitionService.getCompetition(this.id).subscribe({
+      next: (competition) => this.onCompetitionLoaded(competition),
+      error: () => this.onCompetitionLoadError()
+    });
+  }
+
+  private initializeNewCompetition(): void {
+    this.$displayMode.next('edit');
+    this.competition$.next(null);
+  }
+
+  private onCompetitionLoaded(competition: Competition): void {
+    this.competition$.next(competition);
+    this.formService.fillForm(competition);
+    this.participantService.initialize(this.normalizeParticipants(competition.participants));
+    this.formService.toggleSelects(false);
+  }
+
+  private normalizeParticipants(participants: Student[]): CompetitionParticipant[] {
+    return participants.map(p => ({
+      studentId: p.studentId,
+      firstName: p.firstName ?? '',
+      lastName: p.lastName ?? '',
+      classYear: p.classYear ?? 9,
+      classLetter: p.classLetter ?? 'a'
+    }));
+  }
+
+  private onCompetitionLoadError(): void {
+    this.notification.error('Nem sikerült betölteni a versenyt!');
+    this.competition$.next(null);
+    this.router.navigate(['/competitions']);
+  }
+
+  private subscribeToDisplayMode(): void {
     this.$displayMode
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((mode) => {
@@ -136,7 +155,9 @@ export class CompetitionEditorComponent implements OnInit {
           this.formService.toggleSelects(true);
         }
       });
+  }
 
+  private subscribeToCurrentUser(): void {
     this.authService.$currentUser
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(user => {
@@ -146,63 +167,55 @@ export class CompetitionEditorComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.formService.competitionForm.invalid) {
-      this.formService.competitionForm.markAllAsTouched();
-      return;
-    }
+    if (!this.isFormReadyToSubmit()) return;
 
     this.isLoading = true;
     const participants = this.participantService.getParticipantsForSubmission();
 
-    if (!participants || participants.length === 0) {
+    if (!this.hasParticipants(participants)) return;
+
+    const competitionData = this.formService.buildCompetitionData(participants);
+    this.saveCompetition(competitionData);
+  }
+
+  private isFormReadyToSubmit(): boolean {
+    if (this.formService.competitionForm.invalid) {
+      this.formService.competitionForm.markAllAsTouched();
+      return false;
+    }
+    return true;
+  }
+
+  private hasParticipants(participants: ReturnType<ParticipantService['getParticipantsForSubmission']>): boolean {
+    if (participants.length === 0) {
       this.notification.error('Legalább egy résztvevőt hozzá kell adni!');
       this.isLoading = false;
-      return;
+      return false;
     }
+    return true;
+  }
 
-    const competitionData: CreateCompetitionData = {
-      name: this.formService.name.value,
-      location: this.formService.location.value,
-      subject: this.formService.subject.value as string[],
-      teacher: this.formService.teacher.value as string[],
-      date: this.formService.date.value,
-      level: this.formService.level.value as Level,
-      round: this.formService.round.value!,
-      participants: participants,
-      forms: this.formService.forms.value as any[],
-      result: {
-        position: this.formService.position.value,
-        specialPrize: this.formService.specialPrize.value,
-        compliment: this.formService.compliment.value,
-        nextRound: this.formService.nextRound.value
-      },
-      other: this.formService.other.value
-    };
-
+  private saveCompetition(competitionData: ReturnType<CompetitionFormService['buildCompetitionData']>): void {
     const request$ = this.id
       ? this.competitionService.updateCompetition(this.id, competitionData)
       : this.competitionService.createCompetition(competitionData);
 
     request$.subscribe({
-      next: () => {
-        this.notification.success(
-          this.id
-            ? 'A verseny sikeresen frissítve!'
-            : 'A verseny sikeresen létrehozva!'
-        );
-        this.participantService.clearParticipants();
-        this.router.navigate(['/competitions']);
-      },
-      error: (error) => {
-        console.error('Error:', error);
-        this.notification.error('Hiba történt a mentés során.');
-        this.isLoading = false;
-      }
+      next: () => this.onSaveSuccess(),
+      error: (error) => this.onSaveError(error)
     });
   }
 
-  back() {
-    this.router.navigate(['competition']);
+  private onSaveSuccess(): void {
+    this.notification.success(this.id ? 'A verseny sikeresen frissítve!' : 'A verseny sikeresen létrehozva!');
+    this.participantService.clearParticipants();
+    this.router.navigate(['/competitions']);
+  }
+
+  private onSaveError(error: unknown): void {
+    console.error('Error:', error);
+    this.notification.error('Hiba történt a mentés során.');
+    this.isLoading = false;
   }
 
   editMode() {
@@ -210,9 +223,8 @@ export class CompetitionEditorComponent implements OnInit {
   }
 
   showMode() {
-    if (this.competition) {
-      this.formService.fillForm(this.competition);
-    }
+    const competition = this.competition$.getValue();
+    if (competition) this.formService.fillForm(competition);
     this.$displayMode.next('show');
   }
 
