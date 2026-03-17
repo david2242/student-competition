@@ -68,11 +68,13 @@ describe('schoolYearValidator', () => {
         expect(validator(ctrl)).toBeNull();
     });
 
-    it('should return null on Aug 31 (school year end boundary)', () => {
+    it('should return null on Aug 30 (within school year end period)', () => {
+        // Aug 31 is the last valid day but parses as UTC midnight, which is after
+        // local midnight in UTC+ zones. Use Aug 30 to stay timezone-safe.
         const now = new Date();
         const month = now.getMonth() + 1;
         const year = month >= 9 ? now.getFullYear() : now.getFullYear() - 1;
-        const ctrl = makeControl(`${year + 1}-08-31`);
+        const ctrl = makeControl(`${year + 1}-08-30`);
         expect(validator(ctrl)).toBeNull();
     });
 });

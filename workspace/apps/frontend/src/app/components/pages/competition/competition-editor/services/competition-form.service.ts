@@ -85,6 +85,7 @@ export class CompetitionFormService {
 
     private readonly filteredRoundsSubject = new BehaviorSubject<{ value: Round, text: string }[]>([]);
     readonly filteredRounds$ = this.filteredRoundsSubject.asObservable();
+    get filteredRounds(): { value: Round, text: string }[] { return this.filteredRoundsSubject.getValue(); }
 
     constructor() {
         this.level.valueChanges.subscribe(level => {
