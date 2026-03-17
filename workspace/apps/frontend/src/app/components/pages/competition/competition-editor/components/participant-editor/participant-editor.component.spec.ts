@@ -60,18 +60,42 @@ describe('ParticipantEditorComponent', () => {
             participantService.searchStudents.mockReturnValue(of(mockResults));
 
             component.onSearch('John');
-            tick();
+            tick(300);
 
             expect(participantService.searchStudents).toHaveBeenCalledWith('John');
             expect(component.searchResults).toEqual(mockResults);
             expect(component.isSearching).toBeFalsy();
         }));
 
-        it('should NOT call searchStudents if query is too short', () => {
+        it('should NOT call searchStudents if query is too short', fakeAsync(() => {
             component.onSearch('J');
+            tick(300);
             expect(participantService.searchStudents).not.toHaveBeenCalled();
             expect(component.searchResults).toEqual([]);
-        });
+        }));
+
+        it('should debounce rapid calls and only fire once after 300ms', fakeAsync(() => {
+            const mockResults: StudentSearchResult[] = [
+                {
+                    id: 1,
+                    firstName: 'John',
+                    lastName: 'Doe',
+                    fullName: 'John Doe',
+                    currentClassYear: 9,
+                    currentClassLetter: 'a',
+                    participations: []
+                }
+            ];
+            participantService.searchStudents.mockReturnValue(of(mockResults));
+
+            component.onSearch('Jo');
+            component.onSearch('Joh');
+            component.onSearch('John');
+            tick(300);
+
+            expect(participantService.searchStudents).toHaveBeenCalledTimes(1);
+            expect(participantService.searchStudents).toHaveBeenCalledWith('John');
+        }));
 
         it('should add participant when selecting from search results', () => {
             const student: StudentSearchResult = {

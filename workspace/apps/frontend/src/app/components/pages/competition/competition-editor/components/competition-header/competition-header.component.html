@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col d-flex flex-row-reverse">
             @if (isDeletable) {
-            <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="onDelete()">Verseny törlése
+            <button type="button" class="btn btn-outline-danger btn-sm m-1" (click)="delete.emit()">Verseny törlése
             </button>
             } @else {
             <div class="form-text">A verseny törlése számodra nem lehetséges</div>
@@ -19,13 +19,17 @@
 <div class="row mt-3">
     <div class="col d-flex flex-row justify-content-between">
         @if (mode === 'show' && userRole !== Role.VIEWER) {
-        <button type="button" class="btn btn-outline-secondary" (click)="onEdit()">Szerkesztés</button>
+          @if (isEditable) {
+          <button type="button" class="btn btn-outline-secondary" (click)="edit.emit()">Szerkesztés</button>
+          } @else {
+          <div class="form-text">A verseny szerkesztése számodra nem lehetséges</div>
+          }
         }
         @if (mode === 'edit' && id != null) {
-        <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">Mégse</button>
+        <button type="button" class="btn btn-outline-secondary" (click)="cancel.emit()">Mégse</button>
         }
         @if (mode === 'edit') {
-        <button [disabled]="isLoading" type="button" (click)="onSave()" class="btn btn-primary">
+        <button [disabled]="isLoading" type="button" (click)="save.emit()" class="btn btn-primary">
             <span *ngIf="!isLoading">Mentés</span>
             <span *ngIf="isLoading" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
             <span *ngIf="isLoading" class="visually-hidden">Mentés...</span>

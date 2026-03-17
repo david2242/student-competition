@@ -3,11 +3,11 @@
         <label for="position" class="form-label">Helyezés</label>
         <div class="input-group">
             <input [readonly]="displayMode === 'show'" type="number" class="form-control" [ngClass]="{
-          'is-invalid': displayMode === 'edit' && position?.invalid && (position?.touched || position?.dirty),
-          'is-valid': displayMode === 'edit' && position?.touched && position?.valid
+          'is-invalid': displayMode === 'edit' && position.invalid && (position.touched || position.dirty),
+          'is-valid': displayMode === 'edit' && position.touched && position.valid
         }" id="position" formControlName="position" min="1">
             <span class="input-group-text">. helyezés</span>
-            @if (displayMode === 'edit' && position?.invalid && (position?.touched || position?.dirty)) {
+            @if (displayMode === 'edit' && position.invalid && (position.touched || position.dirty)) {
             <div class="invalid-feedback">Kérem adjon meg egy érvényes helyezést</div>
             }
         </div>

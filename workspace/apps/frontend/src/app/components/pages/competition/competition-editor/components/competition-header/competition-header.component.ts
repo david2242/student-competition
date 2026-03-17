@@ -15,6 +15,7 @@ export class CompetitionHeaderComponent {
     @Input() id: number | null = null;
     @Input() userRole: Role = Role.VIEWER;
     @Input() isDeletable: boolean = false;
+    @Input() isEditable: boolean = false;
     @Input() isLoading: boolean = false;
 
     @Output() delete = new EventEmitter<void>();
@@ -23,20 +24,4 @@ export class CompetitionHeaderComponent {
     @Output() save = new EventEmitter<void>();
 
     protected readonly Role = Role;
-
-    onDelete() {
-        this.delete.emit();
-    }
-
-    onEdit() {
-        this.edit.emit();
-    }
-
-    onCancel() {
-        this.cancel.emit();
-    }
-
-    onSave() {
-        this.save.emit();
-    }
 }

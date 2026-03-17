@@ -1,8 +1,41 @@
 import { Injectable } from '@angular/core';
-import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
+import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Form, Level, Round, Competition } from '@/app/models/competition.model';
+import { CreateCompetitionData } from '@/app/services/competition.service';
+import { NewParticipant, ExistingParticipant } from '@/app/models/student.model';
 import { schoolYearValidator } from '../schoolYearValidator';
 import { Role } from '@/app/models/current-user';
+
+function futureDateValidator(): ValidatorFn {
+  return (control: AbstractControl) => {
+    const selected = new Date(control.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selected > today ? { futureDate: true } : null;
+  };
+}
+
+const ALL_ROUNDS: { value: Round, text: string }[] = [
+  { value: Round.School,       text: 'Iskolai' },
+  { value: Round.State,        text: 'Megyei' },
+  { value: Round.Regional,     text: 'Körzeti' },
+  { value: Round.National,     text: 'Országos' },
+  { value: Round.OktvRoundOne, text: 'OKTV I. forduló' },
+  { value: Round.OktvRoundTwo, text: 'OKTV II. forduló' },
+  { value: Round.OktvFinal,    text: 'OKTV döntő' }
+];
+
+const OKTV_ROUNDS = new Set([Round.OktvRoundOne, Round.OktvRoundTwo, Round.OktvFinal]);
+
+const NON_OKTV_ROUNDS = new Set([Round.School, Round.State, Round.Regional, Round.National]);
+
+const ROUNDS_BY_LEVEL: Partial<Record<Level, Round[]>> = {
+  [Level.Local]:         [Round.School, Round.Regional],
+  [Level.State]:         [Round.School, Round.State, Round.Regional],
+  [Level.National]:      [Round.Regional, Round.National],
+  [Level.International]: [Round.National, Round.OktvFinal],
+};
 
 export interface CompetitionForm extends FormGroup {
     controls: {
@@ -50,17 +83,9 @@ export class CompetitionFormService {
         other: new FormControl<string>('', { nonNullable: true })
     }) as CompetitionForm;
 
-    filteredRounds: { value: Round, text: string }[] = [];
-
-    private allRounds = [
-        { value: Round.School, text: 'Iskolai' },
-        { value: Round.State, text: 'Megyei' },
-        { value: Round.Regional, text: 'Körzeti' },
-        { value: Round.National, text: 'Országos' },
-        { value: Round.OktvRoundOne, text: 'OKTV I. forduló' },
-        { value: Round.OktvRoundTwo, text: 'OKTV II. forduló' },
-        { value: Round.OktvFinal, text: 'OKTV döntő' }
-    ];
+    private readonly filteredRoundsSubject = new BehaviorSubject<{ value: Round, text: string }[]>([]);
+    readonly filteredRounds$ = this.filteredRoundsSubject.asObservable();
+    get filteredRounds(): { value: Round, text: string }[] { return this.filteredRoundsSubject.getValue(); }
 
     constructor() {
         this.level.valueChanges.subscribe(level => {
@@ -121,55 +146,17 @@ export class CompetitionFormService {
     }
 
     updateFilteredRounds(level: Level | null): void {
-        if (this.oktv.value) {
-            this.filteredRounds = this.allRounds.filter(round =>
-                round.value === Round.OktvRoundOne ||
-                round.value === Round.OktvRoundTwo ||
-                round.value === Round.OktvFinal
-            );
-        } else if (!level) {
-            this.filteredRounds = this.allRounds.filter(round =>
-                round.value !== Round.OktvRoundOne &&
-                round.value !== Round.OktvRoundTwo &&
-                round.value !== Round.OktvFinal
-            );
-        } else {
-            switch (level) {
-                case Level.Local:
-                    this.filteredRounds = this.allRounds.filter(round =>
-                        round.value === Round.School ||
-                        round.value === Round.Regional
-                    );
-                    break;
-                case Level.State:
-                    this.filteredRounds = this.allRounds.filter(round =>
-                        round.value === Round.School ||
-                        round.value === Round.State ||
-                        round.value === Round.Regional
-                    );
-                    break;
-                case Level.National:
-                    this.filteredRounds = this.allRounds.filter(round =>
-                        round.value === Round.Regional ||
-                        round.value === Round.National
-                    );
-                    break;
-                case Level.International:
-                    this.filteredRounds = this.allRounds.filter(round =>
-                        round.value === Round.National ||
-                        round.value === Round.OktvFinal
-                    );
-                    break;
-                default:
-                    this.filteredRounds = [];
-            }
-        }
-
-        // Reset round if the current selection is not in the filtered list
-        const currentRound = this.round.value;
-        if (currentRound && !this.filteredRounds.some(r => r.value === currentRound)) {
+        const allowed = this.allowedRoundsFor(level, this.oktv.value);
+        this.filteredRoundsSubject.next(ALL_ROUNDS.filter(r => allowed.has(r.value)));
+        if (this.round.value && !allowed.has(this.round.value)) {
             this.round.setValue(null);
         }
+    }
+
+    private allowedRoundsFor(level: Level | null, isOktv: boolean): Set<Round> {
+        if (isOktv) return OKTV_ROUNDS;
+        if (!level) return NON_OKTV_ROUNDS;
+        return new Set(ROUNDS_BY_LEVEL[level] ?? []);
     }
 
     fillForm(competition: Competition) {
@@ -180,10 +167,7 @@ export class CompetitionFormService {
         this.round.setValue(competition.round);
         this.other.setValue(competition.other);
 
-        const isOktv = competition.round === Round.OktvRoundOne ||
-            competition.round === Round.OktvRoundTwo ||
-            competition.round === Round.OktvFinal;
-        this.oktv.setValue(isOktv);
+        this.oktv.setValue(competition.round != null && OKTV_ROUNDS.has(competition.round));
 
         this.position.setValue(competition.result.position);
         this.specialPrize.setValue(competition.result.specialPrize);
@@ -212,21 +196,33 @@ export class CompetitionFormService {
         } else {
             dateControl.addValidators([
                 Validators.required,
-                (control) => {
-                    const selectedDate = new Date(control.value);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-
-                    if (selectedDate > today) {
-                        return { futureDate: true };
-                    }
-                    return null;
-                },
+                futureDateValidator(),
                 schoolYearValidator()
             ]);
         }
 
         dateControl.updateValueAndValidity();
+    }
+
+    buildCompetitionData(participants: Array<ExistingParticipant | NewParticipant>): CreateCompetitionData {
+        return {
+            name: this.name.value,
+            location: this.location.value,
+            subject: this.subject.value as string[],
+            teacher: this.teacher.value as string[],
+            date: this.date.value,
+            level: this.level.value as Level,
+            round: this.round.value!,
+            participants,
+            forms: this.forms.value as (Form | null)[],
+            result: {
+                position: this.position.value,
+                specialPrize: this.specialPrize.value,
+                compliment: this.compliment.value,
+                nextRound: this.nextRound.value
+            },
+            other: this.other.value
+        };
     }
 
     toggleSelects(enable: boolean) {

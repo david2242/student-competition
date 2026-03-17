@@ -1,5 +1,5 @@
 <app-competition-header location="top" [id]="id" [userRole]="userRole"
-  [isDeletable]="(isCompetitionDeletable$ | async) || false" (delete)="deleteCompetition()">
+  [isDeletable]="(isCompetitionModifiable$ | async) || false" (delete)="deleteCompetition()">
 </app-competition-header>
 <div class="container">
   <form [formGroup]="formService.competitionForm" (ngSubmit)="onSubmit()"
@@ -54,7 +54,7 @@
       <div class="col-sm-12 col-md-6 mb-3">
         <app-competition-select-field [label]="'Verseny szintje'" [id]="'round'" [control]="formService.round"
           [displayMode]="($displayMode | async) || 'show'" [placeholder]="'Válasszon szintet!'"
-          [options]="formService.filteredRounds"
+          [options]="(formService.filteredRounds$ | async) ?? []"
           [errorMessage]="'Kérem adja meg a verseny szintjét!'"></app-competition-select-field>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
@@ -73,7 +73,8 @@
           [displayMode]="($displayMode | async) || 'show'" [type]="'textarea'"></app-competition-field>
       </div>
       <app-competition-header location="bottom" [mode]="($displayMode | async) || 'show'" [id]="id"
-        [userRole]="userRole" [isLoading]="isLoading" (edit)="editMode()" (cancel)="showMode()" (save)="onSubmit()">
+        [userRole]="userRole" [isEditable]="(isCompetitionModifiable$ | async) || false" [isLoading]="isLoading"
+        (edit)="editMode()" (cancel)="showMode()" (save)="onSubmit()">
       </app-competition-header>
     </div>
   </form>
