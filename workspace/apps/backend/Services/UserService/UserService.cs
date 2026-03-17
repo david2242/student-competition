@@ -1,6 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Workspace.Backend.Data;
 using Workspace.Backend.Dtos.User;
 using Workspace.Backend.Models;
 
@@ -12,17 +14,20 @@ public class UserService : IUserService
     private readonly RoleManager<IdentityRole> _roleManager;
     private readonly IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly DataContext _context;
 
     public UserService(
         UserManager<IdentityUser> userManager,
         RoleManager<IdentityRole> roleManager,
         IMapper mapper,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        DataContext context)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _mapper = mapper;
         _httpContextAccessor = httpContextAccessor;
+        _context = context;
     }
 
     public async Task<List<GetUserResponseDto>> GetAll()
@@ -125,6 +130,10 @@ public class UserService : IUserService
         {
             throw new KeyNotFoundException($"User with ID '{id}' not found.");
         }
+
+        await _context.Competitions
+            .Where(c => c.CreatorId == id)
+            .ExecuteUpdateAsync(s => s.SetProperty(c => c.CreatorId, (string?)null));
 
         var result = await _userManager.DeleteAsync(user);
         if (!result.Succeeded)
