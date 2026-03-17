@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { AbstractControl, FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Form, Level, Round, Competition } from '@/app/models/competition.model';
 import { CreateCompetitionData } from '@/app/services/competition.service';
@@ -82,7 +83,8 @@ export class CompetitionFormService {
         other: new FormControl<string>('', { nonNullable: true })
     }) as CompetitionForm;
 
-    filteredRounds: { value: Round, text: string }[] = [];
+    private readonly filteredRoundsSubject = new BehaviorSubject<{ value: Round, text: string }[]>([]);
+    readonly filteredRounds$ = this.filteredRoundsSubject.asObservable();
 
     constructor() {
         this.level.valueChanges.subscribe(level => {
@@ -144,7 +146,7 @@ export class CompetitionFormService {
 
     updateFilteredRounds(level: Level | null): void {
         const allowed = this.allowedRoundsFor(level, this.oktv.value);
-        this.filteredRounds = ALL_ROUNDS.filter(r => allowed.has(r.value));
+        this.filteredRoundsSubject.next(ALL_ROUNDS.filter(r => allowed.has(r.value)));
         if (this.round.value && !allowed.has(this.round.value)) {
             this.round.setValue(null);
         }
@@ -211,7 +213,7 @@ export class CompetitionFormService {
             level: this.level.value as Level,
             round: this.round.value!,
             participants,
-            forms: this.forms.value as any[],
+            forms: this.forms.value as (Form | null)[],
             result: {
                 position: this.position.value,
                 specialPrize: this.specialPrize.value,

@@ -54,7 +54,7 @@
       <div class="col-sm-12 col-md-6 mb-3">
         <app-competition-select-field [label]="'Verseny szintje'" [id]="'round'" [control]="formService.round"
           [displayMode]="($displayMode | async) || 'show'" [placeholder]="'Válasszon szintet!'"
-          [options]="formService.filteredRounds"
+          [options]="(formService.filteredRounds$ | async) ?? []"
           [errorMessage]="'Kérem adja meg a verseny szintjét!'"></app-competition-select-field>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
