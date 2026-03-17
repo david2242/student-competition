@@ -23,20 +23,4 @@ export class CompetitionHeaderComponent {
     @Output() save = new EventEmitter<void>();
 
     protected readonly Role = Role;
-
-    onDelete() {
-        this.delete.emit();
-    }
-
-    onEdit() {
-        this.edit.emit();
-    }
-
-    onCancel() {
-        this.cancel.emit();
-    }
-
-    onSave() {
-        this.save.emit();
-    }
 }
