@@ -1,5 +1,4 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { Role } from "@/app/models/current-user";
 
 export function schoolYearValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -18,8 +17,7 @@ export function schoolYearValidator(): ValidatorFn {
 
     if (date >= schoolYearStart && date <= schoolYearEnd) {
       return null;
-    } else {
-      return { schoolYear: { value: control.value } };
     }
+    return { schoolYear: { value: control.value } };
   };
 }

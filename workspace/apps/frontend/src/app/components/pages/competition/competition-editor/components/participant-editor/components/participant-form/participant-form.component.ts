@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, FormControl } from '@angular/forms';
 import { CompetitionParticipant } from "@/app/components/pages/competition/competition-editor";
@@ -102,8 +102,7 @@ import { CompetitionParticipant } from "@/app/components/pages/competition/compe
 export class ParticipantFormComponent implements OnInit {
   @Input() classYears: number[] = [];
   @Input() classLetters: string[] = [];
-  @Input() participant?: CompetitionParticipant;
-  @Input() initialData: { firstName?: string; lastName?: string } = {};
+  @Input() initialData?: Partial<CompetitionParticipant>;
   @Output() submitForm = new EventEmitter<CompetitionParticipant>();
   @Output() cancel = new EventEmitter<void>();
   @Output() formInteraction = new EventEmitter<void>();
@@ -115,20 +114,20 @@ export class ParticipantFormComponent implements OnInit {
     classLetter: FormControl<string | null>;
   }>;
 
-  constructor(private fb: FormBuilder) { }
+  private fb = inject(FormBuilder);
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      firstName: [this.initialData.firstName || this.participant?.firstName || '', [
+      firstName: [this.initialData?.firstName || '', [
         Validators.required,
         Validators.maxLength(50)
       ]],
-      lastName: [this.initialData.lastName || this.participant?.lastName || '', [
+      lastName: [this.initialData?.lastName || '', [
         Validators.required,
         Validators.maxLength(50)
       ]],
-      classYear: [this.participant?.classYear || null, Validators.required],
-      classLetter: [this.participant?.classLetter || '', Validators.required]
+      classYear: [this.initialData?.classYear ?? null, Validators.required],
+      classLetter: [this.initialData?.classLetter || '', Validators.required]
     });
   }
 
@@ -138,7 +137,7 @@ export class ParticipantFormComponent implements OnInit {
       const participant: CompetitionParticipant = {
         firstName: formValue.firstName || '',
         lastName: formValue.lastName || '',
-        classYear: formValue.classYear || 0,
+        classYear: formValue.classYear!,
         classLetter: formValue.classLetter || ''
       };
       this.submitForm.emit(participant);
