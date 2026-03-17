@@ -10,29 +10,29 @@ type ResultFormGroup = FormGroup<{
 }>;
 
 @Component({
-    selector: 'app-competition-result',
-    standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
-    templateUrl: './competition-result.component.html',
-    styleUrls: ['./competition-result.component.css']
+  selector: 'app-competition-result',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './competition-result.component.html',
+  styleUrls: ['./competition-result.component.css']
 })
 export class CompetitionResultComponent {
     @Input({ required: true }) formGroup!: ResultFormGroup;
     @Input({ required: true }) displayMode: 'show' | 'edit' = 'show';
 
     get position() {
-        return this.formGroup.controls.position;
+      return this.formGroup.controls.position;
     }
 
     get specialPrize() {
-        return this.formGroup.controls.specialPrize;
+      return this.formGroup.controls.specialPrize;
     }
 
     get compliment() {
-        return this.formGroup.controls.compliment;
+      return this.formGroup.controls.compliment;
     }
 
     get nextRound() {
-        return this.formGroup.controls.nextRound;
+      return this.formGroup.controls.nextRound;
     }
 }
