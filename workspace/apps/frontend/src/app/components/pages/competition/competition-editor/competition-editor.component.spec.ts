@@ -291,7 +291,7 @@ describe('CompetitionEditorComponent', () => {
 
       it('should be deletable for ADMIN', (done) => {
         currentUserSubject.next({ role: Role.ADMIN, id: 1 });
-        component.isCompetitionDeletable$.pipe(take(1)).subscribe((deletable: boolean) => {
+        component.isCompetitionModifiable$.pipe(take(1)).subscribe((deletable: boolean) => {
           expect(deletable).toBe(true);
           done();
         });
@@ -299,7 +299,7 @@ describe('CompetitionEditorComponent', () => {
 
       it('should be deletable for Creator CONTRIBUTOR', (done) => {
         currentUserSubject.next({ role: Role.CONTRIBUTOR, id: 10 });
-        component.isCompetitionDeletable$.pipe(take(1)).subscribe((deletable: boolean) => {
+        component.isCompetitionModifiable$.pipe(take(1)).subscribe((deletable: boolean) => {
           expect(deletable).toBe(true);
           done();
         });
@@ -307,7 +307,7 @@ describe('CompetitionEditorComponent', () => {
 
       it('should NOT be deletable for other CONTRIBUTOR', (done) => {
         currentUserSubject.next({ role: Role.CONTRIBUTOR, id: 11 });
-        component.isCompetitionDeletable$.pipe(take(1)).subscribe((deletable: boolean) => {
+        component.isCompetitionModifiable$.pipe(take(1)).subscribe((deletable: boolean) => {
           expect(deletable).toBe(false);
           done();
         });

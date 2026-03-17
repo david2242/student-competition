@@ -81,7 +81,7 @@ export class CompetitionEditorComponent implements OnInit {
     { value: 'submission', text: 'Pályázatos' },
   ];
 
-  isCompetitionDeletable$ = combineLatest([
+  isCompetitionModifiable$ = combineLatest([
     this.authService.$currentUser,
     this.competition$
   ]).pipe(
