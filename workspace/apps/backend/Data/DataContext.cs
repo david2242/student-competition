@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Workspace.Backend.Models;
-using System.Linq;
 
 namespace Workspace.Backend.Data
 {
@@ -14,22 +13,6 @@ namespace Workspace.Backend.Data
     public DbSet<Competition> Competitions => Set<Competition>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<CompetitionParticipant> CompetitionParticipants => Set<CompetitionParticipant>();
-    
-    // Override SaveChanges to ensure we don't have any tracking issues
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-      // Only detach modified students, not newly added ones
-      var modifiedStudents = ChangeTracker
-          .Entries()
-          .Where(e => e.Entity is Student && e.State == Microsoft.EntityFrameworkCore.EntityState.Modified);
-
-      foreach (var entityEntry in modifiedStudents)
-      {
-          entityEntry.State = Microsoft.EntityFrameworkCore.EntityState.Detached;
-      }
-      
-      return await base.SaveChangesAsync(cancellationToken);
-    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
