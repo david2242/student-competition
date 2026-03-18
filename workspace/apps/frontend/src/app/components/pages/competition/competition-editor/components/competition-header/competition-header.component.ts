@@ -1,11 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Role } from "@/app/models/current-user";
 
 @Component({
     selector: 'app-competition-header',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
     templateUrl: './competition-header.component.html',
     styleUrl: './competition-header.component.css'
 })
