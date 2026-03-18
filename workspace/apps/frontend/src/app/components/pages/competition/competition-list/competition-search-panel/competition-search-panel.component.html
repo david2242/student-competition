@@ -1,0 +1,75 @@
+<div class="mb-3 mt-3">
+  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggle()">
+    <i class="bi" [class.bi-chevron-down]="!isExpanded" [class.bi-chevron-up]="isExpanded"></i>
+    Szűrők
+  </button>
+
+  <div *ngIf="isExpanded" class="card card-body mt-2">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label">Verseny neve</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.name" placeholder="Részleges egyezés...">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Tantárgy</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.subject" placeholder="Részleges egyezés...">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Tanár</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.teacher" placeholder="Részleges egyezés...">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Szint</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filters.level">
+          <option value="">Összes</option>
+          <option *ngFor="let l of levels" [value]="l.value">{{ l.label }}</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Forduló</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filters.round">
+          <option value="">Összes</option>
+          <option *ngFor="let r of rounds" [value]="r.value">{{ r.label }}</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Versenyző neve</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.studentName" placeholder="Részleges egyezés...">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Dátumtól</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="filters.dateFrom">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Dátumig</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="filters.dateTo">
+      </div>
+      <div class="col-6 col-md-3 d-flex align-items-end">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="isOktv" [(ngModel)]="filters.isOktv">
+          <label class="form-check-label" for="isOktv">OKTV</label>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 d-flex align-items-end">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="nextRound" [(ngModel)]="filters.nextRound">
+          <label class="form-check-label" for="nextRound">Továbbjutás</label>
+        </div>
+      </div>
+      <div class="col-6 col-md-3 d-flex align-items-end">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="hasResult" [(ngModel)]="filters.hasResult">
+          <label class="form-check-label" for="hasResult">Van eredmény</label>
+        </div>
+      </div>
+    </div>
+    <div class="mt-3 d-flex gap-2">
+      <button type="button" class="btn btn-primary btn-sm" (click)="onSearch()">
+        <i class="bi bi-search me-1"></i>Keresés
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="onReset()">
+        <i class="bi bi-x-circle me-1"></i>Visszaállítás
+      </button>
+    </div>
+  </div>
+</div>

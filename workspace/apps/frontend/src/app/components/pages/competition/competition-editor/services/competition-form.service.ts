@@ -18,8 +18,8 @@ function futureDateValidator(): ValidatorFn {
 
 const ALL_ROUNDS: { value: Round, text: string }[] = [
   { value: Round.School,       text: 'Iskolai' },
-  { value: Round.State,        text: 'Megyei' },
   { value: Round.Regional,     text: 'Körzeti' },
+  { value: Round.State,        text: 'Vármegyei' },
   { value: Round.National,     text: 'Országos' },
   { value: Round.OktvRoundOne, text: 'OKTV I. forduló' },
   { value: Round.OktvRoundTwo, text: 'OKTV II. forduló' },
@@ -31,10 +31,10 @@ const OKTV_ROUNDS = new Set([Round.OktvRoundOne, Round.OktvRoundTwo, Round.OktvF
 const NON_OKTV_ROUNDS = new Set([Round.School, Round.State, Round.Regional, Round.National]);
 
 const ROUNDS_BY_LEVEL: Partial<Record<Level, Round[]>> = {
-  [Level.Local]:         [Round.School, Round.Regional],
-  [Level.State]:         [Round.School, Round.State, Round.Regional],
-  [Level.National]:      [Round.Regional, Round.National],
-  [Level.International]: [Round.National, Round.OktvFinal],
+  [Level.Local]:    [Round.School, Round.Regional],
+  [Level.Regional]: [Round.School, Round.Regional],
+  [Level.State]:    [Round.School, Round.Regional, Round.State],
+  [Level.National]: [Round.School, Round.Regional, Round.State, Round.National],
 };
 
 export interface CompetitionForm extends FormGroup {
@@ -138,11 +138,15 @@ export class CompetitionFormService {
     toggleOktv(checked: boolean): void {
         this.oktv.setValue(checked);
         this.round.reset();
-        this.updateFilteredRounds(this.level.value);
 
-        if (checked && (!this.level.value || this.level.value === Level.Local)) {
-            this.level.setValue(Level.State);
+        if (checked) {
+            this.level.setValue(Level.National);
+            this.level.disable();
+        } else {
+            this.level.enable();
         }
+
+        this.updateFilteredRounds(this.level.value);
     }
 
     updateFilteredRounds(level: Level | null): void {
@@ -167,7 +171,13 @@ export class CompetitionFormService {
         this.round.setValue(competition.round);
         this.other.setValue(competition.other);
 
-        this.oktv.setValue(competition.round != null && OKTV_ROUNDS.has(competition.round));
+        const isOktv = competition.round != null && OKTV_ROUNDS.has(competition.round);
+        this.oktv.setValue(isOktv);
+        if (isOktv) {
+            this.level.disable();
+        } else {
+            this.level.enable();
+        }
 
         this.position.setValue(competition.result.position);
         this.specialPrize.setValue(competition.result.specialPrize);

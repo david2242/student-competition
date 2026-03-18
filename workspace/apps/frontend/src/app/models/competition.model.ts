@@ -25,10 +25,10 @@ export interface Competition {
 }
 
 export enum Level {
-  Local = 'LOCAL',
-  State = 'STATE',
-  National = 'NATIONAL',
-  International = 'INTERNATIONAL',
+  Local     = 'LOCAL',
+  Regional  = 'REGIONAL',
+  State     = 'STATE',
+  National  = 'NATIONAL',
 }
 
 export enum Round {

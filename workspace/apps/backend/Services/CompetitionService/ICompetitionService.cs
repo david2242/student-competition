@@ -10,4 +10,5 @@ public interface ICompetitionService
   Task<List<GetCompetitionResponseDto>> AddCompetition(AddCompetitionRequestDto newCompetition, string currentUserId);
   Task<GetCompetitionResponseDto> UpdateCompetition(int id, UpdateCompetitionRequestDto updatedCompetition, string currentUserId);
   Task<List<GetCompetitionResponseDto>> DeleteCompetition(int id, string currentUserId);
+  Task<List<GetCompetitionResponseDto>> SearchCompetitionsAsync(CompetitionSearchRequestDto request);
 }

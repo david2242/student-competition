@@ -184,7 +184,7 @@ describe('CompetitionEditorComponent', () => {
     it('should filter rounds for National level', () => {
       component.formService.level.setValue(Level.National);
       expect(component.formService.filteredRounds.every((r: any) =>
-        r.value === Round.Regional || r.value === Round.National
+        r.value === Round.School || r.value === Round.Regional || r.value === Round.State || r.value === Round.National
       )).toBeTruthy();
     });
 
@@ -203,14 +203,14 @@ describe('CompetitionEditorComponent', () => {
       )).toBeTruthy();
     });
 
-    it('should set level to State if Local/null when OKTV is enabled', () => {
+    it('should set level to National and disable it when OKTV is enabled', () => {
       component.formService.level.setValue(Level.Local);
       component.formService.toggleOktv(true);
-      expect(component.formService.level.value).toBe(Level.State);
+      expect(component.formService.level.value).toBe(Level.National);
+      expect(component.formService.level.disabled).toBeTruthy();
 
-      component.formService.level.setValue(null);
-      component.formService.toggleOktv(true);
-      expect(component.formService.level.value).toBe(Level.State);
+      component.formService.toggleOktv(false);
+      expect(component.formService.level.disabled).toBeFalsy();
     });
 
     it('should reset round when OKTV is toggled', () => {
@@ -229,13 +229,7 @@ describe('CompetitionEditorComponent', () => {
       expect(values.length).toBe(3);
     });
 
-    it('should filter rounds for International level', () => {
-      component.formService.level.setValue(Level.International);
-      const values = component.formService.filteredRounds.map(r => r.value);
-      expect(values).toContain(Round.National);
-      expect(values).toContain(Round.OktvFinal);
-      expect(values.length).toBe(2);
-    });
+
   });
 
   describe('Form Restoration', () => {

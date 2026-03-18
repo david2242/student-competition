@@ -69,9 +69,10 @@ export class CompetitionEditorComponent implements OnInit {
   teachers = teachers;
 
   readonly levelOptions = [
-    { value: Level.Local, text: 'Helyi' },
-    { value: Level.State, text: 'Vármegyei' },
-    { value: Level.National, text: 'Országos' },
+    { value: Level.Local,     text: 'Helyi' },
+    { value: Level.Regional,  text: 'Körzeti' },
+    { value: Level.State,     text: 'Vármegyei' },
+    { value: Level.National,  text: 'Országos' },
   ];
 
   readonly formOptions = [

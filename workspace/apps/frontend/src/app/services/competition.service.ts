@@ -1,11 +1,25 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from "@angular/common/http";
-import { Competition, Level, Round, Form, Result } from "@/app/models/competition.model";
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Competition, Form, Result } from "@/app/models/competition.model";
 import { handleBackendResponse, ServerResponse } from "@/app/models/server-response";
 import { NewParticipant, ExistingParticipant, Student } from "@/app/models/student.model";
 import { environment } from '@/environments/environment';
 import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
+
+export interface CompetitionSearchParams {
+  name?: string;
+  subject?: string;
+  teacher?: string;
+  level?: string;
+  round?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  studentName?: string;
+  nextRound?: boolean;
+  hasResult?: boolean;
+  isOktv?: boolean;
+}
 
 // Type for creating a new competition
 export interface CreateCompetitionData extends Omit<Competition, 'id' | 'created' | 'creatorId' | 'participants'> {
@@ -23,6 +37,18 @@ export class CompetitionService {
   getCompetitions() {
     return this.httpClient.get<ServerResponse<Competition[]>>(`${this.apiUrl}/competition`).pipe(
       handleBackendResponse()
+    );
+  }
+
+  searchCompetitions(params: CompetitionSearchParams) {
+    let httpParams = new HttpParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        httpParams = httpParams.set(key, String(value));
+      }
+    });
+    return this.httpClient.get<ServerResponse<Competition[]>>(`${this.apiUrl}/competition/search`, { params: httpParams }).pipe(
+      handleBackendResponse<Competition[]>()
     );
   }
 

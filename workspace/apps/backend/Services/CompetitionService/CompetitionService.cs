@@ -289,6 +289,75 @@ public class CompetitionService : ICompetitionService
     }
   }
 
+  public async Task<List<GetCompetitionResponseDto>> SearchCompetitionsAsync(CompetitionSearchRequestDto request)
+  {
+    IQueryable<Competition> query = CompetitionIncludes(_context.Competitions);
+
+    if (!string.IsNullOrWhiteSpace(request.Name))
+      query = query.Where(c => c.Name.ToLower().Contains(request.Name.ToLower()));
+
+    if (!string.IsNullOrWhiteSpace(request.Level))
+      query = query.Where(c => c.Level.ToLower() == request.Level.ToLower());
+
+    if (!string.IsNullOrWhiteSpace(request.Round))
+      query = query.Where(c => c.Round.ToLower() == request.Round.ToLower());
+
+    if (request.DateFrom.HasValue)
+      query = query.Where(c => c.Date >= request.DateFrom.Value);
+
+    if (request.DateTo.HasValue)
+      query = query.Where(c => c.Date <= request.DateTo.Value);
+
+    if (request.StudentId.HasValue)
+      query = query.Where(c => c.CompetitionParticipants.Any(p => p.StudentId == request.StudentId.Value));
+
+    if (!string.IsNullOrWhiteSpace(request.StudentName))
+    {
+      var lower = request.StudentName.ToLower();
+      query = query.Where(c => c.CompetitionParticipants.Any(p =>
+        p.Student.FirstName.ToLower().Contains(lower) ||
+        p.Student.LastName.ToLower().Contains(lower)));
+    }
+
+    if (request.NextRound.HasValue)
+      query = query.Where(c => c.Result.NextRound == request.NextRound.Value);
+
+    if (request.HasResult == true)
+      query = query.Where(c =>
+        c.Result.Position != null ||
+        c.Result.SpecialPrize ||
+        c.Result.Compliment ||
+        c.Result.NextRound);
+
+    if (request.IsOktv == true)
+      query = query.Where(c => c.Round.StartsWith("OKTV"));
+
+    var competitions = await query
+      .OrderByDescending(c => c.Date)
+      .ToListAsync();
+
+    // In-memory filters for array columns
+    if (!string.IsNullOrWhiteSpace(request.Subject))
+    {
+      var lower = request.Subject.ToLower();
+      competitions = competitions
+        .Where(c => c.Subject.Any(s => s.ToLower().Contains(lower)))
+        .ToList();
+    }
+
+    if (!string.IsNullOrWhiteSpace(request.Teacher))
+    {
+      var lower = request.Teacher.ToLower();
+      competitions = competitions
+        .Where(c => c.Teacher.Any(t => t.ToLower().Contains(lower)))
+        .ToList();
+    }
+
+    return competitions
+      .Select(c => _mapper.Map<GetCompetitionResponseDto>(c))
+      .ToList();
+  }
+
   public async Task<List<GetCompetitionResponseDto>> DeleteCompetition(int id, string currentUserId)
   {
     var isAdmin = await IsUserInRoleAsync(currentUserId, "admin");
