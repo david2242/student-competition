@@ -22,10 +22,9 @@ public class CompetitionService : ICompetitionService
   {
     if (participantDto.StudentId.HasValue)
     {
-      var student = await _context.Students
-        .AsNoTracking()
-        .FirstOrDefaultAsync(s => s.Id == participantDto.StudentId.Value);
-        
+      var student = _context.Students.Local.FirstOrDefault(s => s.Id == participantDto.StudentId.Value)
+        ?? await _context.Students.FirstOrDefaultAsync(s => s.Id == participantDto.StudentId.Value);
+
       return student ?? throw new KeyNotFoundException($"Student with ID {participantDto.StudentId} not found");
     }
     

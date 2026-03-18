@@ -3,10 +3,12 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using MockQueryable;
 using MockQueryable.Moq;
 using Moq;
 using NUnit.Framework;
+using Workspace.Backend.Data;
 using Workspace.Backend.Dtos.User;
 using Workspace.Backend.Models;
 using Workspace.Backend.Services.UserService;
@@ -21,6 +23,7 @@ public class UserServiceTests : TestBase<UserService>
     private Mock<UserManager<IdentityUser>> _userManagerMock = null!;
     private Mock<RoleManager<IdentityRole>> _roleManagerMock = null!;
     private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
+    private DataContext _context = null!;
     private UserService _service = null!;
 
     [SetUp]
@@ -38,12 +41,22 @@ public class UserServiceTests : TestBase<UserService>
 
         _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
 
+        var options = new DbContextOptionsBuilder<DataContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options;
+        _context = new DataContext(options);
+
         _service = new UserService(
             _userManagerMock.Object,
             _roleManagerMock.Object,
             Mapper,
-            _httpContextAccessorMock.Object);
+            _httpContextAccessorMock.Object,
+            _context);
     }
+
+    [TearDown]
+    public void TearDown() => _context.Dispose();
 
     [Test]
     public async Task GetSingle_WhenUserExists_ReturnsMappedDto()
