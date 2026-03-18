@@ -1,7 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from "@angular/router";
-import { CompetitionService } from "@/app/services/competition.service";
+import { CompetitionService, CompetitionSearchParams } from "@/app/services/competition.service";
+import { CompetitionSearchPanelComponent } from './competition-search-panel/competition-search-panel.component';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, SizeColumnsToFitGridStrategy, RowClickedEvent } from 'ag-grid-community';
 import {
@@ -36,7 +37,7 @@ ModuleRegistry.registerModules([
 @Component({
   selector: 'app-competition-list',
   standalone: true,
-  imports: [ CommonModule, AgGridAngular ],
+  imports: [ CommonModule, AgGridAngular, CompetitionSearchPanelComponent ],
   templateUrl: './competition-list.component.html',
   styleUrl: './competition-list.component.css',
 })
@@ -69,6 +70,7 @@ export class CompetitionListComponent implements OnInit {
   }
 
   rowData?: Competition[];
+  hasActiveFilters = false;
 
   colDefs: ColDef[] = [
     {
@@ -126,6 +128,34 @@ export class CompetitionListComponent implements OnInit {
     resizable: true,
     minWidth: 200,
   };
+
+  onSearch(params: CompetitionSearchParams) {
+    this.hasActiveFilters = true;
+    this.competitionService.searchCompetitions(params).subscribe({
+      next: (response) => {
+        this.rowData = Array.isArray(response) ? response : [];
+      },
+      error: (error) => {
+        console.error('Error searching competitions:', error);
+        this.notification.error('Nem sikerült a keresés!');
+        this.rowData = [];
+      }
+    });
+  }
+
+  onReset() {
+    this.hasActiveFilters = false;
+    this.competitionService.getCompetitions().subscribe({
+      next: (response) => {
+        this.rowData = Array.isArray(response) ? response : [];
+      },
+      error: (error) => {
+        console.error('Error loading competitions:', error);
+        this.notification.error('Nem sikerült betölteni a versenyeket!');
+        this.rowData = [];
+      }
+    });
+  }
 
   goToCompetition($event: RowClickedEvent<Competition>) {
     this.router.navigate([ 'competition', $event.data?.id ]);

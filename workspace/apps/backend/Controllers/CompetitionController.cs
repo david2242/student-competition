@@ -27,6 +27,13 @@ public class CompetitionController : ControllerBase
         return Ok(new ServiceResponse<List<GetCompetitionResponseDto>> { Data = result });
     }
 
+    [HttpGet("search"), Authorize(Roles = "admin,contributor,viewer")]
+    public async Task<IActionResult> Search([FromQuery] CompetitionSearchRequestDto request)
+    {
+        var result = await _competitionService.SearchCompetitionsAsync(request);
+        return Ok(new ServiceResponse<List<GetCompetitionResponseDto>> { Data = result });
+    }
+
     [HttpGet("{id}"), Authorize(Roles = "admin,contributor,viewer")]
     public async Task<IActionResult> GetSingle(int id)
     {

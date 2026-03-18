@@ -3,14 +3,14 @@ import { Form, Level, Round } from "@/app/models/competition.model";
 export const COMPETITION_TRANSLATIONS = {
   level: {
     [Level.Local]: 'Helyi',
+    [Level.Regional]: 'Körzeti',
     [Level.State]: 'Vármegyei',
     [Level.National]: 'Országos',
-    [Level.International]: 'Nemzetközi',
   } as const,
-  
+
   round: {
     [Round.School]: 'Iskolai',
-    [Round.Regional]: 'Regionális',
+    [Round.Regional]: 'Körzeti',
     [Round.State]: 'Vármegyei',
     [Round.National]: 'Országos',
     [Round.OktvRoundOne]: 'OKTV I. forduló',

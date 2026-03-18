@@ -58,31 +58,30 @@ public class Result
 
 public static class Level
 {
-  public const string Local = nameof(Local);
-  public const string State = nameof(State);
-  public const string Regional = nameof(Regional);
-  public const string National = nameof(National);
-  public const string International = nameof(International);
-  public const string OktvRoundOne = nameof(OktvRoundOne);
-  public const string OktvRoundTwo = nameof(OktvRoundTwo);
-  public const string OktvFinal = nameof(OktvFinal);
+  public const string Local    = "LOCAL";
+  public const string Regional = "REGIONAL";
+  public const string State    = "STATE";
+  public const string National = "NATIONAL";
 
-  public static readonly string[] All = 
+  public static readonly string[] All =
   {
-    Local, State, Regional, National, International, OktvRoundOne, OktvRoundTwo, OktvFinal
+    Local, Regional, State, National
   };
 }
 
 public static class Round
 {
-  public const string School = nameof(School);
-  public const string Regional = nameof(Regional);
-  public const string State = nameof(State);
-  public const string National = nameof(National);
+  public const string School      = "SCHOOL";
+  public const string Regional    = "REGIONAL";
+  public const string State       = "STATE";
+  public const string National    = "NATIONAL";
+  public const string OktvRoundOne = "OKTV_ROUND_ONE";
+  public const string OktvRoundTwo = "OKTV_ROUND_TWO";
+  public const string OktvFinal    = "OKTV_FINAL";
 
-  public static readonly string[] All = 
+  public static readonly string[] All =
   {
-    School, Regional, State, National
+    School, Regional, State, National, OktvRoundOne, OktvRoundTwo, OktvFinal
   };
 }
 

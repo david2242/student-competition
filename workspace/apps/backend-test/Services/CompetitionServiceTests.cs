@@ -188,7 +188,7 @@ public class CompetitionServiceTests : TestBase<CompetitionService>
         var creatorId = "creator-123";
         var otherUserId = "other-123";
         var otherUser = new IdentityUser { Id = otherUserId };
-        
+
         var competition = new Competition { Id = 1, CreatorId = creatorId };
         _context.Competitions.Add(competition);
         await _context.SaveChangesAsync();
@@ -201,5 +201,206 @@ public class CompetitionServiceTests : TestBase<CompetitionService>
 
         // Assert
         await act.Should().ThrowAsync<UnauthorizedAccessException>();
+    }
+
+    // ---- SearchCompetitionsAsync tests ----
+
+    private async Task SeedSearchData()
+    {
+        var student1 = new Student { Id = 1, FirstName = "Kovács", LastName = "Anna" };
+        var student2 = new Student { Id = 2, FirstName = "Kiss", LastName = "Béla" };
+        _context.Students.AddRange(student1, student2);
+
+        var c1 = new Competition
+        {
+            Id = 10,
+            Name = "OKTV Matematika",
+            Subject = new[] { "Matematika" },
+            Teacher = new[] { "Kovács Tanár" },
+            Level = Models.Level.National,
+            Round = Models.Round.National,
+            Date = new DateOnly(2025, 3, 1),
+            Result = new Result { Position = 1, NextRound = false }
+        };
+        var c2 = new Competition
+        {
+            Id = 11,
+            Name = "Fizika verseny",
+            Subject = new[] { "Fizika" },
+            Teacher = new[] { "Nagy Tanár" },
+            Level = Models.Level.Local,
+            Round = Models.Round.School,
+            Date = new DateOnly(2024, 11, 15),
+            Result = new Result { NextRound = true }
+        };
+        var c3 = new Competition
+        {
+            Id = 12,
+            Name = "Kémia olimpia",
+            Subject = new[] { "Kémia" },
+            Teacher = new[] { "Kovács Tanár" },
+            Level = Models.Level.Regional,
+            Round = Models.Round.Regional,
+            Date = new DateOnly(2025, 1, 20),
+            Result = new Result { SpecialPrize = true }
+        };
+        _context.Competitions.AddRange(c1, c2, c3);
+        await _context.SaveChangesAsync();
+
+        _context.CompetitionParticipants.AddRange(
+            new CompetitionParticipant(10, 1, 11, "A", 2024),
+            new CompetitionParticipant(11, 2, 9, "B", 2024),
+            new CompetitionParticipant(12, 1, 11, "A", 2024)
+        );
+        await _context.SaveChangesAsync();
+    }
+
+    [Test]
+    public async Task SearchCompetitions_NoFilters_ReturnsAll()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto());
+        result.Should().HaveCount(3);
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByName_ReturnsPartialMatch()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { Name = "mat" });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("OKTV Matematika");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_BySubject_ReturnsInMemoryMatch()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { Subject = "fizik" });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Fizika verseny");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByTeacher_ReturnsInMemoryMatch()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { Teacher = "Kovács" });
+        result.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByLevel_ReturnsExactMatch()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { Level = Models.Level.Local });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Fizika verseny");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByRound_ReturnsExactMatch()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { Round = Models.Round.National });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("OKTV Matematika");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByDateFrom_ReturnsResultsOnOrAfter()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { DateFrom = new DateOnly(2025, 1, 1) });
+        result.Should().HaveCount(2);
+        result.Should().NotContain(r => r.Name == "Fizika verseny");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByDateTo_ReturnsResultsOnOrBefore()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { DateTo = new DateOnly(2024, 12, 31) });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Fizika verseny");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByStudentName_ReturnsCompetitionsWithParticipant()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { StudentName = "Kovács" });
+        result.Should().HaveCount(2);
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByStudentId_ReturnsCompetitionsWithParticipant()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { StudentId = 2 });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Fizika verseny");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByNextRound_ReturnsMatchingCompetitions()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { NextRound = true });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("Fizika verseny");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_ByHasResult_ReturnsCompetitionsWithAnyResult()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { HasResult = true });
+        result.Should().HaveCount(3);
+    }
+
+    [Test]
+    public async Task SearchCompetitions_CombinedFilters_AppliesAndLogic()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto
+        {
+            Teacher = "Kovács",
+            Level = Models.Level.National
+        });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("OKTV Matematika");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_IsOktv_ReturnsOnlyOktvLevelCompetitions()
+    {
+        await SeedSearchData();
+
+        var oktvComp = new Competition
+        {
+            Id = 20,
+            Name = "OKTV Fizika",
+            Subject = new[] { "Fizika" },
+            Teacher = new[] { "Tanár" },
+            Level = Models.Level.National,
+            Round = "OKTV_ROUND_TWO",
+            Date = new DateOnly(2025, 2, 10),
+            Result = new Result()
+        };
+        _context.Competitions.Add(oktvComp);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { IsOktv = true });
+        result.Should().HaveCount(1);
+        result[0].Name.Should().Be("OKTV Fizika");
+    }
+
+    [Test]
+    public async Task SearchCompetitions_NoMatch_ReturnsEmptyList()
+    {
+        await SeedSearchData();
+        var result = await _service.SearchCompetitionsAsync(new CompetitionSearchRequestDto { Name = "nonexistent-xyzzy" });
+        result.Should().BeEmpty();
     }
 }

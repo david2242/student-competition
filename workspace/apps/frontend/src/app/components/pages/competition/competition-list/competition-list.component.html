@@ -1,4 +1,16 @@
 <div class="container">
+  <app-competition-search-panel
+    (searchSubmit)="onSearch($event)"
+    (resetFilters)="onReset()"
+  />
+
+  <div *ngIf="hasActiveFilters" class="mb-2 d-flex align-items-center gap-2">
+    <span class="badge bg-info text-dark">
+      <i class="bi bi-funnel-fill me-1"></i>Szűrők aktívak ({{ rowData?.length ?? 0 }} találat)
+    </span>
+    <button type="button" class="btn btn-link btn-sm p-0 text-secondary" (click)="onReset()">Szűrők törlése</button>
+  </div>
+
   <ag-grid-angular
     class="ag-theme-alpine mt-3"
     domLayout="autoHeight"
