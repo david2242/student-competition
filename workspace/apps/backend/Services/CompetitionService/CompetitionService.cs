@@ -237,6 +237,9 @@ public class CompetitionService : ICompetitionService
       throw new UnauthorizedAccessException("You can only update competitions you created");
     }
 
+    if (!isAdmin && !SchoolYearHelper.IsCurrentSchoolYear(competition.Date))
+      throw new UnauthorizedAccessException("Csak az aktuális tanév versenyeit módosíthatja");
+
     using var transaction = await _context.Database.BeginTransactionAsync();
     try
     {
@@ -371,6 +374,9 @@ public class CompetitionService : ICompetitionService
     {
       throw new UnauthorizedAccessException("You can only delete competitions you created");
     }
+
+    if (!isAdmin && !SchoolYearHelper.IsCurrentSchoolYear(competition.Date))
+      throw new UnauthorizedAccessException("Csak az aktuális tanév versenyeit törölheti");
 
     using var transaction = await _context.Database.BeginTransactionAsync();
     try

@@ -200,8 +200,7 @@ export class CompetitionFormService {
 
         if (userRole === Role.ADMIN) {
             dateControl.addValidators([
-                Validators.required,
-                schoolYearValidator()
+                Validators.required
             ]);
         } else {
             dateControl.addValidators([
