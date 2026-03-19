@@ -1,5 +1,7 @@
 <app-competition-header location="top" [id]="id" [userRole]="userRole"
-  [isDeletable]="(isCompetitionModifiable$ | async) || false" (delete)="deleteCompetition()">
+  [isDeletable]="(isCompetitionModifiable$ | async) || false"
+  (back)="goBack()"
+  (delete)="deleteCompetition()">
 </app-competition-header>
 <div class="container">
   <form [formGroup]="formService.competitionForm" (ngSubmit)="onSubmit()"

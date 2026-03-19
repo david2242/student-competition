@@ -1,12 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { Role } from "@/app/models/current-user";
 
 @Component({
     selector: 'app-competition-header',
     standalone: true,
-    imports: [CommonModule, RouterLink],
+    imports: [CommonModule],
     templateUrl: './competition-header.component.html',
     styleUrl: './competition-header.component.css'
 })
@@ -19,6 +18,7 @@ export class CompetitionHeaderComponent {
     @Input() isEditable: boolean = false;
     @Input() isLoading: boolean = false;
 
+    @Output() back = new EventEmitter<void>();
     @Output() delete = new EventEmitter<void>();
     @Output() edit = new EventEmitter<void>();
     @Output() cancel = new EventEmitter<void>();

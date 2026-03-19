@@ -1,5 +1,5 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
-import { AsyncPipe, CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule, Location } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -55,6 +55,7 @@ export class CompetitionEditorComponent implements OnInit {
   private notification = inject(NotificationService);
   private authService = inject(AuthService);
   private participantService = inject(ParticipantService);
+  private location = inject(Location);
   formService = inject(CompetitionFormService);
 
   id: number | null = null;
@@ -143,7 +144,11 @@ export class CompetitionEditorComponent implements OnInit {
   private onCompetitionLoadError(): void {
     this.notification.error('Nem sikerült betölteni a versenyt!');
     this.competition$.next(null);
-    this.router.navigate(['/competitions']);
+    this.router.navigate(['/competition']);
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   private subscribeToDisplayMode(): void {
@@ -210,7 +215,7 @@ export class CompetitionEditorComponent implements OnInit {
   private onSaveSuccess(): void {
     this.notification.success(this.id ? 'A verseny sikeresen frissítve!' : 'A verseny sikeresen létrehozva!');
     this.participantService.clearParticipants();
-    this.router.navigate(['/competitions']);
+    this.router.navigate(['/competition']);
   }
 
   private onSaveError(error: unknown): void {
@@ -240,7 +245,7 @@ export class CompetitionEditorComponent implements OnInit {
         .subscribe({
           next: () => {
             this.notification.success('A verseny sikeresen törölve!');
-            this.router.navigate(['/competitions']);
+            this.router.navigate(['/competition']);
           },
           error: () => {
             this.notification.error('Hiba történt a törlés során.');
