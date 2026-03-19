@@ -10,6 +10,7 @@ import { StudentSearchResult } from "@/app/components/pages/competition/competit
   template: `
     <div class="search-container mb-3">
       <label for="participantSearch" class="form-label">Keresés létező diákok között</label>
+      <div class="form-text mb-1">Kezdje el gépelni, és megjelennek a találatok.</div>
       <div class="input-group">
         <input
           type="text"
