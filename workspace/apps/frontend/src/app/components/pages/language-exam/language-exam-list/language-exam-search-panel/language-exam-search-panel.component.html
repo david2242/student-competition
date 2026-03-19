@@ -1,0 +1,67 @@
+<div class="mb-3 mt-3">
+  <button type="button" class="btn btn-outline-secondary btn-sm" (click)="toggle()">
+    <i class="bi" [class.bi-chevron-down]="!isExpanded" [class.bi-chevron-up]="isExpanded"></i>
+    Szűrők
+  </button>
+
+  <div *ngIf="isExpanded" class="card card-body mt-2">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <label class="form-label">Tanuló neve</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.studentName" placeholder="Részleges egyezés...">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Tanár</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.teacher" placeholder="Részleges egyezés...">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Nyelv</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filters.language">
+          <option value="">Összes</option>
+          <option *ngFor="let l of languages" [value]="l">{{ l }}</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Szint</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filters.level">
+          <option value="">Összes</option>
+          <option *ngFor="let lv of levels" [value]="lv">{{ lv }}</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Típus</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filters.type">
+          <option value="">Összes</option>
+          <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Vizsgaszervező</label>
+        <select class="form-select form-select-sm" [(ngModel)]="filters.examBody">
+          <option value="">Összes</option>
+          <option *ngFor="let eb of examBodies" [value]="eb">{{ eb }}</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Dátumtól</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="filters.dateFrom">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Dátumig</label>
+        <input type="date" class="form-control form-control-sm" [(ngModel)]="filters.dateTo">
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Tanév</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="filters.schoolYear" placeholder="pl. 2024">
+      </div>
+    </div>
+    <div class="mt-3 d-flex gap-2">
+      <button type="button" class="btn btn-primary btn-sm" (click)="onSearch()">
+        <i class="bi bi-search me-1"></i>Keresés
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" (click)="onReset()">
+        <i class="bi bi-x-circle me-1"></i>Visszaállítás
+      </button>
+    </div>
+  </div>
+</div>

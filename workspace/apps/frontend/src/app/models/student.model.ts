@@ -11,6 +11,7 @@ export interface Student {
 }
 
 export interface StudentSearchResult extends Student {
+  id?: number;
   participations: StudentParticipation[];
   fullName: string;
   currentClassYear: number;

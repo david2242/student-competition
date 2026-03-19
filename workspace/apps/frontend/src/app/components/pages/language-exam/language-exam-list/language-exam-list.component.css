@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+ag-grid-angular {
+  width: 100%;
+}
+
+:host ::ng-deep .tinted {
+  background-color: #e8f4fd !important;
+}

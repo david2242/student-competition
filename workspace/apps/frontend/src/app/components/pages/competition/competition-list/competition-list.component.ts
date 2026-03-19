@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from "@angular/router";
+import { Router, RouterLink } from "@angular/router";
 import { CompetitionService, CompetitionSearchParams } from "@/app/services/competition.service";
 import { CompetitionSearchPanelComponent } from './competition-search-panel/competition-search-panel.component';
 import { AgGridAngular } from 'ag-grid-angular';
@@ -37,7 +37,7 @@ ModuleRegistry.registerModules([
 @Component({
   selector: 'app-competition-list',
   standalone: true,
-  imports: [ CommonModule, AgGridAngular, CompetitionSearchPanelComponent ],
+  imports: [ CommonModule, AgGridAngular, CompetitionSearchPanelComponent, RouterLink ],
   templateUrl: './competition-list.component.html',
   styleUrl: './competition-list.component.css',
 })

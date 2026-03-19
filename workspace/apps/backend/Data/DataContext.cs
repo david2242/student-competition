@@ -13,6 +13,7 @@ namespace Workspace.Backend.Data
     public DbSet<Competition> Competitions => Set<Competition>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<CompetitionParticipant> CompetitionParticipants => Set<CompetitionParticipant>();
+    public DbSet<LanguageExam> LanguageExams => Set<LanguageExam>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,6 +56,23 @@ namespace Workspace.Backend.Data
         .WithMany()
         .HasForeignKey(c => c.CreatorId)
         .OnDelete(DeleteBehavior.Restrict);
+
+      modelBuilder.Entity<LanguageExam>(entity =>
+      {
+        entity.HasOne(e => e.Student)
+          .WithMany(s => s.LanguageExams)
+          .HasForeignKey(e => e.StudentId)
+          .OnDelete(DeleteBehavior.Cascade);
+
+        entity.HasOne(e => e.Creator)
+          .WithMany()
+          .HasForeignKey(e => e.CreatorId)
+          .OnDelete(DeleteBehavior.Restrict);
+
+        entity.Property(e => e.CreatedAt)
+          .IsRequired()
+          .HasDefaultValueSql("NOW() AT TIME ZONE 'UTC'");
+      });
 
       modelBuilder.Entity<Competition>()
         .Property(c => c.Forms)

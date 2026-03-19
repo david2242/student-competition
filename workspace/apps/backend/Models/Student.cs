@@ -17,6 +17,9 @@ public class Student
   [JsonIgnore]
   public ICollection<CompetitionParticipant> CompetitionParticipants { get; set; } = new List<CompetitionParticipant>();
 
+  [JsonIgnore]
+  public ICollection<LanguageExam> LanguageExams { get; set; } = new List<LanguageExam>();
+
   public Student()
   {
     FirstName = string.Empty;

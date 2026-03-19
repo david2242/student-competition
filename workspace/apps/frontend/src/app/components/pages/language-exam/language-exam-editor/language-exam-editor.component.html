@@ -1,0 +1,157 @@
+<!-- Header / Back -->
+<div class="container my-2">
+  <div class="d-flex justify-content-between align-items-center">
+    <a routerLink="/language-exams" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-chevron-left"></i> Vissza
+    </a>
+    @if (id != null && userRole !== Role.VIEWER) {
+      @if (isModifiable$ | async) {
+        <button type="button" class="btn btn-outline-danger btn-sm" (click)="deleteExam()">
+          Nyelvvizsga törlése
+        </button>
+      } @else {
+        <span class="form-text">A törlés számodra nem lehetséges</span>
+      }
+    }
+  </div>
+</div>
+
+<div class="container mb-4">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="row g-3">
+
+      <!-- Student -->
+      <div class="col-12">
+        <label class="form-label fw-semibold">Tanuló</label>
+        @if (($displayMode | async) === 'edit') {
+          <app-student-search
+            label=""
+            placeholder="Keress tanuló nevére..."
+            [selectedStudents]="selectedStudents"
+            (studentSelected)="onStudentSelected($event)"
+            (studentRemoved)="onStudentRemoved($event)"
+          />
+          @if (form.get('studentId')?.touched && form.get('studentId')?.errors?.['required']) {
+            <div class="text-danger small">Kérem válasszon egy tanulót!</div>
+          }
+        } @else {
+          <p class="form-control-plaintext">
+            {{ selectedStudents[0]?.lastName }} {{ selectedStudents[0]?.firstName }}
+          </p>
+        }
+      </div>
+
+      <!-- Language -->
+      <div class="col-sm-12 col-md-6">
+        <label for="language" class="form-label">Nyelv</label>
+        @if (($displayMode | async) === 'edit') {
+          <select id="language" class="form-select" formControlName="language"
+            [class.is-invalid]="form.get('language')?.touched && form.get('language')?.invalid">
+            <option value="">Válasszon nyelvet...</option>
+            <option *ngFor="let l of languages" [value]="l">{{ l }}</option>
+          </select>
+          <div class="invalid-feedback">Kérem válasszon nyelvet!</div>
+        } @else {
+          <p class="form-control-plaintext">{{ form.get('language')?.value }}</p>
+        }
+      </div>
+
+      <!-- Level -->
+      <div class="col-sm-12 col-md-6">
+        <label for="level" class="form-label">Szint</label>
+        @if (($displayMode | async) === 'edit') {
+          <select id="level" class="form-select" formControlName="level"
+            [class.is-invalid]="form.get('level')?.touched && form.get('level')?.invalid">
+            <option value="">Válasszon szintet...</option>
+            <option *ngFor="let lv of levels" [value]="lv">{{ lv }}</option>
+          </select>
+          <div class="invalid-feedback">Kérem válasszon szintet!</div>
+        } @else {
+          <p class="form-control-plaintext">{{ form.get('level')?.value }}</p>
+        }
+      </div>
+
+      <!-- Type -->
+      <div class="col-sm-12 col-md-6">
+        <label for="type" class="form-label">Típus</label>
+        @if (($displayMode | async) === 'edit') {
+          <select id="type" class="form-select" formControlName="type"
+            [class.is-invalid]="form.get('type')?.touched && form.get('type')?.invalid">
+            <option value="">Válasszon típust...</option>
+            <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+          </select>
+          <div class="invalid-feedback">Kérem válasszon típust!</div>
+        } @else {
+          <p class="form-control-plaintext">{{ form.get('type')?.value }}</p>
+        }
+      </div>
+
+      <!-- ExamBody -->
+      <div class="col-sm-12 col-md-6">
+        <label for="examBody" class="form-label">Vizsgaszervező</label>
+        @if (($displayMode | async) === 'edit') {
+          <select id="examBody" class="form-select" formControlName="examBody"
+            [class.is-invalid]="form.get('examBody')?.touched && form.get('examBody')?.invalid">
+            <option value="">Válasszon szervezőt...</option>
+            <option *ngFor="let eb of examBodies" [value]="eb">{{ eb }}</option>
+          </select>
+          <div class="invalid-feedback">Kérem válasszon szervezőt!</div>
+        } @else {
+          <p class="form-control-plaintext">{{ form.get('examBody')?.value }}</p>
+        }
+      </div>
+
+      <!-- Teacher -->
+      <div class="col-sm-12 col-md-6">
+        <label for="teacher" class="form-label">Felkészítő tanár</label>
+        @if (($displayMode | async) === 'edit') {
+          <input type="text" id="teacher" class="form-control" formControlName="teacher"
+            placeholder="Tanár neve..."
+            [class.is-invalid]="form.get('teacher')?.touched && form.get('teacher')?.invalid">
+          <div class="invalid-feedback">Kérem adja meg a felkészítő tanár nevét!</div>
+        } @else {
+          <p class="form-control-plaintext">{{ form.get('teacher')?.value }}</p>
+        }
+      </div>
+
+      <!-- Date -->
+      <div class="col-sm-12 col-md-6">
+        <label for="date" class="form-label">Dátum</label>
+        @if (($displayMode | async) === 'edit') {
+          <input type="text" id="date" class="form-control" formControlName="date"
+            mwlFlatpickr placeholder="ÉÉÉÉ.HH.NN"
+            [class.is-invalid]="form.get('date')?.touched && form.get('date')?.invalid">
+          <div class="invalid-feedback">Kérem adja meg a dátumot!</div>
+        } @else {
+          <p class="form-control-plaintext">{{ form.get('date')?.value }}</p>
+        }
+      </div>
+
+      <!-- Action buttons -->
+      <div class="col-12 d-flex justify-content-between mt-2">
+        @if (($displayMode | async) === 'show' && userRole !== Role.VIEWER) {
+          @if (isModifiable$ | async) {
+            <button type="button" class="btn btn-outline-secondary" (click)="editMode()">Szerkesztés</button>
+          } @else {
+            <span class="form-text">A szerkesztés számodra nem lehetséges</span>
+          }
+        }
+        @if (($displayMode | async) === 'edit') {
+          <div class="d-flex gap-2 ms-auto">
+            @if (id != null) {
+              <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()">Mégse</button>
+            }
+            <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+              @if (!isLoading) { Mentés }
+              @else {
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="visually-hidden">Mentés...</span>
+              }
+            </button>
+          </div>
+        }
+      </div>
+
+    </div>
+  </form>
+</div>

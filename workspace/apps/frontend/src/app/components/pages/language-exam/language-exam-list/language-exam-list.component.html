@@ -1,14 +1,11 @@
 <div class="container">
   <div class="d-flex justify-content-between align-items-center mt-3 mb-1">
-    <h5 class="mb-0">Versenyek</h5>
-    <a *ngIf="(authService.$currentUser | async)?.role !== 'viewer'"
-       routerLink="/competition-editor"
-       class="btn btn-primary btn-sm">
-      <i class="bi bi-plus-lg me-1"></i>Új verseny
+    <h5 class="mb-0">Nyelvvizsgák</h5>
+    <a *ngIf="(authService.$currentUser | async)?.role !== 'viewer'" routerLink="/language-exams/new" class="btn btn-primary btn-sm">
+      <i class="bi bi-plus-lg me-1"></i>Új nyelvvizsga
     </a>
   </div>
-
-  <app-competition-search-panel
+  <app-language-exam-search-panel
     (searchSubmit)="onSearch($event)"
     (resetFilters)="onReset()"
   />
@@ -26,8 +23,8 @@
     [rowData]="rowData"
     [columnDefs]="colDefs"
     [autoSizeStrategy]="autoSizeStrategy"
-    (rowClicked)="goToCompetition($event)"
     [defaultColDef]="defaultColDef"
     [getRowClass]="getRowClass.bind(this)"
+    (rowClicked)="onRowClicked($event)"
   />
 </div>
