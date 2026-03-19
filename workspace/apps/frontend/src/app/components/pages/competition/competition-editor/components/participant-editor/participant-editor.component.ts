@@ -30,7 +30,7 @@ export class ParticipantEditorComponent {
   searchResults: StudentSearchResult[] = [];
   newParticipantData: Partial<CompetitionParticipant> = {};
 
-  readonly CLASS_YEARS = Array.from({ length: 12 }, (_, i) => i + 1);
+  readonly CLASS_YEARS = Array.from({ length: 8 }, (_, i) => i + 5);
   readonly CLASS_LETTERS = ['a', 'b', 'c', 'd'];
 
   private participantService = inject(ParticipantService);

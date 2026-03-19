@@ -14,6 +14,7 @@ import { StudentSearchComponent } from '@/app/components/shared/student-search/s
 import { StudentSearchResult } from '@/app/models/student.model';
 import { FlatpickrDirective, provideFlatpickrDefaults } from 'angularx-flatpickr';
 import { Hungarian } from 'flatpickr/dist/l10n/hu.js';
+import { isInCurrentSchoolYear } from '../../competition/competition-editor/schoolYearValidator';
 
 @Component({
   selector: 'app-language-exam-editor',
@@ -67,7 +68,7 @@ export class LanguageExamEditorComponent implements OnInit {
       if (user.role === Role.ADMIN) return true;
       if (user.role === Role.CONTRIBUTOR) {
         if (!exam) return true; // new exam
-        return exam.creatorId === user.id;
+        return exam.creatorId === user.id && isInCurrentSchoolYear(new Date(exam.date));
       }
       return false;
     })

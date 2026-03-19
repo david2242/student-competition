@@ -138,6 +138,9 @@ public class LanguageExamService : ILanguageExamService
     if (exam.CreatorId != userId && !isAdmin)
       throw new UnauthorizedAccessException("Ezt a bejegyzést nem módosíthatja");
 
+    if (!isAdmin && !SchoolYearHelper.IsCurrentSchoolYear(exam.Date))
+      throw new UnauthorizedAccessException("Csak az aktuális tanév vizsgáit módosíthatja");
+
     _ = await _context.Students.FirstOrDefaultAsync(s => s.Id == dto.StudentId)
       ?? throw new KeyNotFoundException($"Student with ID {dto.StudentId} not found");
 
@@ -167,6 +170,9 @@ public class LanguageExamService : ILanguageExamService
     var isAdmin = await IsAdminAsync(userId);
     if (exam.CreatorId != userId && !isAdmin)
       throw new UnauthorizedAccessException("Ezt a bejegyzést nem törölheti");
+
+    if (!isAdmin && !SchoolYearHelper.IsCurrentSchoolYear(exam.Date))
+      throw new UnauthorizedAccessException("Csak az aktuális tanév vizsgáit törölheti");
 
     _context.LanguageExams.Remove(exam);
     await _context.SaveChangesAsync();

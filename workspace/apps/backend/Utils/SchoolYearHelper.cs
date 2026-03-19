@@ -15,5 +15,8 @@ namespace Workspace.Backend.Utils
             // If the month is August or earlier, the school year is the previous year
             return date.Month >= 9 ? date.Year : date.Year - 1;
         }
+
+        public static bool IsCurrentSchoolYear(DateOnly date) =>
+            GetSchoolYear(date.ToDateTime(TimeOnly.MinValue)) == GetSchoolYear(DateTime.UtcNow);
     }
 }

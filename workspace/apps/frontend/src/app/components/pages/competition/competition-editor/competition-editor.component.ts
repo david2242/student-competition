@@ -13,6 +13,7 @@ import { CompetitionService } from '@/app/services/competition.service';
 import { NotificationService } from '@/app/services/notification.service';
 import { AuthService } from '@/app/services/auth.service';
 import { Role } from '@/app/models/current-user';
+import { isInCurrentSchoolYear } from './schoolYearValidator';
 import { subjects } from './subjects';
 import { teachers } from './teachers';
 import { CompetitionFormService } from './services/competition-form.service';
@@ -89,8 +90,11 @@ export class CompetitionEditorComponent implements OnInit {
   ]).pipe(
     map(([user, competition]) => {
       if (!user || !competition) return false;
-      return user.role === Role.ADMIN ||
-        (user.role === Role.CONTRIBUTOR && competition.creatorId === user.id);
+      if (user.role === Role.ADMIN) return true;
+      if (user.role === Role.CONTRIBUTOR && competition.creatorId === user.id) {
+        return isInCurrentSchoolYear(new Date(competition.date));
+      }
+      return false;
     })
   );
 
