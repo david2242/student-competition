@@ -14,13 +14,11 @@
                 <i class="bi-trophy me-1"></i>Eredmények
               </a>
             </li>
-            @if (($currentUser | async)?.role !== Role.VIEWER) {
-              <li class="nav-item">
-                <a class="nav-link" routerLinkActive="active" routerLink="competition-editor">
-                  <i class="bi-pencil-square me-1"></i>Rögzítés
-                </a>
-              </li>
-            }
+            <li class="nav-item">
+              <a class="nav-link" routerLinkActive="active" routerLink="language-exams">
+                <i class="bi-translate me-1"></i>Nyelvvizsgák
+              </a>
+            </li>
             @if (($currentUser | async)?.role === Role.ADMIN) {
               <li class="nav-item">
                 <a class="nav-link" routerLinkActive="active" routerLink="admin/users">

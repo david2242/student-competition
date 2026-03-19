@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Workspace.Backend.Dtos.Competition;
+using Workspace.Backend.Dtos.LanguageExam;
 using Workspace.Backend.Dtos.Student;
 using Workspace.Backend.Dtos.User;
 using Workspace.Backend.Models;
@@ -25,7 +26,8 @@ public class AutoMapperProfile : Profile
       .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName.Trim()))
       .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName.Trim()))
       .ForMember(dest => dest.Id, opt => opt.Ignore())
-      .ForMember(dest => dest.CompetitionParticipants, opt => opt.Ignore());
+      .ForMember(dest => dest.CompetitionParticipants, opt => opt.Ignore())
+      .ForMember(dest => dest.LanguageExams, opt => opt.Ignore());
 
     CreateMap<UpdateCompetitionRequestDto, Competition>()
       .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -59,6 +61,10 @@ public class AutoMapperProfile : Profile
     CreateMap<CompetitionParticipant, StudentParticipationDto>()
       .ForMember(dest => dest.CompetitionName, opt => opt.MapFrom(src => src.Competition.Name))
       .ForMember(dest => dest.CompetitionDate, opt => opt.MapFrom(src => src.Competition.Date.ToDateTime(TimeOnly.MinValue)));
+
+    CreateMap<LanguageExam, GetLanguageExamResponseDto>()
+      .ForMember(dest => dest.StudentFirstName, opt => opt.MapFrom(src => src.Student != null ? src.Student.FirstName : string.Empty))
+      .ForMember(dest => dest.StudentLastName,  opt => opt.MapFrom(src => src.Student != null ? src.Student.LastName  : string.Empty));
 
     CreateMap<CompetitionParticipant, ParticipantDto>()
       .ForMember(dest => dest.StudentId, opt => opt.MapFrom(src => src.StudentId))

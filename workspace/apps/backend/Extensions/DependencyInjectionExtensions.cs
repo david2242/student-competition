@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Workspace.Backend.Services.AuthService;
 using Workspace.Backend.Services.CompetitionService;
 using Workspace.Backend.Services.KeepAliveService;
+using Workspace.Backend.Services.LanguageExamService;
 using Workspace.Backend.Services.StudentService;
 using Workspace.Backend.Services.UserService;
 
@@ -16,6 +17,7 @@ public static class DependencyInjectionExtensions
         services.AddHostedService<KeepAliveService>();
         services.AddHttpContextAccessor();
         services.AddScoped<ICompetitionService, CompetitionService>();
+        services.AddScoped<ILanguageExamService, LanguageExamService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IStudentService, StudentService>();

@@ -9,6 +9,8 @@ import { UserAdminComponent } from "@/app/components/pages/user/user-admin/user-
 import { adminGuard } from "@/app/guards/admin.guard";
 import { ProfileComponent } from "@/app/components/pages/user/profile/profile.component";
 import { ChangePasswordComponent } from "@/app/components/pages/user/change-password/change-password.component";
+import { LanguageExamListComponent } from "@/app/components/pages/language-exam/language-exam-list/language-exam-list.component";
+import { LanguageExamEditorComponent } from "@/app/components/pages/language-exam/language-exam-editor/language-exam-editor.component";
 
 export const appRoutes: Route[] = [
   {
@@ -24,6 +26,9 @@ export const appRoutes: Route[] = [
   { path: 'competition', component: CompetitionListComponent },
   { path: 'competition/:id', component: CompetitionEditorComponent },
   { path: 'competition-editor', component: CompetitionEditorComponent },
+  { path: 'language-exams', component: LanguageExamListComponent },
+  { path: 'language-exams/new', component: LanguageExamEditorComponent },
+  { path: 'language-exams/:id', component: LanguageExamEditorComponent },
   { path: 'login', component: LoginComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'change-password', component: ChangePasswordComponent },
