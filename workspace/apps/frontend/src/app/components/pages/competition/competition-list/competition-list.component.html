@@ -13,6 +13,17 @@
     (resetFilters)="onReset()"
   />
 
+  <div class="d-flex align-items-center gap-2 mb-2">
+    <label class="form-label mb-0 fw-semibold">Tanév:</label>
+    <select class="form-select form-select-sm w-auto"
+            [(ngModel)]="selectedSchoolYear"
+            (ngModelChange)="onSchoolYearChange()">
+      <option *ngFor="let year of availableSchoolYears" [ngValue]="year">
+        {{ formatSchoolYear(year) }}
+      </option>
+    </select>
+  </div>
+
   <div *ngIf="hasActiveFilters" class="mb-2 d-flex align-items-center gap-2">
     <span class="badge bg-info text-dark">
       <i class="bi bi-funnel-fill me-1"></i>Szűrők aktívak ({{ rowData?.length ?? 0 }} találat)
@@ -28,6 +39,6 @@
     [autoSizeStrategy]="autoSizeStrategy"
     (rowClicked)="goToCompetition($event)"
     [defaultColDef]="defaultColDef"
-    [getRowClass]="getRowClass.bind(this)"
+    [getRowClass]="getRowClass"
   />
 </div>

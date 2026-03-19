@@ -2,12 +2,12 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CompetitionListComponent } from './competition-list.component';
 import { of, BehaviorSubject } from "rxjs";
 import { CompetitionService } from "@/app/services/competition.service";
-import { Router } from "@angular/router";
+import { RouterTestingModule } from "@angular/router/testing";
 import { NotificationService } from "@/app/services/notification.service";
 import { AuthService } from "@/app/services/auth.service";
 
 const mockCompetitionService = {
-  getCompetitions: () => of([])
+  searchCompetitions: () => of([])
 };
 
 const mockNotificationService = {
@@ -19,9 +19,6 @@ const mockAuthService = {
   $currentUser: new BehaviorSubject(null)
 };
 
-const mockRouter = {
-  navigate: jest.fn()
-};
 
 describe('CompetitionListComponent', () => {
   let component: CompetitionListComponent;
@@ -29,12 +26,11 @@ describe('CompetitionListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CompetitionListComponent],
+      imports: [CompetitionListComponent, RouterTestingModule],
       providers: [
         { provide: CompetitionService, useValue: mockCompetitionService },
         { provide: NotificationService, useValue: mockNotificationService },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
 

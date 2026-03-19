@@ -1,5 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from "@angular/router";
 import { CompetitionService, CompetitionSearchParams } from "@/app/services/competition.service";
 import { CompetitionSearchPanelComponent } from './competition-search-panel/competition-search-panel.component';
@@ -19,8 +20,14 @@ import {
 } from 'ag-grid-community';
 import { Competition } from "@/app/models/competition.model";
 import { NotificationService } from "@/app/services/notification.service";
-import { translateLevel } from "@/app/translations/competition.translations";
 import { AuthService } from "@/app/services/auth.service";
+import {
+  getCurrentSchoolYear,
+  getSchoolYearBounds,
+  formatSchoolYear,
+  getAvailableSchoolYears,
+} from '../competition-editor/schoolYearValidator';
+import { COMPETITION_COL_DEFS } from './competition-list.columns';
 
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
@@ -37,86 +44,49 @@ ModuleRegistry.registerModules([
 @Component({
   selector: 'app-competition-list',
   standalone: true,
-  imports: [ CommonModule, AgGridAngular, CompetitionSearchPanelComponent, RouterLink ],
+  imports: [ CommonModule, FormsModule, AgGridAngular, CompetitionSearchPanelComponent, RouterLink ],
   templateUrl: './competition-list.component.html',
   styleUrl: './competition-list.component.css',
 })
 export class CompetitionListComponent implements OnInit {
 
-  competitionService = inject(CompetitionService);
-  router = inject(Router);
-  notification = inject(NotificationService);
-  authService = inject(AuthService);
+  private competitionService = inject(CompetitionService);
+  private router             = inject(Router);
+  private notification       = inject(NotificationService);
+  authService                = inject(AuthService);
+
+  selectedSchoolYear: number = getCurrentSchoolYear();
+  availableSchoolYears: number[] = getAvailableSchoolYears();
+  formatSchoolYear = formatSchoolYear;
+
+  private lastSearchParams: CompetitionSearchParams = {};
+  rowData?: Competition[];
+  hasActiveFilters = false;
 
   ngOnInit(): void {
-    this.competitionService.getCompetitions().subscribe({
+    this.loadCompetitions();
+  }
+
+  loadCompetitions(extraParams: CompetitionSearchParams = {}): void {
+    const bounds = getSchoolYearBounds(this.selectedSchoolYear);
+    const params: CompetitionSearchParams = { ...bounds, ...extraParams };
+    this.competitionService.searchCompetitions(params).subscribe({
       next: (response) => {
-        // Ensure we always set an array, even if response is null/undefined
-        if (Array.isArray(response)) {
-          this.rowData = response;
-        } else {
-          // Fallback to empty array if response is not in expected format
-          console.warn('Unexpected response format, defaulting to empty array:', response);
-          this.rowData = [];
-        }
+        this.rowData = Array.isArray(response) ? response : [];
       },
       error: (error) => {
         console.error('Error loading competitions:', error);
         this.notification.error('Nem sikerült betölteni a versenyeket!');
-        // Ensure rowData is always an array, even on error
         this.rowData = [];
       }
     });
   }
 
-  rowData?: Competition[];
-  hasActiveFilters = false;
+  onSchoolYearChange(): void {
+    this.loadCompetitions(this.lastSearchParams);
+  }
 
-  colDefs: ColDef[] = [
-    {
-      field: "id",
-      headerName: "#",
-      minWidth: 50,
-      width: 50,
-      filter: false
-    },
-    {
-      field: "name",
-      headerName: "Verseny neve"
-    },
-    {
-      field: "students",
-      headerName: "Versenyző",
-      valueGetter: (data) => {
-        const students = data.data.participants || [];
-        if (students.length === 1) {
-          return students[0].firstName + ' ' + students[0].lastName;
-        } else return 'Csapatverseny'
-      }
-    },
-    {
-      field: "level",
-      headerName: "Szint",
-      valueGetter: (data) => translateLevel(data.data.level)
-    },
-    {
-      field: "teacher",
-      headerName: "Tanár",
-      valueGetter: (data) => data.data.teacher[0] || ''
-    },
-    {
-      field: "result.position",
-      headerName: "Helyezés",
-      width: 100,
-      valueGetter: (data) => data.data.result?.position || ''
-    },
-    {
-      field: "result.nextRound",
-      headerName: "Továbbjutás",
-      width: 120,
-      valueGetter: (data) => data.data.result?.nextRound ? 'Igen' : 'Nem'
-    }
-  ];
+  colDefs = COMPETITION_COL_DEFS;
 
   autoSizeStrategy: SizeColumnsToFitGridStrategy = {
     type: 'fitGridWidth',
@@ -131,34 +101,18 @@ export class CompetitionListComponent implements OnInit {
 
   onSearch(params: CompetitionSearchParams) {
     this.hasActiveFilters = true;
-    this.competitionService.searchCompetitions(params).subscribe({
-      next: (response) => {
-        this.rowData = Array.isArray(response) ? response : [];
-      },
-      error: (error) => {
-        console.error('Error searching competitions:', error);
-        this.notification.error('Nem sikerült a keresés!');
-        this.rowData = [];
-      }
-    });
+    this.lastSearchParams = params;
+    this.loadCompetitions(params);
   }
 
   onReset() {
     this.hasActiveFilters = false;
-    this.competitionService.getCompetitions().subscribe({
-      next: (response) => {
-        this.rowData = Array.isArray(response) ? response : [];
-      },
-      error: (error) => {
-        console.error('Error loading competitions:', error);
-        this.notification.error('Nem sikerült betölteni a versenyeket!');
-        this.rowData = [];
-      }
-    });
+    this.lastSearchParams = {};
+    this.loadCompetitions();
   }
 
-  goToCompetition($event: RowClickedEvent<Competition>) {
-    this.router.navigate([ 'competition', $event.data?.id ]);
+  goToCompetition(event: RowClickedEvent<Competition>) {
+    this.router.navigate([ 'competition', event.data?.id ]);
   }
 
   getRowClass = (params: any): string | string[] | undefined => {
