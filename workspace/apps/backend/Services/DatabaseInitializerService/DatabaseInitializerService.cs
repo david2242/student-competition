@@ -36,7 +36,8 @@ public class DatabaseInitializerService
         EmailConfirmed = true
       };
 
-      string defaultPassword = "Admin123!";
+      string defaultPassword = Environment.GetEnvironmentVariable("DEFAULT_ADMIN_PASSWORD")
+          ?? throw new InvalidOperationException("DEFAULT_ADMIN_PASSWORD environment variable is not set.");
 
       var result = await userManager.CreateAsync(adminUser, defaultPassword);
       if (result.Succeeded)
