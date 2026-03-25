@@ -19,6 +19,7 @@ public static class WebApplicationExtensions
 
     public static WebApplication UseApplicationMiddlewares(this WebApplication app)
     {
+        app.UseRateLimiter();
         app.UseMiddleware<Middlewares.ExceptionMiddleware>();
 
         if (app.Environment.IsDevelopment())
