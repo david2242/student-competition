@@ -31,8 +31,8 @@ public class CompetitionService : ICompetitionService
     // Check if a student with the same name is already being tracked
     var existingStudent = _context.ChangeTracker.Entries<Student>()
       .FirstOrDefault(e => 
-        e.Entity.FirstName.Equals(participantDto.FirstName.Trim(), StringComparison.OrdinalIgnoreCase) &&
-        e.Entity.LastName.Equals(participantDto.LastName.Trim(), StringComparison.OrdinalIgnoreCase))
+        e.Entity.FirstName.Equals(participantDto.FirstName!.Trim(), StringComparison.OrdinalIgnoreCase) &&
+        e.Entity.LastName.Equals(participantDto.LastName!.Trim(), StringComparison.OrdinalIgnoreCase))
       ?.Entity;
       
     if (existingStudent != null)
@@ -42,8 +42,8 @@ public class CompetitionService : ICompetitionService
     
     var newStudent = new Student
     {
-      FirstName = participantDto.FirstName.Trim(),
-      LastName = participantDto.LastName.Trim()
+      FirstName = participantDto.FirstName!.Trim(),
+      LastName = participantDto.LastName!.Trim()
     };
     
     _context.Students.Add(newStudent);

@@ -44,13 +44,13 @@ public class RequiredIfNotAttribute : ValidationAttribute
     private readonly string _otherProperty;
     private const string DefaultErrorMessage = "The {0} field is required when {1} is not provided.";
 
-    public RequiredIfNotAttribute(string otherProperty, string errorMessage = null)
+    public RequiredIfNotAttribute(string otherProperty, string? errorMessage = null)
         : base(errorMessage ?? string.Format(DefaultErrorMessage, "{0}", otherProperty))
     {
         _otherProperty = otherProperty;
     }
 
-    protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         var otherPropertyInfo = validationContext.ObjectType.GetProperty(_otherProperty);
         if (otherPropertyInfo == null)
@@ -71,7 +71,7 @@ public class RequiredIfNotAttribute : ValidationAttribute
         return ValidationResult.Success;
     }
 
-    private static object GetDefaultValue(Type type)
+    private static object? GetDefaultValue(Type type)
     {
         return type.IsValueType ? Activator.CreateInstance(type) : null;
     }
