@@ -35,7 +35,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
-    [AllowAnonymous]
+    [Authorize]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Logout()
     {
