@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Logging;
 using Workspace.Backend.Dtos.Student;
 using Workspace.Backend.Models;
@@ -42,6 +43,7 @@ public class StudentsController : ControllerBase
     /// <param name="classLetter">Filter by class letter (A-Z)</param>
     /// <returns>List of matching students with their participation history</returns>
     [HttpGet("search")]
+    [EnableRateLimiting("search")]
     [ProducesResponseType(typeof(ServiceResponse<StudentSearchResponseDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ServiceResponse<StudentSearchResponseDto>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ServiceResponse<StudentSearchResponseDto>), StatusCodes.Status500InternalServerError)]

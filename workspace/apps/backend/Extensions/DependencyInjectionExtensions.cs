@@ -1,5 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Workspace.Backend.Services.AuthService;
 using Workspace.Backend.Services.CompetitionService;
 using Workspace.Backend.Services.LanguageExamService;
@@ -13,7 +16,18 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddAutoMapper(typeof(AutoMapperProfile));
-services.AddHttpContextAccessor();
+        services.AddHttpContextAccessor();
+        services.AddRateLimiter(options =>
+        {
+            options.AddFixedWindowLimiter("search", policy =>
+            {
+                policy.Window = TimeSpan.FromMinutes(1);
+                policy.PermitLimit = 30;
+                policy.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                policy.QueueLimit = 0;
+            });
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        });
         services.AddScoped<ICompetitionService, CompetitionService>();
         services.AddScoped<ILanguageExamService, LanguageExamService>();
         services.AddScoped<IUserService, UserService>();
