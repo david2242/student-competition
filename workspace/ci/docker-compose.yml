@@ -16,7 +16,7 @@ services:
   workspace-backend:
     image: student-competition:latest
     environment:
-      SWAGGER: "True"
+      SWAGGER: "False"
       SQL_SERVER_HOST: "172.20.0.2"
       SQL_SERVER_USERNAME: "postgres"
       SQL_SERVER_PASSWORD: "YourStrong(!)Password"
