@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Workspace.Backend.Services.AuthService;
 using Workspace.Backend.Services.CompetitionService;
-using Workspace.Backend.Services.KeepAliveService;
 using Workspace.Backend.Services.LanguageExamService;
 using Workspace.Backend.Services.StudentService;
 using Workspace.Backend.Services.UserService;
@@ -14,8 +13,7 @@ public static class DependencyInjectionExtensions
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddAutoMapper(typeof(AutoMapperProfile));
-        services.AddHostedService<KeepAliveService>();
-        services.AddHttpContextAccessor();
+services.AddHttpContextAccessor();
         services.AddScoped<ICompetitionService, CompetitionService>();
         services.AddScoped<ILanguageExamService, LanguageExamService>();
         services.AddScoped<IUserService, UserService>();
