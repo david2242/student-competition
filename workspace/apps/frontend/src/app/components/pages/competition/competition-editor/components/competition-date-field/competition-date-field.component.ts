@@ -22,4 +22,14 @@ export class CompetitionDateFieldComponent {
     @Input({ required: true }) control!: FormControl;
     @Input({ required: true }) displayMode: 'show' | 'edit' = 'show';
     @Input() placeholder = 'ÉÉÉÉ.HH.NN';
+
+    // Flatpickr auto-advances year→month but not month→day.
+    // When the user finishes typing the month (YYYY.MM.), move cursor to the day field.
+    onDateInput(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const value = input.value;
+        if (/^\d{4}\.\d{2}\.$/.test(value)) {
+            input.setSelectionRange(8, 8);
+        }
+    }
 }
