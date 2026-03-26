@@ -75,6 +75,7 @@ export class LanguageExamListComponent implements OnInit {
 
   defaultColDef: ColDef<LanguageExam> = {
     sortable: true,
+    unSortIcon: true,
     filter: true,
     resizable: true,
     minWidth: 100,
