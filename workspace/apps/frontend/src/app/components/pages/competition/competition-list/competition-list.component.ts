@@ -94,6 +94,7 @@ export class CompetitionListComponent implements OnInit {
   };
   defaultColDef: ColDef<Competition> | undefined = {
     sortable: true,
+    unSortIcon: true,
     filter: true,
     resizable: true,
     minWidth: 200,
