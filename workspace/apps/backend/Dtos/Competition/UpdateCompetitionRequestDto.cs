@@ -25,9 +25,14 @@ public class UpdateCompetitionRequestDto
   public DateOnly Date { get; set; }
   
   [Required(ErrorMessage = "Level is required")]
+  [AllowedValues(Models.Level.Local, Models.Level.Regional, Models.Level.State, Models.Level.National,
+    ErrorMessage = "Invalid level value. Allowed: LOCAL, REGIONAL, STATE, NATIONAL")]
   public string Level { get; set; }
-  
+
   [Required(ErrorMessage = "Round is required")]
+  [AllowedValues(Models.Round.School, Models.Round.Regional, Models.Round.State, Models.Round.National,
+    Models.Round.OktvRoundOne, Models.Round.OktvRoundTwo, Models.Round.OktvFinal,
+    ErrorMessage = "Invalid round value")]
   public string Round { get; set; }
   
   public ICollection<string> Forms { get; set; }
