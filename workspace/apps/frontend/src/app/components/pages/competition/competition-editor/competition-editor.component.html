@@ -25,10 +25,15 @@
           [disabled]="($displayMode | async) == 'show'"></app-participant-editor>
       </div>
 
-      <div class="col-sm-12 col-md-6 mb-3">
+      <div class="col-sm-12 col-md-5 mb-3">
         <app-competition-field [label]="'Helyszín'" [id]="'location'" [control]="formService.location"
           [displayMode]="($displayMode | async) || 'show'"
           [errorMessage]="'Kérem töltse ki a verseny helyszínét'"></app-competition-field>
+      </div>
+      <div class="col-sm-12 col-md-1 pt-3 ps-4">
+        <app-competition-checkbox-field [label]="'Online'" [id]="'online'" [control]="formService.online"
+          [displayMode]="($displayMode | async) || 'show'"
+          (toggle)="formService.toggleOnline($event)"></app-competition-checkbox-field>
       </div>
       <div class="col-sm-12 col-md-6 mb-3">
         <app-competition-list-field [label]="'Tantárgy / Téma'" [formArray]="formService.subject"

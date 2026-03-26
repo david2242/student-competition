@@ -47,6 +47,7 @@ export interface CompetitionForm extends FormGroup {
         level: FormControl<Level | null>;
         round: FormControl<Round | null>;
         oktv: FormControl<boolean>;
+        online: FormControl<boolean>;
         forms: FormArray<FormControl<Form | null>>;
         result: FormGroup<{
             position: FormControl<number | null>;
@@ -71,6 +72,7 @@ export class CompetitionFormService {
         level: new FormControl<Level | null>(null, { nonNullable: false, validators: [Validators.required] }),
         round: new FormControl<Round | null>(null, { nonNullable: false, validators: [Validators.required] }),
         oktv: new FormControl<boolean>(false, { nonNullable: true }),
+        online: new FormControl<boolean>(false, { nonNullable: true }),
         forms: new FormArray<FormControl<Form | null>>([
             new FormControl<Form | null>(null, { nonNullable: false, validators: [Validators.required] })
         ], [Validators.required]),
@@ -103,6 +105,7 @@ export class CompetitionFormService {
     get level() { return this.competitionForm.controls.level; }
     get round() { return this.competitionForm.controls.round; }
     get oktv() { return this.competitionForm.controls.oktv; }
+    get online() { return this.competitionForm.controls.online; }
     get forms() { return this.competitionForm.controls.forms; }
     get result() { return this.competitionForm.controls.result; }
     get position() { return this.result.controls.position; }
@@ -133,6 +136,17 @@ export class CompetitionFormService {
 
     removeForm(i: number) {
         this.forms.removeAt(i);
+    }
+
+    toggleOnline(checked: boolean): void {
+        this.online.setValue(checked);
+        if (checked) {
+            this.location.setValue('Online');
+            this.location.disable();
+        } else {
+            this.location.reset();
+            this.location.enable();
+        }
     }
 
     toggleOktv(checked: boolean): void {
@@ -177,6 +191,12 @@ export class CompetitionFormService {
             this.level.disable();
         } else {
             this.level.enable();
+        }
+
+        const isOnline = competition.location?.toLowerCase() === 'online';
+        this.online.setValue(isOnline);
+        if (isOnline) {
+            this.location.disable();
         }
 
         this.position.setValue(competition.result.position);
