@@ -76,3 +76,39 @@ This command does the following:
   - **Frontend:** [http://localhost:8080](http://localhost:8080)
   - **Backend API:** [http://localhost:8080/competition](http://localhost:8080/competition)
   - **Swagger:** [http://localhost:8080/swagger](http://localhost:8080/swagger)
+
+## CI/CD & Environments
+
+### Branch Strategy
+| Branch | Triggers | Environment |
+|---|---|---|
+| `feature/*` | Tests run on push | — |
+| `develop` | Full deploy pipeline | **ref** (staging) |
+| `main` | Full deploy pipeline | **prod** |
+
+PRs should target `develop`. After validation on ref, merge `develop` → `main` to deploy to prod.
+
+### Live Environments
+| Environment | URL | Notes |
+|---|---|---|
+| Production | [gimisapp.otthonkapocs.hu](https://gimisapp.otthonkapocs.hu) | Swagger disabled |
+| Ref (staging) | [ref.gimisapp.otthonkapocs.hu](https://ref.gimisapp.otthonkapocs.hu) | Swagger enabled at `/swagger` |
+
+### Pipeline
+Each deploy pipeline runs:
+1. **Tests** — NUnit (backend) + Jest (frontend), parallel on GitHub-hosted runners
+2. **Build** — Docker image built and pushed to GHCR (`ghcr.io/david2242/student-competition`)
+3. **Deploy** — Self-hosted runner on LXC 101 pulls image and runs `docker compose up -d`
+
+DB migrations run automatically on container startup via EF Core `Migrate()`.
+
+### Adding a New Environment Variable
+1. Add it to `workspace/ci/.env.template` (and `workspace/apps/backend/.env.template` if needed)
+2. SSH to LXC 101 and update `/opt/student-competition/.env.prod` and/or `.env.ref`
+3. The next deploy will pick it up
+
+### Viewing Logs (SSH to LXC 101)
+```bash
+docker compose -p prod logs -f   # prod
+docker compose -p ref logs -f    # ref
+```

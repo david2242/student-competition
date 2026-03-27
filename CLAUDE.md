@@ -97,3 +97,47 @@ Layered Controller → Service → DTO architecture:
 ## TypeScript Path Alias
 
 `@/*` maps to `src/*` in the frontend app.
+
+## CI/CD Pipeline
+
+### Branch Strategy
+- `main` → auto-deploys to **prod** (`gimisapp.otthonkapocs.hu`, port 8080)
+- `develop` → auto-deploys to **ref** (`ref.gimisapp.otthonkapocs.hu`, port 8081)
+- `feature/*` → tests only run on push; open PR to `develop` to merge
+
+### GitHub Actions Workflows (`.github/workflows/`)
+| File | Trigger | What it does |
+|---|---|---|
+| `ci.yml` | PR to `develop`/`main`, push to `feature/**` | NUnit + Jest tests only |
+| `deploy-ref.yml` | Push to `develop` | Tests → build Docker image → push `:ref` to GHCR → deploy to ref |
+| `deploy-prod.yml` | Push to `main` | Tests → build Docker image → push `:prod` to GHCR → deploy to prod |
+
+Build jobs run on GitHub-hosted runners. Deploy jobs run on the **self-hosted runner** (LXC 101, `192.168.0.13`).
+
+### Docker Images
+Images are stored in GHCR: `ghcr.io/david2242/student-competition:prod` and `:ref`.
+The image is a multi-stage build: Angular frontend is compiled into .NET `wwwroot/`, served as static files.
+
+### Environments (on LXC 101)
+| | Prod | Ref |
+|---|---|---|
+| Docker project | `prod` | `ref` |
+| Compose file | `workspace/ci/docker-compose.prod.yml` | `workspace/ci/docker-compose.ref.yml` |
+| Port | 8080 | 8081 |
+| DB volume | `prod_postgres-prod-data` | `ref_postgres-ref-data` |
+| Env file (server) | `/opt/student-competition/.env.prod` | `/opt/student-competition/.env.ref` |
+| Swagger | disabled | enabled |
+
+Env files live **only on the server** at `/opt/student-competition/` — never in git. If a new env variable is added to the app, update `.env.template` in the repo AND the relevant `.env.*` file on the server before deploying.
+
+### Viewing Logs
+```bash
+# SSH to LXC 101, then:
+docker compose -p prod logs -f    # prod live logs
+docker compose -p ref logs -f     # ref live logs
+```
+
+### Known Failing Tests (blocks CI)
+These are pre-existing issues — fix them to restore the automated pipeline:
+- **#137** — NUnit: `ErrorHandlingIntegrationTests` (4 tests fail — debug controller was removed, routes changed)
+- **#138** — Jest: `competition-editor.component.spec.ts` (6 tests fail — mock/timing issue after refactor)
