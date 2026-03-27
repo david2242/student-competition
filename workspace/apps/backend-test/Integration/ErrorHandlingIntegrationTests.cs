@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Workspace.Backend.Models;
 
 namespace Workspace.Backend.Test.Integration;
@@ -10,13 +9,13 @@ namespace Workspace.Backend.Test.Integration;
 [Category("Integration")]
 public class ErrorHandlingIntegrationTests
 {
-    private WebApplicationFactory<Program> _factory = null!;
+    private BackendWebApplicationFactory _factory = null!;
     private HttpClient _client = null!;
 
     [SetUp]
     public void Setup()
     {
-        _factory = new WebApplicationFactory<Program>();
+        _factory = new BackendWebApplicationFactory();
         _client = _factory.CreateClient();
     }
 
@@ -76,8 +75,6 @@ public class ErrorHandlingIntegrationTests
         response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         var content = await response.Content.ReadFromJsonAsync<ServiceResponse<object>>();
         content!.Success.Should().BeFalse();
-        // Since WebApplicationFactory usually runs in Development mode by default,
-        // it might return the detailed message or the generic one depending on config.
         content.Message.Should().NotBeNullOrEmpty();
     }
 }
