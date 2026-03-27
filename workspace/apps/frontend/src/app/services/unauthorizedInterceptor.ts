@@ -18,13 +18,15 @@ export function unauthorizedInterceptor(req: HttpRequest<unknown>, next: HttpHan
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        authService.logout().subscribe({
-          complete: () => {
-            if (!router.url.includes('login')) {
-              router.navigate([ '/login' ]);
+        if (!req.url.includes('/auth/logout')) {
+          authService.logout().subscribe({
+            complete: () => {
+              if (!router.url.includes('login')) {
+                router.navigate([ '/login' ]);
+              }
             }
-          }
-        });
+          });
+        }
         return throwError(() => new Error('Session expired. Please log in again.'));
       }
       return throwError(() => error);
