@@ -21,7 +21,7 @@ services:
       SQL_DATABASE_NAME: "${SQL_DATABASE_NAME}"
       SQL_SERVER_PORT: "${SQL_SERVER_PORT:-5432}"
       DEFAULT_ADMIN_PASSWORD: "${DEFAULT_ADMIN_PASSWORD}"
-      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_ENVIRONMENT: "Production"
     depends_on:
       - postgres-ref
     networks:
