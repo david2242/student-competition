@@ -102,7 +102,7 @@ Layered Controller → Service → DTO architecture:
 
 ### Branch Strategy
 - `main` → auto-deploys to **prod** (`gimisapp.otthonkapocs.hu`, port 8080)
-- `develop` → auto-deploys to **ref** (`ref.gimisapp.otthonkapocs.hu`, port 8081)
+- `develop` → auto-deploys to **ref** (`gimisapp-ref.otthonkapocs.hu`, port 8081)
 - `feature/*` → tests only run on push; open PR to `develop` to merge
 
 ### GitHub Actions Workflows (`.github/workflows/`)

@@ -92,7 +92,7 @@ PRs should target `develop`. After validation on ref, merge `develop` → `main`
 | Environment | URL | Notes |
 |---|---|---|
 | Production | [gimisapp.otthonkapocs.hu](https://gimisapp.otthonkapocs.hu) | Swagger disabled |
-| Ref (staging) | [ref.gimisapp.otthonkapocs.hu](https://ref.gimisapp.otthonkapocs.hu) | Swagger enabled at `/swagger` |
+| Ref (staging) | [gimisapp-ref.otthonkapocs.hu](https://gimisapp-ref.otthonkapocs.hu) | Swagger enabled at `/swagger` |
 
 ### Pipeline
 Each deploy pipeline runs:
