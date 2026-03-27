@@ -47,3 +47,7 @@ Thumbs.db
 **/backend/bin
 **/backend-test/bin
 **/.idea
+
+# Environment files — never commit secrets
+workspace/apps/backend/.env
+workspace/ci/.env

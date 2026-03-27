@@ -1,0 +1,91 @@
+name: Deploy to Ref
+
+on:
+  push:
+    branches: [develop]
+
+env:
+  IMAGE: ghcr.io/david2242/student-competition
+
+jobs:
+  test-backend:
+    name: Backend Tests (NUnit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore workspace/apps/backend-test/Workspace.Backend.Test.csproj
+
+      - name: Test
+        run: dotnet test workspace/apps/backend-test/Workspace.Backend.Test.csproj --no-restore --verbosity normal
+
+  test-frontend:
+    name: Frontend Tests (Jest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: workspace/package-lock.json
+
+      - name: Install dependencies
+        run: cd workspace && npm ci
+
+      - name: Test
+        run: cd workspace && npx nx test frontend --ci
+
+  build-and-push:
+    name: Build & Push :ref
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: workspace/ci/Dockerfile
+          push: true
+          tags: ${{ env.IMAGE }}:ref
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy Ref Stack
+    runs-on: self-hosted
+    needs: build-and-push
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker login
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull image
+        run: docker pull ${{ env.IMAGE }}:ref
+
+      - name: Deploy
+        run: |
+          docker compose \
+            --project-name ref \
+            --file ${{ github.workspace }}/workspace/ci/docker-compose.ref.yml \
+            --env-file /opt/student-competition/.env.ref \
+            up -d --remove-orphans

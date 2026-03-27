@@ -1,0 +1,43 @@
+services:
+  postgres-prod:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: "${SQL_SERVER_USERNAME}"
+      POSTGRES_PASSWORD: "${SQL_SERVER_PASSWORD}"
+      POSTGRES_DB: "${SQL_DATABASE_NAME}"
+    networks:
+      prod_network:
+        ipv4_address: 172.20.0.2
+    volumes:
+      - postgres-prod-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  backend-prod:
+    image: ghcr.io/david2242/student-competition:prod
+    environment:
+      SWAGGER: "False"
+      SQL_SERVER_HOST: "172.20.0.2"
+      SQL_SERVER_USERNAME: "${SQL_SERVER_USERNAME}"
+      SQL_SERVER_PASSWORD: "${SQL_SERVER_PASSWORD}"
+      SQL_DATABASE_NAME: "${SQL_DATABASE_NAME}"
+      SQL_SERVER_PORT: "${SQL_SERVER_PORT:-5432}"
+      DEFAULT_ADMIN_PASSWORD: "${DEFAULT_ADMIN_PASSWORD}"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    depends_on:
+      - postgres-prod
+    networks:
+      prod_network:
+        ipv4_address: 172.20.0.3
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+networks:
+  prod_network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+volumes:
+  postgres-prod-data:
+    driver: local
