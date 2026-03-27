@@ -11,6 +11,7 @@ import { AuthService } from "@/app/services/auth.service";
 import { ParticipantService } from "./services/participant.service";
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { CompetitionFormService } from "./services/competition-form.service";
+import { getCurrentSchoolYear } from "./schoolYearValidator";
 
 describe('CompetitionEditorComponent', () => {
   let component: CompetitionEditorComponent;
@@ -106,6 +107,7 @@ describe('CompetitionEditorComponent', () => {
     });
 
     it('should validate date format (schoolYearValidator)', () => {
+      currentUserSubject.next({ role: Role.CONTRIBUTOR, id: 1 });
       const dateControl = component.formService.competitionForm.controls.date;
       dateControl.setValue('2020.01.01');
       expect(dateControl.errors?.['schoolYear']).toBeTruthy();
@@ -279,7 +281,7 @@ describe('CompetitionEditorComponent', () => {
 
     describe('Deletable logic', () => {
       beforeEach(() => {
-        const competition = { creatorId: 10 };
+        const competition = { creatorId: 10, date: `${getCurrentSchoolYear()}.10.01` };
         (component as any).competition$.next(competition);
       });
 
@@ -326,7 +328,7 @@ describe('CompetitionEditorComponent', () => {
       tick();
       expect(competitionService.createCompetition).toHaveBeenCalled();
       expect(notificationService.success).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+      expect(router.navigate).toHaveBeenCalledWith(['/competition']);
     }));
 
     it('should call updateCompetition on submit when ID is provided', fakeAsync(() => {
@@ -344,7 +346,7 @@ describe('CompetitionEditorComponent', () => {
       tick();
       expect(competitionService.updateCompetition).toHaveBeenCalled();
       expect(notificationService.success).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+      expect(router.navigate).toHaveBeenCalledWith(['/competition']);
     }));
 
     it('should show error notification on failed submission', fakeAsync(() => {
@@ -384,7 +386,7 @@ describe('CompetitionEditorComponent', () => {
       tick();
 
       expect(notificationService.error).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+      expect(router.navigate).toHaveBeenCalledWith(['/competition']);
     }));
   });
 
@@ -404,7 +406,7 @@ describe('CompetitionEditorComponent', () => {
 
       expect(competitionService.deleteCompetition).toHaveBeenCalledWith(1);
       expect(notificationService.success).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledWith(['/competitions']);
+      expect(router.navigate).toHaveBeenCalledWith(['/competition']);
     }));
 
     it('should handle error on deletion failure', fakeAsync(() => {
