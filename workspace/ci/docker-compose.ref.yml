@@ -6,8 +6,7 @@ services:
       POSTGRES_PASSWORD: "${SQL_SERVER_PASSWORD}"
       POSTGRES_DB: "${SQL_DATABASE_NAME}"
     networks:
-      ref_network:
-        ipv4_address: 172.21.0.2
+      - ref_network
     volumes:
       - postgres-ref-data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -16,7 +15,7 @@ services:
     image: ghcr.io/david2242/student-competition:ref
     environment:
       SWAGGER: "True"
-      SQL_SERVER_HOST: "172.21.0.2"
+      SQL_SERVER_HOST: "postgres-ref"
       SQL_SERVER_USERNAME: "${SQL_SERVER_USERNAME}"
       SQL_SERVER_PASSWORD: "${SQL_SERVER_PASSWORD}"
       SQL_DATABASE_NAME: "${SQL_DATABASE_NAME}"
@@ -26,17 +25,13 @@ services:
     depends_on:
       - postgres-ref
     networks:
-      ref_network:
-        ipv4_address: 172.21.0.3
+      - ref_network
     ports:
       - "8081:8080"
     restart: unless-stopped
 
 networks:
   ref_network:
-    ipam:
-      config:
-        - subnet: 172.21.0.0/24
 
 volumes:
   postgres-ref-data:

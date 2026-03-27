@@ -6,8 +6,7 @@ services:
       POSTGRES_PASSWORD: "${SQL_SERVER_PASSWORD}"
       POSTGRES_DB: "${SQL_DATABASE_NAME}"
     networks:
-      prod_network:
-        ipv4_address: 172.20.0.2
+      - prod_network
     volumes:
       - postgres-prod-data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -16,7 +15,7 @@ services:
     image: ghcr.io/david2242/student-competition:prod
     environment:
       SWAGGER: "False"
-      SQL_SERVER_HOST: "172.20.0.2"
+      SQL_SERVER_HOST: "postgres-prod"
       SQL_SERVER_USERNAME: "${SQL_SERVER_USERNAME}"
       SQL_SERVER_PASSWORD: "${SQL_SERVER_PASSWORD}"
       SQL_DATABASE_NAME: "${SQL_DATABASE_NAME}"
@@ -26,17 +25,13 @@ services:
     depends_on:
       - postgres-prod
     networks:
-      prod_network:
-        ipv4_address: 172.20.0.3
+      - prod_network
     ports:
       - "8080:8080"
     restart: unless-stopped
 
 networks:
   prod_network:
-    ipam:
-      config:
-        - subnet: 172.20.0.0/24
 
 volumes:
   postgres-prod-data:
